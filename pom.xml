@@ -24,6 +24,15 @@
 		<java.version>1.8</java.version>
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
+		<docker.maven.version>0.4.11</docker.maven.version>
+		<debug.config>-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=</debug.config>
+		<debug.filedatabase.port>5050</debug.filedatabase.port>
+		<debug.dataedge.port>5059</debug.dataedge.port>
+		<debug.eureka.port>5061</debug.eureka.port>
+		<debug.config.port>5088</debug.config.port>
+		<debug.hystrix.port>5089</debug.hystrix.port>
+		<debug.res.port>5090</debug.res.port>
+		<debug.key.port>5094</debug.key.port>
 	</properties>
 
 	<modules>
