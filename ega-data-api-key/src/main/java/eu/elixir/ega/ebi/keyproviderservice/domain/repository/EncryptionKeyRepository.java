@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 ELIXIR EGA
+ * Copyright 2018 ELIXIR EGA
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,16 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package eu.elixir.ega.ebi.keyproviderservice;
+package eu.elixir.ega.ebi.keyproviderservice.domain.repository;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
+import eu.elixir.ega.ebi.keyproviderservice.domain.entity.EncryptionKey;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.query.Param;
 
-@SpringBootApplication
-public class KeyproviderserviceApplication {
+/**
+ * @author asenf
+ */
+public interface EncryptionKeyRepository extends CrudRepository<EncryptionKey, Integer> {
 
-    public static void main(String[] args) {
-        SpringApplication.run(KeyproviderserviceApplication.class, args);
-    }
+    @Cacheable(cacheNames = "byId")
+    EncryptionKey findById(@Param("id") String id);
 
 }
+ 
