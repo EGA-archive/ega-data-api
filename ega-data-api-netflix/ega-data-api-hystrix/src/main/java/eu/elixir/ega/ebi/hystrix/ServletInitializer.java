@@ -1,5 +1,6 @@
 /*
  * Copyright 2016 ELIXIR EGA
+ * Copyright 2016 Alexander Senf
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,19 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package eu.elixir.ega.ebi.hystrix;
 
-package eu.elixir.ega.ebi.config;
+import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.boot.web.support.SpringBootServletInitializer;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.cloud.config.server.EnableConfigServer;
+public class ServletInitializer extends SpringBootServletInitializer {
 
-@EnableConfigServer
-@SpringBootApplication
-public class ConfigServer {
-
-    public static void main(String[] args) {
-        SpringApplication.run(ConfigServer.class, args);
+    @Override
+    protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
+        return application.sources(HystrixDashboardServerApplication.class);
     }
 
 }

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<GpgConfiguration>
+        <Keys>
+                <Key ID="1">
+                        <Type>AES</Type>
+                        <KeyPath>{your path}/test.txt</KeyPath>
+                        <KeyFile></KeyFile>
+                        <KeyKey></KeyKey>
+                </Key>
+                <Key ID="2">
+                        <Type>PrivateGPG</Type>
+                        <KeyPath>{path to your}/.gnupg/secring.gpg</KeyPath>
+                        <KeyFile>{path to}/key_passphrase</KeyFile>
+                        <KeyKey></KeyKey>
+                </Key>
+        </Keys>
+</GpgConfiguration>

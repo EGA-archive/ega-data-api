@@ -1,0 +1,15 @@
+The Eureka configuration is identical between all services. Here's an example:
+
+If EUREKA runs on a server 'http://example-server.uk' which has an IP of 'http://10.20.30.40' then this should work
+
+eureka.name = sampleRegisteringService
+eureka.port = 8761
+eureka.vipAddress = example-server.uk
+eureka.serviceUrls = http://10.20.30.40:8761/eureka/
+eureka.client.serviceUrl.defaultZone: http://example-server.uk:8761/eureka/
+eureka.instance.preferIpAddress: true
+
+The port can be customsed as well, but it is not necessary. The server names & IPs must be customised to your local environment.
+
+The DecryptionEcosystem.xml shows an example of the way keys can be specified - this is customisable in the KEYSERVICE microservice. Essentially, this is just a way to specify either keys directly, or keyfiles/keyrings.
+
