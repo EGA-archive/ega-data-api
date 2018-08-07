@@ -1,5 +1,5 @@
-/*
- * Copyright 2016 ELIXIR EGA
+/* 
+ * Copyright 2017 ELIXIR EGA
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,16 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package eu.elixir.ega.ebi.keyproviderservice;
+/**
+ * Author:  asenf
+ * Created: 17-Feb-2017
+ */
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-
-@SpringBootApplication
-public class KeyproviderserviceApplication {
-
-    public static void main(String[] args) {
-        SpringApplication.run(KeyproviderserviceApplication.class, args);
-    }
-
-}
+CREATE TABLE dev_ega_file.file_dataset (
+	dataset_id varchar(128) NULL,
+	file_id varchar(128) NULL,
+)
+WITH (
+	OIDS=FALSE
+);
+CREATE UNIQUE INDEX dataset_id_idx ON dev_ega_file.file_dataset (dataset_id, file_id);
+CREATE INDEX file_id_idx ON dev_ega_file.file_dataset (file_id);

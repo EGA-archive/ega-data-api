@@ -1,0 +1,12 @@
+spring:
+  application:
+    name: downloader
+---
+
+spring:
+  application:
+    name: downloader     
+    profiles: docker        
+  cloud:
+    config:
+      uri: http://config:8888        
