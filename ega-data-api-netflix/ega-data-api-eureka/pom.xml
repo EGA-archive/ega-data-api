@@ -131,8 +131,7 @@
 						<configuration>
 							<imageName>ega-data-api/eureka</imageName>
 							<baseImage>java:8</baseImage>
-							<entryPoint>["java", "${debug.config}${debug.eureka.port}",
-								"-jar", "/${project.build.finalName}.jar"]</entryPoint>
+							<entryPoint>["java", "${debug.config}${debug.eureka.port}", "-jar", "/${project.build.finalName}.jar"]</entryPoint>
 							<resources>
 								<resource>
 									<targetPath>/</targetPath>

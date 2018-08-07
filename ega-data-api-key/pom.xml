@@ -258,8 +258,7 @@
 						<configuration>
 							<imageName>ega-data-api/key</imageName>
 							<baseImage>java:8</baseImage>
-							<entryPoint>["java", "${debug.config}${debug.key.port}", "-jar",
-								"/${project.build.finalName}.jar"]</entryPoint>
+							<entryPoint>["java", "${debug.config}${debug.key.port}", "-jar", "/${project.build.finalName}.jar"]</entryPoint>
 							<resources>
 								<resource>
 									<targetPath>/</targetPath>
