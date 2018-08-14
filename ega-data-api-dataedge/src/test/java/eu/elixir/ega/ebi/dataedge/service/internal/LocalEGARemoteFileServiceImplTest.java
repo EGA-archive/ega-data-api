@@ -59,11 +59,11 @@ import htsjdk.samtools.cram.ref.CRAMReferenceSource;
 @TestPropertySource(locations = "classpath:application-test.properties")
 public class LocalEGARemoteFileServiceImplTest {
 
-    private final String SERVICE_URL = "http://FILEDATABASE";
-    private final String RES_URL = "http://RES2";
-    private final String DATASET1 = "DATASET1";
-    private final String DATASET2 = "DATASET2";
-    private final String FILEID = "fileId";
+    private static final String SERVICE_URL = "http://FILEDATABASE";
+    private static final String RES_URL = "http://RES2";
+    private static final String DATASET1 = "DATASET1";
+    private static final String DATASET2 = "DATASET2";
+    private static final String FILEID = "fileId";
     private Authentication auth;
 
 

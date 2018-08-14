@@ -46,7 +46,7 @@ import java.util.Iterator;
 @EnableDiscoveryClient
 public class KeyServiceImpl implements KeyService {
 
-    private final String SERVICE_URL = "http://KEYSERVER"; //ICE";
+    private static final String SERVICE_URL = "http://KEYSERVER"; //ICE";
 
     @Autowired
     RestTemplate restTemplate;

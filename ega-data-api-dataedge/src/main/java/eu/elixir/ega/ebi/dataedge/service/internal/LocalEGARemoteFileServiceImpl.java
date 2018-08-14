@@ -57,8 +57,8 @@ import java.util.*;
 @EnableDiscoveryClient
 public class LocalEGARemoteFileServiceImpl implements FileService {
 
-    private final String SERVICE_URL = "http://FILEDATABASE";
-    private final String RES_URL = "http://RES2";
+    private static final String SERVICE_URL = "http://FILEDATABASE";
+    private static final String RES_URL = "http://RES2";
 
     @Autowired
     private RestTemplate restTemplate;

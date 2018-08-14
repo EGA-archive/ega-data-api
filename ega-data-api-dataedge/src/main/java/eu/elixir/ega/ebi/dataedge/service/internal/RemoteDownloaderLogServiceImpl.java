@@ -48,7 +48,7 @@ import java.net.URISyntaxException;
 @EnableDiscoveryClient
 public class RemoteDownloaderLogServiceImpl implements DownloaderLogService {
 
-    private final String SERVICE_URL = "http://FILEDATABASE";
+    private static final String SERVICE_URL = "http://FILEDATABASE";
 
     @Autowired
     AsyncRestTemplate restTemplate;
