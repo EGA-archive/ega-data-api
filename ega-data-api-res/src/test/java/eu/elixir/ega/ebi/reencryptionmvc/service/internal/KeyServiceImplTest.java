@@ -84,7 +84,7 @@ public class KeyServiceImplTest {
     public void testGetFileKey() {
         final ResponseEntity<String> mockResponseEntity = mock(ResponseEntity.class);
         final String keyMock = "body Output";
-        when(restTemplate.getForEntity(SERVICE_URL + "/keys/filekeys/{file_id}", String.class, "fileId"))
+        when(restTemplate.getForEntity(SERVICE_URL + "/keys/filekeys/{fileId}", String.class, "fileId"))
                 .thenReturn(mockResponseEntity);
         when(mockResponseEntity.getBody()).thenReturn(keyMock);
 

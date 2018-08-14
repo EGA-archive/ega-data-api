@@ -52,4 +52,5 @@ public class LogController {
         DownloadLog logDownload = logService.logDownload(input);
         // TODO Return 201 with Resource URL
     }
+
 }

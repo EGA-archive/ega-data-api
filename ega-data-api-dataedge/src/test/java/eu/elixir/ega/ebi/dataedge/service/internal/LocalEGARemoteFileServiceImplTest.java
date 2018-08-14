@@ -110,11 +110,11 @@ public class LocalEGARemoteFileServiceImplTest {
             when(forEntity.getBody()).thenReturn(file);
             when(forSize.getBody()).thenReturn(1000l);
 
-            when(restTemplate.getForEntity(SERVICE_URL + "/file/{file_id}/datasets", FileDataset[].class, FILEID))
+            when(restTemplate.getForEntity(SERVICE_URL + "/file/{fileId}/datasets", FileDataset[].class, FILEID))
                     .thenReturn(forEntityDataset);
-            when(restTemplate.getForEntity(SERVICE_URL + "/file/{file_id}", File[].class, FILEID))
+            when(restTemplate.getForEntity(SERVICE_URL + "/file/{fileId}", File[].class, FILEID))
                     .thenReturn(forEntity);
-            when(restTemplate.getForEntity(RES_URL + "/file/archive/{file_id}/size", Long.class, FILEID))
+            when(restTemplate.getForEntity(RES_URL + "/file/archive/{fileId}/size", Long.class, FILEID))
                     .thenReturn(forSize);
 
             localEGARemoteFileServiceImpl.getFile(auth, FILEID, "plain", "destinationKey", "destinationIV", 0, 0,

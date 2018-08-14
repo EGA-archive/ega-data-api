@@ -173,9 +173,9 @@ public class RemoteTicketServiceImplTest {
         when(externalConfig.getEgaExternalUrl()).thenReturn("egaExternalUrl");
         when(authentication.getAuthorities()).thenReturn(authorities);
         when(httpServletRequest.getHeader(any())).thenReturn("token");
-        when(restTemplate.getForEntity(SERVICE_URL + "/file/{file_id}/datasets", FileDataset[].class, FILEID))
+        when(restTemplate.getForEntity(SERVICE_URL + "/file/{fileId}/datasets", FileDataset[].class, FILEID))
                 .thenReturn(forEntityDataset);
-        when(restTemplate.getForEntity(SERVICE_URL + "/file/{file_id}", File[].class, FILEID)).thenReturn(forEntity);
+        when(restTemplate.getForEntity(SERVICE_URL + "/file/{fileId}", File[].class, FILEID)).thenReturn(forEntity);
 
     }
 }

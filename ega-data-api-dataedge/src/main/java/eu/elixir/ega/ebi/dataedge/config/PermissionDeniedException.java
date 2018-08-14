@@ -29,4 +29,5 @@ public class PermissionDeniedException extends RuntimeException {
     public PermissionDeniedException(String code) {
         super("Permission Denied : " + code);
     }
+
 }

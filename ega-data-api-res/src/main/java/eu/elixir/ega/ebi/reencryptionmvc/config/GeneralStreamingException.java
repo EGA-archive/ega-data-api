@@ -29,4 +29,5 @@ public class GeneralStreamingException extends RuntimeException {
     public GeneralStreamingException(String error, int stage) {
         super("Error processing Stream at stage : " + stage + " (with error " + error + ")");
     }
+
 }

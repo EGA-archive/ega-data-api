@@ -33,7 +33,6 @@ import java.util.*;
  */
 public class MyAccessTokenConverter implements AccessTokenConverter {
 
-
     private UserAuthenticationConverter userTokenConverter = new DefaultUserAuthenticationConverter();
 
     private boolean includeGrantType;
@@ -57,7 +56,7 @@ public class MyAccessTokenConverter implements AccessTokenConverter {
     }
 
     public Map<String, ?> convertAccessToken(OAuth2AccessToken token, OAuth2Authentication authentication) {
-        Map<String, Object> response = new HashMap<String, Object>();
+        Map<String, Object> response = new HashMap<>();
         OAuth2Request clientToken = authentication.getOAuth2Request();
 
         if (!authentication.isClientOnly()) {
@@ -95,7 +94,7 @@ public class MyAccessTokenConverter implements AccessTokenConverter {
 
     public OAuth2AccessToken extractAccessToken(String value, Map<String, ?> map) {
         DefaultOAuth2AccessToken token = new DefaultOAuth2AccessToken(value);
-        Map<String, Object> info = new HashMap<String, Object>(map);
+        Map<String, Object> info = new HashMap<>(map);
         info.remove(EXP);
         info.remove(AUD);
         info.remove(CLIENT_ID);
@@ -115,13 +114,13 @@ public class MyAccessTokenConverter implements AccessTokenConverter {
     public OAuth2Authentication extractAuthentication(Map<String, ?> map) {
 
         // Add Dataset Permissions as Roles
-        Map<String, Object> info = new HashMap<String, Object>(map);
+        Map<String, Object> info = new HashMap<>(map);
         if (info.containsKey("Permissions")) {
             Object get = info.get("Permissions");
             info.put(AUTHORITIES, get); // OK - Permissions from AAI Response
         }
 
-        Map<String, String> parameters = new HashMap<String, String>();
+        Map<String, String> parameters = new HashMap<>();
         Set<String> scope = extractScope(map);
         Authentication user = userTokenConverter.extractAuthentication(info); // {map} Use 'enhanced' Map with Permissions
         String clientId = (String) map.get(CLIENT_ID);
@@ -129,8 +128,7 @@ public class MyAccessTokenConverter implements AccessTokenConverter {
         if (includeGrantType && map.containsKey(GRANT_TYPE)) {
             parameters.put(GRANT_TYPE, (String) map.get(GRANT_TYPE));
         }
-        Set<String> resourceIds = new LinkedHashSet<String>(map.containsKey(AUD) ? getAudience(map)
-                : Collections.<String>emptySet());
+        Set<String> resourceIds = new LinkedHashSet<>(map.containsKey(AUD) ? getAudience(map) : Collections.emptySet());
 
         Collection<? extends GrantedAuthority> authorities = null;
         if (user == null && map.containsKey(AUTHORITIES)) {
@@ -157,14 +155,15 @@ public class MyAccessTokenConverter implements AccessTokenConverter {
         Set<String> scope = Collections.emptySet();
         if (map.containsKey(SCOPE)) {
             Object scopeObj = map.get(SCOPE);
-            if (String.class.isInstance(scopeObj)) {
-                scope = new LinkedHashSet<String>(Arrays.asList(String.class.cast(scopeObj).split(" ")));
+            if (scopeObj instanceof String) {
+                scope = new LinkedHashSet<>(Arrays.asList(((String) scopeObj).split(" ")));
             } else if (Collection.class.isAssignableFrom(scopeObj.getClass())) {
                 @SuppressWarnings("unchecked")
                 Collection<String> scopeColl = (Collection<String>) scopeObj;
-                scope = new LinkedHashSet<String>(scopeColl);    // Preserve ordering
+                scope = new LinkedHashSet<>(scopeColl);    // Preserve ordering
             }
         }
         return scope;
     }
+
 }

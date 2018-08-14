@@ -29,4 +29,5 @@ public class InvalidAuthenticationException extends RuntimeException {
     public InvalidAuthenticationException(String code) {
         super("Invalid Authentication : " + code);
     }
+
 }

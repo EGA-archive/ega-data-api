@@ -48,13 +48,12 @@ import java.util.stream.StreamSupport;
 @RequestMapping("/file")
 public class FileController {
 
-    private ResService resService; // Handle Any Direct Re/Encryption Operations
-    private ArchiveService archiveService; // Handle Archived File Operations (file identified by Archive ID)
-
     /**
      * Size of a byte buffer to read/write file (for Random Stream)
      */
     private static final int BUFFER_SIZE = 4096;
+    private ResService resService; // Handle Any Direct Re/Encryption Operations
+    private ArchiveService archiveService; // Handle Archived File Operations (file identified by Archive ID)
 
     // Direct Re/Encryption (e.g. Pipeline/Import)
     @GetMapping

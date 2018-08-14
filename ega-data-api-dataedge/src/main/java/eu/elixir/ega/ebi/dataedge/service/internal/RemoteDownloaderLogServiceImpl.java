@@ -33,11 +33,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.ListenableFutureCallback;
 import org.springframework.web.client.AsyncRestTemplate;
+import org.springframework.web.client.RestTemplate;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.List;
-import org.springframework.web.client.RestTemplate;
 
 //import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 
@@ -56,10 +55,10 @@ public class RemoteDownloaderLogServiceImpl implements DownloaderLogService {
 
     @Autowired
     RestTemplate syncRestTemplate;
-    
+
     @Autowired
     private EurekaClient discoveryClient;
-    
+
     @Override
     //@HystrixCommand
     public void logDownload(DownloadEntry downloadEntry) {
@@ -69,7 +68,7 @@ public class RemoteDownloaderLogServiceImpl implements DownloaderLogService {
 
         InstanceInfo instance = discoveryClient.getNextServerFromEureka("FILEDATABASE", false);
         String logUrl = instance.getHomePageUrl();
-    
+
         // Jackson ObjectMapper to convert requestBody to JSON
         String json = null;
         URI url = null;
@@ -77,7 +76,7 @@ public class RemoteDownloaderLogServiceImpl implements DownloaderLogService {
             json = new ObjectMapper().writeValueAsString(downloadEntry);
             //url = new URI(SERVICE_URL + "/log/download/");
             url = new URI(logUrl + "/log/download/");
-        } catch (JsonProcessingException | URISyntaxException ex) {
+        } catch (JsonProcessingException | URISyntaxException ignored) {
         }
 
         HttpEntity<String> entity = new HttpEntity<>(json, headers);
@@ -114,14 +113,14 @@ public class RemoteDownloaderLogServiceImpl implements DownloaderLogService {
 
         InstanceInfo instance = discoveryClient.getNextServerFromEureka("FILEDATABASE", false);
         String logUrl = instance.getHomePageUrl();
-    
+
         // Jackson ObjectMapper to convert requestBody to JSON
         String json = null;
         URI url = null;
         try {
             json = new ObjectMapper().writeValueAsString(eventEntry);
             url = new URI(logUrl + "/log/event/");
-        } catch (JsonProcessingException | URISyntaxException ex) {
+        } catch (JsonProcessingException | URISyntaxException ignored) {
         }
 
         HttpEntity<String> entity = new HttpEntity<>(json, headers);
@@ -144,8 +143,6 @@ public class RemoteDownloaderLogServiceImpl implements DownloaderLogService {
 
         // Old Synchronous Call
         //restTemplate.postForObject(SERVICE_URL + "/log/event/", eventEntry, Void.class);
-
     }
-
 
 }

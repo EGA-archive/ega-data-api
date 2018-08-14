@@ -28,6 +28,8 @@ import lombok.Setter;
 @Setter
 @Getter
 public class FileDataset {
+
     private String fileId;
     private String datasetId;
+
 }

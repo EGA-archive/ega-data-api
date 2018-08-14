@@ -51,7 +51,7 @@ public class StatsController {
     @RequestMapping(value = "/load", method = GET)
     public String get() {
 
-        String load = "NN";
+        String load;
         try {
             load = String.valueOf(getProcessCpuLoad());
         } catch (Exception ex) {
@@ -60,4 +60,5 @@ public class StatsController {
 
         return load;
     }
+
 }

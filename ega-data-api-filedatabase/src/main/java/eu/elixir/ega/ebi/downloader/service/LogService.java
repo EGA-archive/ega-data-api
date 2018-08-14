@@ -23,8 +23,8 @@ import eu.elixir.ega.ebi.downloader.domain.entity.Event;
  */
 public interface LogService {
 
-    public Event logEvent(Event event);
+    Event logEvent(Event event);
 
-    public DownloadLog logDownload(DownloadLog downloadLog);
+    DownloadLog logDownload(DownloadLog downloadLog);
 
 }

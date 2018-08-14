@@ -28,6 +28,8 @@ import lombok.Setter;
 @Setter
 @Getter
 public class HtsgetErrorResponse implements HtsgetResponseInterface {
+
     private String error;
     private String message;
+
 }

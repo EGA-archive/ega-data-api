@@ -23,37 +23,35 @@ import java.security.PublicKey;
 import java.security.Signature;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Base64;
-import java.util.List;
+import java.util.Collections;
 
 
 public class VerifyMessageNew {
-    private List<byte[]> list;
-    private String keyFile = "publicKey";
+
     private ArrayList<String> messages = new ArrayList<>();
 
     @SuppressWarnings("unchecked")
     //The constructor of VerifyMessage class retrieves the byte arrays from the File and prints the message only if the signature is verified.
     public VerifyMessageNew(String message) throws Exception {
         // Separate out provided signature
-        List<String> list = new ArrayList<String>(Arrays.asList(message.split(" , ")));
-        String [] items = message.split(",");
-        byte[] sig = Base64.getDecoder().decode(items[items.length-1]);
+        String[] items = message.split(",");
+        byte[] sig = Base64.getDecoder().decode(items[items.length - 1]);
 
         // Transform list of DatasetIDs to byte array (same as used for signature)
-        String sigString = message.substring(0, message.lastIndexOf(",")+1);
+        String sigString = message.substring(0, message.lastIndexOf(",") + 1);
         byte[] lst = (sigString).getBytes();
-        
+
+        String keyFile = "publicKey";
         if (verifySignature(lst, sig, keyFile)) {
-            this.messages = new ArrayList<String>(Arrays.asList(sigString.substring(0, message.lastIndexOf(","))));
+            this.messages = new ArrayList<String>(Collections.singletonList(sigString.substring(0, message.lastIndexOf(","))));
 
             // Check timestamp; if too old, wipe permissions (10 minutes) - has t be tested.... (different machines, different timezones...)
             //long timestamp_delta = System.currentTimeMillis() - Long.parseLong(dataset);
             //if (timestamp_delta > 600000)
             //    messages = new ArrayList<>();
         } else {
-System.out.println("NO!!");
+            System.out.println("NO!!");
         }
 
         //System.out.println(verifySignature(list.get(0), list.get(1), keyFile) ? "VERIFIED MESSAGE" + "\n----------------\n" + new String(list.get(0)) : "Could not verify the signature.");
@@ -79,8 +77,9 @@ System.out.println("NO!!");
 
     public ArrayList<String> getPermissions() {
         ArrayList<String> permissions = new ArrayList<>();
-        for (int i=0; i<this.messages.size()-1; i++)
+        for (int i = 0; i < this.messages.size() - 1; i++) {
             permissions.add(this.messages.get(i));
+        }
         return permissions; //this.messages;
     }
 

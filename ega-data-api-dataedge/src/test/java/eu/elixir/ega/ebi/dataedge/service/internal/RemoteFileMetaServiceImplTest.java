@@ -88,9 +88,9 @@ public class RemoteFileMetaServiceImplTest {
         final File[] files = { f };
 
         when(auth.getAuthorities()).thenReturn(authorities);
-        when(syncRestTemplate.getForEntity(SERVICE_URL + "/file/{file_id}/datasets", FileDataset[].class, FILEID))
+        when(syncRestTemplate.getForEntity(SERVICE_URL + "/file/{fileId}/datasets", FileDataset[].class, FILEID))
                 .thenReturn(forEntityDataset);
-        when(syncRestTemplate.getForEntity(SERVICE_URL + "/file/{file_id}", File[].class, FILEID))
+        when(syncRestTemplate.getForEntity(SERVICE_URL + "/file/{fileId}", File[].class, FILEID))
                 .thenReturn(forEntity);
         when(forEntityDataset.getBody()).thenReturn(datasets);
         when(forEntity.getBody()).thenReturn(files);
@@ -111,7 +111,7 @@ public class RemoteFileMetaServiceImplTest {
         f.setFileId(FILEID);
         final File[] files = { f };
 
-        when(syncRestTemplate.getForObject(SERVICE_URL + "/datasets/{dataset_id}/files", File[].class, DATASET1))
+        when(syncRestTemplate.getForObject(SERVICE_URL + "/datasets/{datasetId}/files", File[].class, DATASET1))
                 .thenReturn(files);
 
         final Iterable<File> fileOutput = remoteFileMetaServiceImpl.getDatasetFiles(DATASET1);

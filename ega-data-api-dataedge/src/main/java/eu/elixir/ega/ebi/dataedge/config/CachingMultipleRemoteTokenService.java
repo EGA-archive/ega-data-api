@@ -15,7 +15,6 @@
  */
 package eu.elixir.ega.ebi.dataedge.config;
 
-import java.util.ArrayList;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.security.core.Authentication;
@@ -24,6 +23,8 @@ import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.common.exceptions.InvalidTokenException;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.token.RemoteTokenServices;
+
+import java.util.ArrayList;
 
 /**
  * @author asenf
@@ -37,33 +38,31 @@ public class CachingMultipleRemoteTokenService extends RemoteTokenServices {
     ArrayList<CachingRemoteTokenService> remoteServices;
 
     public void addRemoteTokenService(CachingRemoteTokenService service) {
-        if (remoteServices==null)
+        if (remoteServices == null)
             remoteServices = new ArrayList<>();
 
         remoteServices.add(service);
-System.out.println("-- service " + service.toString());
+        System.out.println("-- service " + service.toString());
     }
-    
+
     /*
      * Code adjusted to handle a list of remote services
-     */    
-
+     */
     @Override
     @Cacheable(cacheNames = "tokens", key = "#root.methodName + #accessToken")
     public OAuth2Authentication loadAuthentication(String accessToken)
             throws org.springframework.security.core.AuthenticationException,
             InvalidTokenException {
-System.out.println("1 -- " + accessToken);
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        
+        System.out.println("1 -- " + accessToken);
+
         OAuth2Authentication loadAuthentication = null;
-        for (int i=0; i<remoteServices.size(); i++) {
+        for (CachingRemoteTokenService remoteService : remoteServices) {
             try {
-                loadAuthentication = remoteServices.get(i).loadAuthentication(accessToken);
+                loadAuthentication = remoteService.loadAuthentication(accessToken);
             } catch (IllegalStateException ex) {
                 System.out.println(ex.toString());
             }
-            if (loadAuthentication!=null && loadAuthentication.isAuthenticated()) break;
+            if (loadAuthentication != null && loadAuthentication.isAuthenticated()) break;
         }
         return loadAuthentication;
 
@@ -73,16 +72,16 @@ System.out.println("1 -- " + accessToken);
     @Override
     @Cacheable(cacheNames = "tokens", key = "#root.methodName + #accessToken")
     public OAuth2AccessToken readAccessToken(String accessToken) {
-System.out.println("2 -- " + accessToken);
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        
+        System.out.println("2 -- " + accessToken);
+
         OAuth2AccessToken readAccess = null;
-        for (int i=0; i<remoteServices.size(); i++) {
+        for (int i = 0; i < remoteServices.size(); i++) {
             readAccess = remoteServices.get(i).readAccessToken(accessToken);
             if (!readAccess.isExpired()) break;
         }
         return readAccess;
-        
+
         //return super.readAccessToken(accessToken);
     }
+
 }

@@ -71,7 +71,7 @@ public class DatasetControllerTest {
 
 		when(fileService.getDatasetFiles(any(String.class))).thenReturn(downloadList);
 		final MockHttpServletResponse response = mockMvc
-				.perform(get("/datasets/dataset_id/files").accept(APPLICATION_JSON)).andReturn().getResponse();
+				.perform(get("/datasets/datasetId/files").accept(APPLICATION_JSON)).andReturn().getResponse();
 		assertThat(response.getStatus(), equalTo(OK.value()));
 	}
 

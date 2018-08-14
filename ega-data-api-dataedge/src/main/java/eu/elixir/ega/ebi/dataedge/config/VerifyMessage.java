@@ -31,8 +31,7 @@ import java.util.StringTokenizer;
 
 
 public class VerifyMessage {
-    private List<byte[]> list;
-    private String keyFile = "publicKey";
+
     private ArrayList<String> messages = new ArrayList<>();
 
     @SuppressWarnings("unchecked")
@@ -40,9 +39,10 @@ public class VerifyMessage {
     public VerifyMessage(String message) throws Exception {
         ByteArrayInputStream bais = new ByteArrayInputStream(Base64.getDecoder().decode(message));
         ObjectInputStream in = new ObjectInputStream(bais);
-        this.list = (List<byte[]>) in.readObject();
+        List<byte[]> list = (List<byte[]>) in.readObject();
         in.close();
 
+        String keyFile = "publicKey";
         if (verifySignature(list.get(0), list.get(1), keyFile)) {
             String permissions_timestamp = new String(list.get(0));
 
@@ -89,4 +89,5 @@ public class VerifyMessage {
     //    List<String> list = verifyMessage.getPermissions();
     //    System.out.println();
     //}
+
 }

@@ -26,14 +26,12 @@ import javax.management.AttributeList;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.lang.management.ManagementFactory;
 import java.util.List;
 import java.util.Set;
-import javax.servlet.http.HttpServletResponse;
 
-import static org.springframework.web.bind.annotation.RequestMethod.GET;
-import static org.springframework.web.bind.annotation.RequestMethod.POST;
-import static org.springframework.web.bind.annotation.RequestMethod.OPTIONS;
+import static org.springframework.web.bind.annotation.RequestMethod.*;
 
 /**
  * @author asenf
@@ -60,14 +58,14 @@ public class StatsController {
     @RequestMapping(value = "/load", method = OPTIONS)
     public void getLoadOptions(HttpServletResponse response) {
         response.addHeader("Access-Control-Request-Method", "GET");
-System.out.println("Adding Header load");
+        System.out.println("Adding Header load");
     }
-    
+
     @RequestMapping(value = "/load", method = GET)
     @ResponseBody
     public String get() {
 
-        String load = "NN";
+        String load;
         try {
             load = String.valueOf(getProcessCpuLoad());
         } catch (Exception ex) {
@@ -83,13 +81,14 @@ System.out.println("Adding Header load");
     @RequestMapping(value = "/testme", method = OPTIONS)
     public void getTestOptions(HttpServletResponse response) {
         response.addHeader("Access-Control-Request-Method", "GET");
-System.out.println("Adding Header testme");
+        System.out.println("Adding Header testme");
     }
-    @RequestMapping(value = "/testme", method = {GET,POST})
+
+    @RequestMapping(value = "/testme", method = {GET, POST})
     @ResponseBody
     public String testme(HttpServletRequest servletRequest, @RequestHeader HttpHeaders headers) {
 
-        String result = "Null";
+        String result;
 
         result = "Headers: ";
         Set<String> keySet = headers.keySet();
@@ -111,4 +110,5 @@ System.out.println("Adding Header testme");
 
         return result;
     }
+
 }

@@ -29,4 +29,5 @@ public class InternalErrorException extends RuntimeException {
     public InternalErrorException(String error, String id) {
         super(error + ": " + id);
     }
+
 }

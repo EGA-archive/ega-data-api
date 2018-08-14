@@ -67,9 +67,6 @@ public class Event implements Serializable {
     @Column(nullable = false)
     private Timestamp created;
 
-    /*
-     *
-     */
     public String toString() {
         String line = "";
 
@@ -82,4 +79,5 @@ public class Event implements Serializable {
 
         return line;
     }
+
 }

@@ -44,7 +44,7 @@ public class KeyController {
     }
 
     /*
-     * Getting a Public Key 
+     * Getting a Public Key
      * - Getting our own Public Key
      * - Getting a User Public Key, by ID or by Email
      */
@@ -61,7 +61,7 @@ public class KeyController {
     }
 
     /*
-     * Getting a Private Key 
+     * Getting a Private Key
      * - Getting the instantiated Object (/object)
      * - Getting the paths to the ASCII Armoured Key and Passphrase (/path)
      * - Getting a re-Armoured String of the Key (/key)
@@ -83,7 +83,7 @@ public class KeyController {
     public String getPrivateKeyString(@PathVariable String keyId) {
         return keyService.getPrivateKeyString(keyId);
     }
-    
+
     /*
      * Return all current Key IDs
      */

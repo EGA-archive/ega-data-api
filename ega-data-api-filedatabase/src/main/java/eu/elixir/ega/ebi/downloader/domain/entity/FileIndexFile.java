@@ -45,10 +45,6 @@ public class FileIndexFile implements Serializable {
     @Column(name = "index_file_id", insertable = false, updatable = false, length = 128)
     private String indexFileId;
 
-    /*
-     *
-     */
-
     public String toString() {
         String line = "";
 
@@ -57,4 +53,5 @@ public class FileIndexFile implements Serializable {
 
         return line;
     }
+
 }

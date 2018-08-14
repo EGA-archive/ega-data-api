@@ -18,7 +18,6 @@ package eu.elixir.ega.ebi.dataedge.service.internal;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
 import eu.elixir.ega.ebi.dataedge.config.NotFoundException;
-import eu.elixir.ega.ebi.dataedge.config.VerifyMessage;
 import eu.elixir.ega.ebi.dataedge.config.VerifyMessageNew;
 import eu.elixir.ega.ebi.dataedge.dto.*;
 import eu.elixir.ega.ebi.dataedge.service.TicketService;
@@ -88,7 +87,7 @@ public class RemoteTicketServiceImpl implements TicketService {
     @Override
     //@HystrixCommand
     public Object getTicket(Authentication auth,
-                            String file_id,
+                            String fileId,
                             String format,
                             int referenceIndex,
                             String referenceName,
@@ -108,16 +107,16 @@ public class RemoteTicketServiceImpl implements TicketService {
                     .body(new HtsgetContainer(new HtsgetErrorResponse("InvalidInput", "EGA requires oauth token")));
 
         // Ascertain Access Permissions for specified File ID
-        File reqFile = null;
+        File reqFile;
         try {
-            reqFile = getReqFile(file_id, auth, request); // request added for ELIXIR
+            reqFile = getReqFile(fileId, auth, request); // request added for ELIXIR
         } catch (NotFoundException ex) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .contentType(MediaType.valueOf("application/vnd.ga4gh.htsget.v1.0+json; charset=utf-8"))
-                    .body(new HtsgetContainer(new HtsgetErrorResponse("NotFound", "No such accession '" + file_id + "'")));
+                    .body(new HtsgetContainer(new HtsgetErrorResponse("NotFound", "No such accession '" + fileId + "'")));
         }
 
-        boolean reference = false;
+        boolean reference;
         reference = (referenceIndex > -1 || (referenceName != null && referenceName.length() > 0) || (referenceMD5 != null && referenceMD5.length() > 0));
         if (!reference && ((start != null && start.length() > 0) || (end != null && end.length() > 0))) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -135,7 +134,7 @@ public class RemoteTicketServiceImpl implements TicketService {
 //            urls.add(new HtsgetUrl("header", authHeader));
 
             // Data URL(s)
-            String url = externalConfig.getEgaExternalUrl() + "byid/file?accession=" + file_id;
+            String url = externalConfig.getEgaExternalUrl() + "byid/file?accession=" + fileId;
             if (format != null && format.length() > 0)
                 url += "&format=" + format;
             if (start != null && start.length() > 0)
@@ -171,13 +170,13 @@ public class RemoteTicketServiceImpl implements TicketService {
 
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .contentType(MediaType.valueOf("application/vnd.ga4gh.htsget.v1.0+json; charset=utf-8"))
-                .body(new HtsgetContainer(new HtsgetErrorResponse("UnAuthorized", "No authorization for accession '" + file_id + "'")));
+                .body(new HtsgetContainer(new HtsgetErrorResponse("UnAuthorized", "No authorization for accession '" + fileId + "'")));
     }
 
     @Override
     //@HystrixCommand
     public Object getVariantTicket(Authentication auth,
-                                   String file_id,
+                                   String fileId,
                                    String format,
                                    int referenceIndex,
                                    String referenceName,
@@ -197,16 +196,16 @@ public class RemoteTicketServiceImpl implements TicketService {
                     .body(new HtsgetContainer(new HtsgetErrorResponse("InvalidInput", "EGA requires oauth token")));
 
         // Ascertain Access Permissions for specified File ID
-        File reqFile = null;
+        File reqFile;
         try {
-            reqFile = getReqFile(file_id, auth, request); // request added for ELIXIR
+            reqFile = getReqFile(fileId, auth, request); // request added for ELIXIR
         } catch (NotFoundException ex) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .contentType(MediaType.valueOf("application/vnd.ga4gh.htsget.v1.0+json; charset=utf-8"))
-                    .body(new HtsgetContainer(new HtsgetErrorResponse("NotFound", "No such accession '" + file_id + "'")));
+                    .body(new HtsgetContainer(new HtsgetErrorResponse("NotFound", "No such accession '" + fileId + "'")));
         }
 
-        boolean reference = false;
+        boolean reference;
         reference = (referenceIndex > -1 || (referenceName != null && referenceName.length() > 0) || (referenceMD5 != null && referenceMD5.length() > 0));
         if (!reference && ((start != null && start.length() > 0) || (end != null && end.length() > 0))) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -224,7 +223,7 @@ public class RemoteTicketServiceImpl implements TicketService {
 //            urls.add(new HtsgetUrl("header", authHeader));
 
             // Data URL(s)
-            String url = externalConfig.getEgaExternalUrl() + "variant/byid/file?accession=" + file_id;
+            String url = externalConfig.getEgaExternalUrl() + "variant/byid/file?accession=" + fileId;
             if (format != null && format.length() > 0)
                 url += "&format=" + format;
             if (start != null && start.length() > 0)
@@ -260,7 +259,7 @@ public class RemoteTicketServiceImpl implements TicketService {
 
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .contentType(MediaType.valueOf("application/vnd.ga4gh.htsget.v1.0+json; charset=utf-8"))
-                .body(new HtsgetContainer(new HtsgetErrorResponse("UnAuthorized", "No authorization for accession '" + file_id + "'")));
+                .body(new HtsgetContainer(new HtsgetErrorResponse("UnAuthorized", "No authorization for accession '" + fileId + "'")));
     }
 
 /*    
@@ -366,7 +365,7 @@ public class RemoteTicketServiceImpl implements TicketService {
     // *************************************************************************
     //@HystrixCommand
     @Cacheable(cacheNames = "reqFile")
-    private File getReqFile(String file_id, Authentication auth, HttpServletRequest request)
+    private File getReqFile(String fileId, Authentication auth, HttpServletRequest request)
             throws NotFoundException {
 
         // Obtain all Authorised Datasets (Provided by EGA AAI)
@@ -390,36 +389,36 @@ public class RemoteTicketServiceImpl implements TicketService {
                     }
                 }
             } catch (Exception ex) {
-            //try {
-            //    List<String> permissions_ = (new VerifyMessage(request.getHeader("X-Permissions"))).getPermissions();
-            //    if (permissions_ != null && permissions_.size() > 0) {
-            //        for (String ds : permissions_) {
-            //            if (ds != null) {
-            //                permissions.add(ds);
-            //            }
-            //        }
-            //    }
-            //} catch (Exception ex) {
+                //try {
+                //    List<String> permissions_ = (new VerifyMessage(request.getHeader("X-Permissions"))).getPermissions();
+                //    if (permissions_ != null && permissions_.size() > 0) {
+                //        for (String ds : permissions_) {
+                //            if (ds != null) {
+                //                permissions.add(ds);
+                //            }
+                //        }
+                //    }
+                //} catch (Exception ex) {
             }
         }
 
-        ResponseEntity<FileDataset[]> forEntityDataset = restTemplate.getForEntity(SERVICE_URL + "/file/{file_id}/datasets", FileDataset[].class, file_id);
+        ResponseEntity<FileDataset[]> forEntityDataset = restTemplate.getForEntity(SERVICE_URL + "/file/{fileId}/datasets", FileDataset[].class, fileId);
         FileDataset[] bodyDataset = forEntityDataset.getBody();
 
         File reqFile = null;
-        ResponseEntity<File[]> forEntity = restTemplate.getForEntity(SERVICE_URL + "/file/{file_id}", File[].class, file_id);
+        ResponseEntity<File[]> forEntity = restTemplate.getForEntity(SERVICE_URL + "/file/{fileId}", File[].class, fileId);
         File[] body = forEntity.getBody();
         if ((body != null && body.length > 0) && bodyDataset != null) {
             for (FileDataset f : bodyDataset) {
-                String dataset_id = f.getDatasetId();
-                if (permissions.contains(dataset_id) && body.length >= 1) {
+                String datasetId = f.getDatasetId();
+                if (permissions.contains(datasetId) && body.length >= 1) {
                     reqFile = body[0];
-                    reqFile.setDatasetId(dataset_id);
+                    reqFile.setDatasetId(datasetId);
                     break;
                 }
             }
         } else { // 404 File Not Found
-            throw new NotFoundException(file_id, "File not found.");
+            throw new NotFoundException(fileId, "File not found.");
         }
 
         return reqFile;
@@ -427,9 +426,9 @@ public class RemoteTicketServiceImpl implements TicketService {
 
     //@HystrixCommand
     @Cacheable(cacheNames = "indexFile")
-    private FileIndexFile getFileIndexFile(String file_id) {
+    private FileIndexFile getFileIndexFile(String fileId) {
         FileIndexFile indexFile = null;
-        ResponseEntity<FileIndexFile[]> forEntity = restTemplate.getForEntity(SERVICE_URL + "/file/{file_id}/index", FileIndexFile[].class, file_id);
+        ResponseEntity<FileIndexFile[]> forEntity = restTemplate.getForEntity(SERVICE_URL + "/file/{fileId}/index", FileIndexFile[].class, fileId);
         FileIndexFile[] body = forEntity.getBody();
         if (body != null && body.length >= 1) {
             indexFile = body[0];
@@ -442,4 +441,5 @@ public class RemoteTicketServiceImpl implements TicketService {
         InstanceInfo instance = discoveryClient.getNextServerFromEureka("RES", false);
         return instance.getHomePageUrl();
     }
+
 }

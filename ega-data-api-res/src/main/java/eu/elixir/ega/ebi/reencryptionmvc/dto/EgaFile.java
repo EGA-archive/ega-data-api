@@ -28,8 +28,10 @@ import lombok.Setter;
 @Setter
 @Getter
 public class EgaFile {
+
     private String fileId;
     private String fileName;
     private long fileSize;
     private String fileStatus;
+
 }

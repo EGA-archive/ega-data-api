@@ -17,30 +17,22 @@ package eu.elixir.ega.ebi.dataedge.rest;
 
 import eu.elixir.ega.ebi.dataedge.config.InvalidAuthenticationException;
 import eu.elixir.ega.ebi.dataedge.service.FileService;
-import java.io.IOException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 
-import static org.springframework.web.bind.annotation.RequestMethod.GET;
-import static org.springframework.web.bind.annotation.RequestMethod.HEAD;
-import static org.springframework.web.bind.annotation.RequestMethod.OPTIONS;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import static org.springframework.web.bind.annotation.RequestMethod.*;
 
 /**
  * @author asenf
@@ -53,8 +45,8 @@ public class FileController {
     @Autowired
     private FileService fileService;
 
-    @RequestMapping(value = "/{file_id}", method = GET)
-    public void getFile(@PathVariable String file_id,
+    @RequestMapping(value = "/{fileId}", method = GET)
+    public void getFile(@PathVariable String fileId,
                         @RequestParam(value = "destinationFormat", required = false, defaultValue = "aes128") String destinationFormat,
                         @RequestParam(value = "destinationKey", required = false, defaultValue = "") String destinationKey,
                         @RequestParam(value = "destinationIV", required = false, defaultValue = "RANDOM") String destinationIV,
@@ -72,7 +64,7 @@ public class FileController {
         }
 
         fileService.getFile(auth,
-                file_id,
+                fileId,
                 destinationFormat,
                 destinationKey,
                 destinationIV,
@@ -80,7 +72,7 @@ public class FileController {
                 endCoordinate,
                 request,
                 response);
-        
+
         try {
             response.flushBuffer();
         } catch (IOException ex) {
@@ -88,8 +80,8 @@ public class FileController {
         }
     }
 
-    @RequestMapping(value = "/{file_id}", method = HEAD)
-    public void getFileHead(@PathVariable String file_id,
+    @RequestMapping(value = "/{fileId}", method = HEAD)
+    public void getFileHead(@PathVariable String fileId,
                             @RequestParam(value = "destinationFormat", required = false, defaultValue = "aes128") String destinationFormat,
                             HttpServletRequest request,
                             HttpServletResponse response) {
@@ -97,21 +89,21 @@ public class FileController {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
         fileService.getFileHead(auth,
-                file_id,
+                fileId,
                 destinationFormat,
                 request,
                 response);
     }
 
     // Experimental - Return a BAM Header
-    @RequestMapping(value = "/{file_id}/header", method = GET)
-    public Object getFileHeader(@PathVariable String file_id,
+    @RequestMapping(value = "/{fileId}/header", method = GET)
+    public Object getFileHeader(@PathVariable String fileId,
                                 @RequestParam(value = "destinationFormat", required = false, defaultValue = "aes128") String destinationFormat,
                                 @RequestParam(value = "destinationKey", required = false, defaultValue = "") String destinationKey) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
         return fileService.getFileHeader(auth,
-                file_id,
+                fileId,
                 destinationFormat,
                 destinationKey,
                 null);  // This by default makes it BAM
@@ -122,12 +114,12 @@ public class FileController {
     public void getById_(HttpServletResponse response) {
         response.addHeader("Access-Control-Request-Method", "GET");
     }
-    
+
     // {id} -- 'file', 'sample', 'run', ...
     @RequestMapping(value = "/byid/{type}", method = GET)
     @ResponseBody
     public void getById(@PathVariable String type,
-                        @RequestParam(value = "accession", required = true) String accession,
+                        @RequestParam(value = "accession") String accession,
                         @RequestParam(value = "format", required = false, defaultValue = "bam") String format,
                         @RequestParam(value = "chr", required = false, defaultValue = "") String reference,
                         @RequestParam(value = "start", required = false, defaultValue = "0") long start,
@@ -165,11 +157,11 @@ public class FileController {
     public void getByVariantId_(HttpServletResponse response) {
         response.addHeader("Access-Control-Request-Method", "GET");
     }
-    
+
     @RequestMapping(value = "/variant/byid/{type}", method = GET)
     @ResponseBody
     public void getByVariantId(@PathVariable String type,
-                               @RequestParam(value = "accession", required = true) String accession,
+                               @RequestParam(value = "accession") String accession,
                                @RequestParam(value = "format", required = false, defaultValue = "vcf") String format,
                                @RequestParam(value = "chr", required = false, defaultValue = "") String reference,
                                @RequestParam(value = "start", required = false, defaultValue = "0") long start,
@@ -206,7 +198,7 @@ public class FileController {
     @RequestMapping(value = "/byid/{type}", method = HEAD)
     @ResponseBody
     public ResponseEntity getHeadById(@PathVariable String type,
-                                      @RequestParam(value = "accession", required = true) String accession,
+                                      @RequestParam(value = "accession") String accession,
                                       HttpServletRequest request,
                                       HttpServletResponse response) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -217,8 +209,9 @@ public class FileController {
         return fileService.getHeadById(auth, type, accession, request, response);
     }
 
-    @RequestMapping( value = "/**", method = RequestMethod.OPTIONS ) 
-    public ResponseEntity handle() { 
-        return new ResponseEntity(HttpStatus.OK); 
+    @RequestMapping(value = "/**", method = RequestMethod.OPTIONS)
+    public ResponseEntity handle() {
+        return new ResponseEntity(HttpStatus.OK);
     }
+
 }

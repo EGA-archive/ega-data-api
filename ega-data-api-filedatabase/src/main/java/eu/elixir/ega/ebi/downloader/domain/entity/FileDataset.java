@@ -45,10 +45,6 @@ public class FileDataset implements Serializable {
     @Column(name = "dataset_id", insertable = false, updatable = false, length = 128)
     private String datasetId;
 
-    /*
-     *
-     */
-
     public String toString() {
         String line = "";
 
@@ -57,4 +53,5 @@ public class FileDataset implements Serializable {
 
         return line;
     }
+
 }

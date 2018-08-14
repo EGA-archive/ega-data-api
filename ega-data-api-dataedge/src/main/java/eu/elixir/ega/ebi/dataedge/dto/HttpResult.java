@@ -34,4 +34,5 @@ public class HttpResult {
     private long bytes;
     private List<String> session;
     private String md5;
+
 }
