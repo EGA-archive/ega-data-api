@@ -22,6 +22,6 @@ import eu.elixir.ega.ebi.dataedge.domain.entity.Transfer;
  */
 public interface SessionService {
 
-    public Transfer getSessionStats(String session_uuid);
+    Transfer getSessionStats(String sessionUuid);
 
 }

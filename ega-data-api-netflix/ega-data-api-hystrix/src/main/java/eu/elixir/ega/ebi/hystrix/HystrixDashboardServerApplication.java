@@ -34,4 +34,5 @@ public class HystrixDashboardServerApplication {
     protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
         return application.sources(HystrixDashboardServerApplication.class);
     }
+
 }

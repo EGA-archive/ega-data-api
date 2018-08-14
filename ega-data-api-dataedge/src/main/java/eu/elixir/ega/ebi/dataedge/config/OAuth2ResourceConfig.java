@@ -19,9 +19,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
 import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
@@ -31,6 +32,9 @@ import org.springframework.security.oauth2.provider.authentication.TokenExtracto
 import org.springframework.security.oauth2.provider.token.AccessTokenConverter;
 import org.springframework.security.oauth2.provider.token.RemoteTokenServices;
 import org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.servlet.FilterChain;
@@ -38,10 +42,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import org.springframework.http.HttpMethod;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.filter.CorsFilter;
 
 /**
  * @author asenf
@@ -73,16 +73,16 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
                 .cors()
                 .and()
                 .requestMatchers()
-                    .antMatchers("/files/**")
-                    .antMatchers("/metadata/**")
-                    .antMatchers("/tickets/**")
-                    .antMatchers("/demo/**")
-                    .antMatchers("/download/file/**")
-                    //.antMatchers("/stats/testme")
+                .antMatchers("/files/**")
+                .antMatchers("/metadata/**")
+                .antMatchers("/tickets/**")
+                .antMatchers("/demo/**")
+                .antMatchers("/download/file/**")
+                //.antMatchers("/stats/testme")
                 .and()
                 .authorizeRequests()
-                    .antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                    .anyRequest().authenticated()
+                .antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                .anyRequest().authenticated()
                 .and()
                 .csrf().disable();
     }
@@ -100,7 +100,7 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
 
     @Bean
     @Profile("enable-aai")
-    @Primary  
+    @Primary
     public RemoteTokenServices remoteTokenServices(HttpServletRequest request,
                                                    //public RemoteTokenServices combinedTokenServices(HttpServletRequest request,
                                                    final @Value("${auth.server.url}") String checkTokenUrl,
@@ -119,27 +119,28 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
         b.setClientSecret(clientSecret);
         b.setAccessTokenConverter(accessTokenConverter());
         remoteTokenServices.addRemoteTokenService(b);
-        
+
         // ELIXIR AAI
         CachingRemoteTokenService a = new CachingRemoteTokenService();
         a.setCheckTokenEndpointUrl(zuulCheckTokenUrl);
         a.setClientId(zuulClientId);
         a.setClientSecret(zuulClientSecret);
         remoteTokenServices.addRemoteTokenService(a);
-        
+
         return remoteTokenServices;
     }
-    
+
     @Bean
     @Order(0)
     public CorsFilter corsFilter() {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowCredentials(true); 
+        config.setAllowCredentials(true);
         config.addAllowedOrigin("*");
         config.addAllowedHeader("*");
         config.addAllowedMethod("*");
         source.registerCorsConfiguration("/**", config);
         return new CorsFilter(source);
-    }    
+    }
+
 }

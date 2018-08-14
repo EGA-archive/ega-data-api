@@ -15,8 +15,11 @@
  */
 package eu.elixir.ega.ebi.reencryptionmvc.service.internal;
 
-import javax.servlet.http.HttpServletResponse;
-
+import eu.elixir.ega.ebi.reencryptionmvc.config.NotFoundException;
+import eu.elixir.ega.ebi.reencryptionmvc.dto.ArchiveSource;
+import eu.elixir.ega.ebi.reencryptionmvc.dto.EgaFile;
+import eu.elixir.ega.ebi.reencryptionmvc.service.ArchiveService;
+import eu.elixir.ega.ebi.reencryptionmvc.service.KeyService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.context.annotation.Primary;
@@ -27,11 +30,7 @@ import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import eu.elixir.ega.ebi.reencryptionmvc.config.NotFoundException;
-import eu.elixir.ega.ebi.reencryptionmvc.dto.ArchiveSource;
-import eu.elixir.ega.ebi.reencryptionmvc.dto.EgaFile;
-import eu.elixir.ega.ebi.reencryptionmvc.service.ArchiveService;
-import eu.elixir.ega.ebi.reencryptionmvc.service.KeyService;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * @author asenf
@@ -43,7 +42,7 @@ import eu.elixir.ega.ebi.reencryptionmvc.service.KeyService;
 public class GenericArchiveServiceImpl implements ArchiveService {
 
     //private final String SERVICE_URL = "http://DOWNLOADER";
-    private final String SERVICE_URL = "http://FILEDATABASE";
+    private static final String SERVICE_URL = "http://FILEDATABASE";
 
     @Autowired
     RestTemplate restTemplate;
@@ -56,13 +55,13 @@ public class GenericArchiveServiceImpl implements ArchiveService {
     public ArchiveSource getArchiveFile(String id, HttpServletResponse response) {
 
         // Get Filename from EgaFile ID - via DATA service (potentially multiple files)
-        ResponseEntity<EgaFile[]> forEntity = restTemplate.getForEntity(SERVICE_URL + "/file/{file_id}", EgaFile[].class, id);
+        ResponseEntity<EgaFile[]> forEntity = restTemplate.getForEntity(SERVICE_URL + "/file/{fileId}", EgaFile[].class, id);
         int statusCodeValue = forEntity.getStatusCodeValue();
         EgaFile[] body = forEntity.getBody();
         if ((body == null || body.length == 0)) {
             throw new NotFoundException("Can't obtain File data for ID", id);
         }
-        String fileName = (body != null && body.length > 0) ? forEntity.getBody()[0].getFileName() : "";
+        String fileName = forEntity.getBody()[0].getFileName();
 
         // Guess Encryption Format from File
         String encryptionFormat = fileName.toLowerCase().endsWith("gpg") ? "symmetricgpg" : "aes256";

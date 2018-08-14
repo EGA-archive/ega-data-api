@@ -19,7 +19,6 @@ import com.google.common.io.ByteStreams;
 import eu.elixir.ega.ebi.dataedge.config.GeneralStreamingException;
 import eu.elixir.ega.ebi.dataedge.config.NotFoundException;
 import eu.elixir.ega.ebi.dataedge.config.PermissionDeniedException;
-import eu.elixir.ega.ebi.dataedge.config.VerifyMessage;
 import eu.elixir.ega.ebi.dataedge.config.VerifyMessageNew;
 import eu.elixir.ega.ebi.dataedge.dto.*;
 import eu.elixir.ega.ebi.dataedge.service.DownloaderLogService;
@@ -58,8 +57,8 @@ import java.util.*;
 @EnableDiscoveryClient
 public class LocalEGARemoteFileServiceImpl implements FileService {
 
-    private final String SERVICE_URL = "http://FILEDATABASE";
-    private final String RES_URL = "http://RES2";
+    private static final String SERVICE_URL = "http://FILEDATABASE";
+    private static final String RES_URL = "http://RES2";
 
     @Autowired
     private RestTemplate restTemplate;
@@ -69,7 +68,7 @@ public class LocalEGARemoteFileServiceImpl implements FileService {
 
     @Override
     public void getFile(Authentication auth,
-                        String file_id,
+                        String fileId,
                         String destinationFormat,
                         String destinationKey,
                         String destinationIV,
@@ -79,14 +78,13 @@ public class LocalEGARemoteFileServiceImpl implements FileService {
                         HttpServletResponse response) {
 
         // Ascertain Access Permissions for specified File ID
-        File reqFile = getReqFile(file_id, auth, request); // request added for ELIXIR
+        File reqFile = getReqFile(fileId, auth, request); // request added for ELIXIR
         if (reqFile == null) {
             try {
                 Thread.sleep(2500);
-            } catch (InterruptedException ex) {
-                ;
+            } catch (InterruptedException ignored) {
             }
-            reqFile = getReqFile(file_id, auth, request);
+            reqFile = getReqFile(fileId, auth, request);
         }
         if (reqFile.getFileSize() > 0 && endCoordinate > reqFile.getFileSize())
             endCoordinate = reqFile.getFileSize();
@@ -104,122 +102,116 @@ public class LocalEGARemoteFileServiceImpl implements FileService {
         HttpResult xferResult = null;
         MessageDigest outDigest = null;
 
-        if (reqFile != null) {
-            // Log request in Event
-            //    EventEntry eev_received = getEventEntry(file_id + ":" + destinationFormat + ":" + startCoordinate + ":" + endCoordinate,
-            //            ipAddress, "http_request", user_email);
-            //    eev_received.setEventType("request_log");
-            //    downloaderLogService.logEvent(eev_received);
+        // Log request in Event
+        //    EventEntry eev_received = getEventEntry(file_id + ":" + destinationFormat + ":" + startCoordinate + ":" + endCoordinate,
+        //            ipAddress, "http_request", user_email);
+        //    eev_received.setEventType("request_log");
+        //    downloaderLogService.logEvent(eev_received);
 
-            // Build Header - Specify UUID (Allow later stats query regarding this transfer)
-            UUID dlIdentifier = UUID.randomUUID();
-            String headerValue = dlIdentifier.toString();
-            response = setHeaders(response, headerValue);
+        // Build Header - Specify UUID (Allow later stats query regarding this transfer)
+        UUID dlIdentifier = UUID.randomUUID();
+        String headerValue = dlIdentifier.toString();
+        response = setHeaders(response, headerValue);
 
-            // Content Length of response (if available)
+        // Content Length of response (if available)
 //            response.setContentLengthLong(getContentLength(reqFile, destinationFormat, startCoordinate, endCoordinate));
 
-            // If byte range, set response 206
-            long fileLength = reqFile.getFileSize();
-            if (destinationFormat.equalsIgnoreCase("plain")) fileLength -= 16;
-            if (startCoordinate > 0 || endCoordinate > 0) {
-                response.setStatus(HttpServletResponse.SC_PARTIAL_CONTENT);
-                response.addHeader("Content-Range", "bytes " + startCoordinate +
-                        "-" + (endCoordinate - 1) + "/" + fileLength);
-                if (endCoordinate - startCoordinate < Integer.MAX_VALUE)
-                    response.setBufferSize((int) (endCoordinate - startCoordinate));
-            }
+        // If byte range, set response 206
+        long fileLength = reqFile.getFileSize();
+        if (destinationFormat.equalsIgnoreCase("plain")) fileLength -= 16;
+        if (startCoordinate > 0 || endCoordinate > 0) {
+            response.setStatus(HttpServletResponse.SC_PARTIAL_CONTENT);
+            response.addHeader("Content-Range", "bytes " + startCoordinate +
+                    "-" + (endCoordinate - 1) + "/" + fileLength);
+            if (endCoordinate - startCoordinate < Integer.MAX_VALUE)
+                response.setBufferSize((int) (endCoordinate - startCoordinate));
+        }
 
-            try {
-                // Get Send Stream - http Response, wrap in Digest Stream
-                outDigest = MessageDigest.getInstance("MD5");
-                DigestOutputStream outDigestStream = new DigestOutputStream(response.getOutputStream(), outDigest);
+        try {
+            // Get Send Stream - http Response, wrap in Digest Stream
+            outDigest = MessageDigest.getInstance("MD5");
+            DigestOutputStream outDigestStream = new DigestOutputStream(response.getOutputStream(), outDigest);
 
-                // Get RES data stream, and copy it to output stream
-                RequestCallback requestCallback = request_ -> request_.getHeaders()
-                        .setAccept(Arrays.asList(MediaType.APPLICATION_OCTET_STREAM, MediaType.ALL));
+            // Get RES data stream, and copy it to output stream
+            RequestCallback requestCallback = request_ -> request_.getHeaders()
+                    .setAccept(Arrays.asList(MediaType.APPLICATION_OCTET_STREAM, MediaType.ALL));
 
-                // ----------------------------------------------------------------- Callback Function for Resttemplate
-                // Get Data Stream from RES ReEncryptionService --------------------
-                ResponseExtractor<HttpResult> responseExtractor = response_ -> {
-                    List<String> get = response_.getHeaders().get("X-Session"); // RES session UUID
-                    long b = 0;
-                    String inHashtext = "";
-                    try {
-                        // Input stream from RES, wrap in DigestStream
-                        MessageDigest inDigest = MessageDigest.getInstance("MD5");
-                        DigestInputStream inDigestStream = new DigestInputStream(response_.getBody(), inDigest);
-                        if (inDigestStream == null) {
-                            System.out.println("RemoteFileServiceImpl Error 0: ");
-                            throw new GeneralStreamingException("Unable to obtain Input Stream", 2);
-                        }
+            // ----------------------------------------------------------------- Callback Function for Resttemplate
+            // Get Data Stream from RES ReEncryptionService --------------------
+            ResponseExtractor<HttpResult> responseExtractor = response_ -> {
+                List<String> get = response_.getHeaders().get("X-Session"); // RES session UUID
+                long b = 0;
+                String inHashtext = "";
+                try {
+                    // Input stream from RES, wrap in DigestStream
+                    MessageDigest inDigest = MessageDigest.getInstance("MD5");
+                    DigestInputStream inDigestStream = new DigestInputStream(response_.getBody(), inDigest);
 
-                        // The actual Data Transfer - copy bytes from RES to Http connection to client
-                        b = ByteStreams.copy(inDigestStream, outDigestStream); // in, outputStream
+                    // The actual Data Transfer - copy bytes from RES to Http connection to client
+                    b = ByteStreams.copy(inDigestStream, outDigestStream); // in, outputStream
 
-                        // Done - Close Streams and obtain MD5 of received Stream
-                        inDigestStream.close();
-                        outDigestStream.close();
-                        inHashtext = getDigestText(inDigest.digest());
-                    } catch (Throwable t) {
-                        System.out.println("RemoteFileServiceImpl Error 1: " + t.toString());
-                        inHashtext = t.getMessage();
-                        String errorMessage = t.toString();
-                        throw new GeneralStreamingException(errorMessage, 7);
-                    }
-
-                    // return number of bytes copied, RES session header, and MD5 of RES input stream
-                    return new HttpResult(b, get, inHashtext); // This is the result of the RestTemplate
-                };
-                // -----------------------------------------------------------------
-
-                /*
-                 * CUSTOMISATION: If you access files by absolute path (nearly everyone)
-                 * then call getResUri with the file path instead of the file ID
-                 * [...]getResUri(reqFile.getFileName(),destinationFormat[...]
-                 */
-
-                // Build Request URI with Ticket Parameters and get requested file from RES (timed for statistics)
-                timeDelta = System.currentTimeMillis();
-                xferResult = restTemplate.execute(getResUri(reqFile.getFileName(), destinationFormat, destinationKey, destinationIV, startCoordinate, endCoordinate), HttpMethod.GET, requestCallback, responseExtractor);
-                timeDelta = System.currentTimeMillis() - timeDelta;
-
-            } catch (Throwable t) { // Log Error!
-                System.out.println("LocalEGARemoteFileServiceImpl Error 2: " + t.toString());
-                String errorMessage = file_id + ":" + destinationFormat + ":" + startCoordinate + ":" + endCoordinate + ":" + t.toString();
-                EventEntry eev = getEventEntry(errorMessage, ipAddress, "file", user_email);
-                downloaderLogService.logEvent(eev);
-
-                throw new GeneralStreamingException(t.toString(), 4);
-            } finally {
-                if (xferResult != null) {
-                    //Transfer received = getResSession(xferResult.getSession().get(0)); // Shortcut -- Same Database; otherwise perform a REST call to RES
-                    //System.out.println("Received? " + (received==null?"null":received.toString()));
-
-                    // Compare received MD5 with RES
-                    String inHashtext = xferResult.getMd5();
-                    String outHashtext = getDigestText(outDigest.digest());
-
-                    // Store with UUID for later retrieval - in case of error or success            
-                    //            Transfer transfer = new Transfer(headerValue,
-                    //                                             new java.sql.Timestamp(Calendar.getInstance().getTime().getTime()),
-                    //                                             inHashtext,
-                    //                                             outHashtext,
-                    //                                             xferResult.getBytes(),
-                    //                                             xferResult.getBytes(),
-                    //                                             "DATAEDGE");
-                    //            Transfer save = transferRepository.save(transfer);
-
-                    // Compare - Sent MD5 equals Received MD5? - Log Download in DB
-                    boolean success = outHashtext.equals(inHashtext);
-                    double speed = (xferResult.getBytes() / 1024.0 / 1024.0) / (timeDelta / 1000.0);
-                    long bytes = xferResult.getBytes();
-                    System.out.println("Success? " + success + ", Speed: " + speed + " MB/s");
-                    DownloadEntry dle = getDownloadEntry(success, speed, file_id,
-                            ipAddress, "file", user_email, destinationFormat,
-                            startCoordinate, endCoordinate, bytes);
-                    downloaderLogService.logDownload(dle);
+                    // Done - Close Streams and obtain MD5 of received Stream
+                    inDigestStream.close();
+                    outDigestStream.close();
+                    inHashtext = getDigestText(inDigest.digest());
+                } catch (Throwable t) {
+                    System.out.println("RemoteFileServiceImpl Error 1: " + t.toString());
+                    t.getMessage();
+                    String errorMessage = t.toString();
+                    throw new GeneralStreamingException(errorMessage, 7);
                 }
+
+                // return number of bytes copied, RES session header, and MD5 of RES input stream
+                return new HttpResult(b, get, inHashtext); // This is the result of the RestTemplate
+            };
+            // -----------------------------------------------------------------
+
+            /*
+             * CUSTOMISATION: If you access files by absolute path (nearly everyone)
+             * then call getResUri with the file path instead of the file ID
+             * [...]getResUri(reqFile.getFileName(),destinationFormat[...]
+             */
+
+            // Build Request URI with Ticket Parameters and get requested file from RES (timed for statistics)
+            timeDelta = System.currentTimeMillis();
+            xferResult = restTemplate.execute(getResUri(reqFile.getFileName(), destinationFormat, destinationKey, destinationIV, startCoordinate, endCoordinate), HttpMethod.GET, requestCallback, responseExtractor);
+            timeDelta = System.currentTimeMillis() - timeDelta;
+
+        } catch (Throwable t) { // Log Error!
+            System.out.println("LocalEGARemoteFileServiceImpl Error 2: " + t.toString());
+            String errorMessage = fileId + ":" + destinationFormat + ":" + startCoordinate + ":" + endCoordinate + ":" + t.toString();
+            EventEntry eev = getEventEntry(errorMessage, ipAddress, "file", user_email);
+            downloaderLogService.logEvent(eev);
+
+            throw new GeneralStreamingException(t.toString(), 4);
+        } finally {
+            if (xferResult != null) {
+                //Transfer received = getResSession(xferResult.getSession().get(0)); // Shortcut -- Same Database; otherwise perform a REST call to RES
+                //System.out.println("Received? " + (received==null?"null":received.toString()));
+
+                // Compare received MD5 with RES
+                String inHashtext = xferResult.getMd5();
+                String outHashtext = getDigestText(outDigest.digest());
+
+                // Store with UUID for later retrieval - in case of error or success
+                //            Transfer transfer = new Transfer(headerValue,
+                //                                             new java.sql.Timestamp(Calendar.getInstance().getTime().getTime()),
+                //                                             inHashtext,
+                //                                             outHashtext,
+                //                                             xferResult.getBytes(),
+                //                                             xferResult.getBytes(),
+                //                                             "DATAEDGE");
+                //            Transfer save = transferRepository.save(transfer);
+
+                // Compare - Sent MD5 equals Received MD5? - Log Download in DB
+                boolean success = outHashtext.equals(inHashtext);
+                double speed = (xferResult.getBytes() / 1024.0 / 1024.0) / (timeDelta / 1000.0);
+                long bytes = xferResult.getBytes();
+                System.out.println("Success? " + success + ", Speed: " + speed + " MB/s");
+                DownloadEntry dle = getDownloadEntry(success, speed, fileId,
+                        ipAddress, "file", user_email, destinationFormat,
+                        startCoordinate, endCoordinate, bytes);
+                downloaderLogService.logDownload(dle);
             }
         }
     }
@@ -227,7 +219,7 @@ public class LocalEGARemoteFileServiceImpl implements FileService {
     @Override
     @Cacheable(cacheNames = "fileHead")
     public void getFileHead(Authentication auth,
-                            String file_id,
+                            String fileId,
                             String destinationFormat,
                             HttpServletRequest request,
                             HttpServletResponse response) {
@@ -242,7 +234,7 @@ public class LocalEGARemoteFileServiceImpl implements FileService {
     @Override
     @Cacheable(cacheNames = "headerFile")
     public Object getFileHeader(Authentication auth,
-                                String file_id,
+                                String fileId,
                                 String destinationFormat,
                                 String destinationKey,
                                 CRAMReferenceSource x) {
@@ -251,7 +243,7 @@ public class LocalEGARemoteFileServiceImpl implements FileService {
 
     @Override
     public void getById(Authentication auth,
-                        String idType,
+                        String fileId,
                         String accession,
                         String format,
                         String reference,
@@ -270,7 +262,7 @@ public class LocalEGARemoteFileServiceImpl implements FileService {
 
     @Override
     public void getVCFById(Authentication auth,
-                           String idType,
+                           String fileId,
                            String accession,
                            String format,
                            String reference,
@@ -324,7 +316,7 @@ public class LocalEGARemoteFileServiceImpl implements FileService {
         String url = RES_URL + "/file";
 
         // Build components based on Parameters provided
-        UriComponentsBuilder builder = null;
+        UriComponentsBuilder builder;
 
         if (startCoord == 0 && endCoord == 0 && destFormat.equalsIgnoreCase("plain")) {
             builder = UriComponentsBuilder.fromHttpUrl(url)
@@ -395,15 +387,13 @@ public class LocalEGARemoteFileServiceImpl implements FileService {
     }
 
     @Cacheable(cacheNames = "reqFile")
-    private File getReqFile(String file_id, Authentication auth, HttpServletRequest request) {
+    private File getReqFile(String fileId, Authentication auth, HttpServletRequest request) {
 
         // Obtain all Authorised Datasets (Provided by EGA AAI)
         HashSet<String> permissions = new HashSet<>();
         Collection<? extends GrantedAuthority> authorities = auth.getAuthorities();
         if (authorities != null && authorities.size() > 0) {
-            Iterator<? extends GrantedAuthority> iterator = authorities.iterator();
-            while (iterator.hasNext()) {
-                GrantedAuthority next = iterator.next();
+            for (GrantedAuthority next : authorities) {
                 permissions.add(next.getAuthority());
             }
         } else if (request != null) { // ELIXIR User Case: Obtain Permmissions from X-Permissions Header
@@ -418,16 +408,16 @@ public class LocalEGARemoteFileServiceImpl implements FileService {
                     }
                 }
             } catch (Exception ex) {
-            //try {
-            //    List<String> permissions_ = (new VerifyMessage(request.getHeader("X-Permissions"))).getPermissions();
-            //    if (permissions_ != null && permissions_.size() > 0) {
-            //        for (String ds : permissions_) {
-            //            if (ds != null) {
-            //                permissions.add(ds);
-            //            }
-            //        }
-            //    }
-            //} catch (Exception ex) {
+                //try {
+                //    List<String> permissions_ = (new VerifyMessage(request.getHeader("X-Permissions"))).getPermissions();
+                //    if (permissions_ != null && permissions_.size() > 0) {
+                //        for (String ds : permissions_) {
+                //            if (ds != null) {
+                //                permissions.add(ds);
+                //            }
+                //        }
+                //    }
+                //} catch (Exception ex) {
                 String ipAddress = request.getHeader("X-FORWARDED-FOR");
                 if (ipAddress == null) {
                     ipAddress = request.getRemoteAddr();
@@ -442,18 +432,18 @@ public class LocalEGARemoteFileServiceImpl implements FileService {
             }
         }
 
-        ResponseEntity<FileDataset[]> forEntityDataset = restTemplate.getForEntity(SERVICE_URL + "/file/{file_id}/datasets", FileDataset[].class, file_id);
+        ResponseEntity<FileDataset[]> forEntityDataset = restTemplate.getForEntity(SERVICE_URL + "/file/{fileId}/datasets", FileDataset[].class, fileId);
         FileDataset[] bodyDataset = forEntityDataset.getBody();
 
         File reqFile = null;
-        ResponseEntity<File[]> forEntity = restTemplate.getForEntity(SERVICE_URL + "/file/{file_id}", File[].class, file_id);
+        ResponseEntity<File[]> forEntity = restTemplate.getForEntity(SERVICE_URL + "/file/{fileId}", File[].class, fileId);
         File[] body = forEntity.getBody();
         if (body != null && bodyDataset != null) {
             for (FileDataset f : bodyDataset) {
-                String dataset_id = f.getDatasetId();
-                if (permissions.contains(dataset_id) && body.length >= 1) {
+                String datasetId = f.getDatasetId();
+                if (permissions.contains(datasetId) && body.length >= 1) {
                     reqFile = body[0];
-                    reqFile.setDatasetId(dataset_id);
+                    reqFile.setDatasetId(datasetId);
                     break;
                 }
             }
@@ -461,14 +451,14 @@ public class LocalEGARemoteFileServiceImpl implements FileService {
             if (reqFile != null) {
                 // If there's no file size in the database, obtain it from RES
                 if (reqFile.getFileSize() == 0) {
-                    ResponseEntity<Long> forSize = restTemplate.getForEntity(RES_URL + "/file/archive/{file_id}/size", Long.class, file_id);
+                    ResponseEntity<Long> forSize = restTemplate.getForEntity(RES_URL + "/file/archive/{fileId}/size", Long.class, fileId);
                     reqFile.setFileSize(forSize.getBody());
                 }
             } else { // 403 Unauthorized
                 throw new PermissionDeniedException(HttpStatus.UNAUTHORIZED.toString());
             }
         } else { // 404 File Not Found
-            throw new NotFoundException(file_id, "4");
+            throw new NotFoundException(fileId, "4");
         }
         return reqFile;
     }
@@ -476,7 +466,7 @@ public class LocalEGARemoteFileServiceImpl implements FileService {
     @Override
     @Cacheable(cacheNames = "fileSize")
     public ResponseEntity getHeadById(Authentication auth,
-                                      String idType,
+                                      String fileId,
                                       String accession,
                                       HttpServletRequest request,
                                       HttpServletResponse response) {

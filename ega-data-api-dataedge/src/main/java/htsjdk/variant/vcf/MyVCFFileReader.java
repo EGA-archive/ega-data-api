@@ -63,11 +63,10 @@ public class MyVCFFileReader implements Closeable, Iterable<VariantContext> {
                 fileName.toLowerCase().endsWith(".bcf.gz.cip"));
     }
 
-    private static String getFile(String file_id) {
+    private static String getFile(String fileId) {
 
-        eu.elixir.ega.ebi.dataedge.dto.File reqFile = null;
         RestTemplate rt = new RestTemplate();
-        ResponseEntity<eu.elixir.ega.ebi.dataedge.dto.File[]> forEntity = rt.getForEntity(downloaderUrl + "/file/{file_id}", eu.elixir.ega.ebi.dataedge.dto.File[].class, file_id);
+        ResponseEntity<eu.elixir.ega.ebi.dataedge.dto.File[]> forEntity = rt.getForEntity(downloaderUrl + "/file/{fileId}", eu.elixir.ega.ebi.dataedge.dto.File[].class, fileId);
         eu.elixir.ega.ebi.dataedge.dto.File[] body = forEntity.getBody();
 
         return body[0].getFileName();

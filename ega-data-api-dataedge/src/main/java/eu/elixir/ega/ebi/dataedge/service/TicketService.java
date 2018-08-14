@@ -26,8 +26,22 @@ import java.util.List;
  */
 public interface TicketService {
 
-    public Object getTicket(Authentication auth,
-                            String file_id,
+    Object getTicket(Authentication auth,
+                     String fileId,
+                     String format,
+                     int referenceIndex,
+                     String referenceName,
+                     String referenceMD5,
+                     String start,
+                     String end,
+                     List<String> fields,
+                     List<String> tags,
+                     List<String> notags,
+                     HttpServletRequest request,
+                     HttpServletResponse response);
+
+    Object getVariantTicket(Authentication auth,
+                            String fileId,
                             String format,
                             int referenceIndex,
                             String referenceName,
@@ -39,34 +53,19 @@ public interface TicketService {
                             List<String> notags,
                             HttpServletRequest request,
                             HttpServletResponse response);
-
-    public Object getVariantTicket(Authentication auth,
-                                   String file_id,
-                                   String format,
-                                   int referenceIndex,
-                                   String referenceName,
-                                   String referenceMD5,
-                                   String start,
-                                   String end,
-                                   List<String> fields,
-                                   List<String> tags,
-                                   List<String> notags,
-                                   HttpServletRequest request,
-                                   HttpServletResponse response);
     
-/*    
-    public Object getDirectTicket(Authentication auth, 
-                                  String file_id,
-                                  String format,
-                                  int referenceIndex,
-                                  String referenceName,
-                                  String referenceMD5,
-                                  String start,
-                                  String end,
-                                  List<String> fields,
-                                  List<String> tags,
-                                  List<String> notags,
-                                  HttpServletRequest request,
-                                  HttpServletResponse response);
-*/
+//    Object getDirectTicket(Authentication auth,
+//                           String file_id,
+//                           String format,
+//                           int referenceIndex,
+//                           String referenceName,
+//                           String referenceMD5,
+//                           String start,
+//                           String end,
+//                           List<String> fields,
+//                           List<String> tags,
+//                           List<String> notags,
+//                           HttpServletRequest request,
+//                           HttpServletResponse response);
+
 }

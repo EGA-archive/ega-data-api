@@ -17,34 +17,26 @@ package eu.elixir.ega.ebi.keyproviderservice.config;
 
 import eu.elixir.ega.ebi.keyproviderservice.dto.KeyPath;
 import eu.elixir.ega.ebi.keyproviderservice.dto.PublicKey;
+import org.apache.tomcat.util.http.fileupload.util.Streams;
 import org.bouncycastle.bcpg.ArmoredInputStream;
+import org.bouncycastle.bcpg.ArmoredOutputStream;
+import org.bouncycastle.bcpg.HashAlgorithmTags;
 import org.bouncycastle.openpgp.*;
+import org.bouncycastle.openpgp.operator.KeyFingerPrintCalculator;
 import org.bouncycastle.openpgp.operator.PBESecretKeyDecryptor;
+import org.bouncycastle.openpgp.operator.PGPDigestCalculator;
 import org.bouncycastle.openpgp.operator.PGPDigestCalculatorProvider;
-import org.bouncycastle.openpgp.operator.jcajce.JcaKeyFingerprintCalculator;
-import org.bouncycastle.openpgp.operator.jcajce.JcaPGPDigestCalculatorProviderBuilder;
-import org.bouncycastle.openpgp.operator.jcajce.JcePBESecretKeyDecryptorBuilder;
+import org.bouncycastle.openpgp.operator.jcajce.*;
+import org.identityconnectors.common.security.GuardedString;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.*;
 import java.security.Security;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Scanner;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.apache.tomcat.util.http.fileupload.util.Streams;
-import org.bouncycastle.bcpg.ArmoredOutputStream;
-import org.bouncycastle.bcpg.HashAlgorithmTags;
-import org.bouncycastle.openpgp.operator.KeyFingerPrintCalculator;
-import org.bouncycastle.openpgp.operator.PGPDigestCalculator;
-import org.bouncycastle.openpgp.operator.jcajce.JcaPGPContentSignerBuilder;
-import org.bouncycastle.openpgp.operator.jcajce.JcePBESecretKeyEncryptorBuilder;
-import org.identityconnectors.common.security.GuardedString;
 
 /**
  * @author asenf
@@ -59,7 +51,7 @@ public class MyCipherConfig {
 
     // Paths
     private HashMap<Long, KeyPath> keyPaths = new HashMap<>();
-    
+
     // Re-Armoured Key String
     private HashMap<Long, String> armouredKey = new HashMap<>();
 
@@ -70,12 +62,12 @@ public class MyCipherConfig {
     // Actual keys - keep locked in encrypted memory
     private GuardedString sharedKey;
     private GuardedString egaLegacy;
-    
+
     // Load (1) Private Key
-    public MyCipherConfig(String[] keyPath, 
-                          String[] keyPassPath, 
+    public MyCipherConfig(String[] keyPath,
+                          String[] keyPassPath,
                           String sharedKeyPath,
-                          String publicKeyUrl, 
+                          String publicKeyUrl,
                           String egaLegacyPath) {
         this.publicKeyUrl = publicKeyUrl;
 
@@ -84,11 +76,11 @@ public class MyCipherConfig {
         }
 
         // Shared Key between Services (implemetation using char array)
-        if (sharedKeyPath!=null && sharedKeyPath.length()>0) {
+        if (sharedKeyPath != null && sharedKeyPath.length() > 0) {
             char[] buf = new char[128]; // limit password length to 128 characters
             try {
                 int cnt = readCharArray(buf, sharedKeyPath);
-                this.sharedKey = new GuardedString( Arrays.copyOfRange(buf, 0, cnt) );
+                this.sharedKey = new GuardedString(Arrays.copyOfRange(buf, 0, cnt));
             } catch (IOException ex) {
                 Logger.getLogger(MyCipherConfig.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -99,7 +91,7 @@ public class MyCipherConfig {
             try {
                 String keyAsString = readFileAsString(keyPath[i]).trim();
                 PGPPublicKey pgpPublicKey = extractPublicKey(keyAsString);
-                
+
                 PGPPrivateKey pgpPrivateKey = extractKey(keyAsString, readFileAsString(keyPassPath[i]).trim());
                 long keyId = pgpPrivateKey.getKeyID();
                 // Store the Key Object
@@ -113,20 +105,20 @@ public class MyCipherConfig {
                 Logger.getLogger(MyCipherConfig.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-        
+
         // EGA Legacy Code (implemetation using scanner)
-        if (egaLegacyPath!=null && egaLegacyPath.length()>0) {
+        if (egaLegacyPath != null && egaLegacyPath.length() > 0) {
             try {
                 FileInputStream fis = new FileInputStream(egaLegacyPath);
                 Scanner scanner = new Scanner(fis);
-                if (scanner.hasNextLine()) {                    
+                if (scanner.hasNextLine()) {
                     this.egaLegacy = new GuardedString(scanner.nextLine().toCharArray());
                 }
             } catch (FileNotFoundException ex) {
                 Logger.getLogger(MyCipherConfig.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-            
+
     }
 
     /*
@@ -153,7 +145,7 @@ public class MyCipherConfig {
     public String getAsciiArmouredKey(long keyId) {
         return this.armouredKey.get(keyId);
     }
-    
+
     public Set<Long> getKeyIDs() {
         return this.pgpPrivateKeys.keySet();
     }
@@ -172,14 +164,10 @@ public class MyCipherConfig {
 
     public String getFileKey(String fileId) {
         final StringBuilder clearKey = new StringBuilder();
-        egaLegacy.access(new GuardedString.Accessor() {
-            @Override
-            public void access(final char[] clearChars) {
-                clearKey.append(clearChars);
-            }
-        });
+        egaLegacy.access(clearKey::append);
         return clearKey.toString();
     }
+
     /*
      * Utility Functions
      */
@@ -190,9 +178,9 @@ public class MyCipherConfig {
         } catch (IOException | PGPException ex) {
             System.out.println(ex.toString());
         }
-       return null;
+        return null;
     }
-    
+
     public PGPPrivateKey extractKey(String sKey, String sPass) {
         PGPPrivateKey key = null;
 
@@ -249,7 +237,7 @@ public class MyCipherConfig {
         throw new IllegalArgumentException("Can't find signing key in key ring.");
     }
 
-    private int readCharArray(char[] buf, String path) throws FileNotFoundException, IOException {
+    private int readCharArray(char[] buf, String path) throws IOException {
         FileReader fr = new FileReader(path);
         int count;
         count = fr.read(buf);
@@ -258,7 +246,7 @@ public class MyCipherConfig {
 
     private String reArmourKey(PGPPublicKey pgpPub, PGPPrivateKey pgpPriv) {
         String key = null;
-        
+
         try {
             PGPSecretKeyRing secRing = newSecKey(pgpPub, pgpPriv);
             byte[] encoded = secRing.getEncoded();
@@ -266,18 +254,16 @@ public class MyCipherConfig {
             ByteArrayInputStream bais = new ByteArrayInputStream(encoded);
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             ArmoredOutputStream armoredOutputStream = new ArmoredOutputStream(baos);
-        
+
             Streams.copy(bais, armoredOutputStream, true);
             armoredOutputStream.flush();
             armoredOutputStream.close();
-            
+
             key = baos.toString();
-        } catch (IOException ex) {
-            Logger.getLogger(MyCipherConfig.class.getName()).log(Level.SEVERE, null, ex);
         } catch (Exception ex) {
             Logger.getLogger(MyCipherConfig.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
+
         return key;
     }
 
@@ -287,16 +273,11 @@ public class MyCipherConfig {
         PGPKeyPair ecdsaKeyPair = new PGPKeyPair(pgpPub, pgpPriv);
 
         final StringBuilder clearKey = new StringBuilder();
-        sharedKey.access(new GuardedString.Accessor() {
-            @Override
-            public void access(final char[] clearChars) {
-                clearKey.append(clearChars);
-            }
-        });
+        sharedKey.access(clearKey::append);
         char[] passPhrase = clearKey.toString().toCharArray();
         PGPDigestCalculator sha1Calc = new JcaPGPDigestCalculatorProviderBuilder().build().get(HashAlgorithmTags.SHA1);
         PGPKeyRingGenerator keyRingGen = new PGPKeyRingGenerator(PGPSignature.POSITIVE_CERTIFICATION, ecdsaKeyPair,
-                 "key@ega.org", sha1Calc, null, null, new JcaPGPContentSignerBuilder(ecdsaKeyPair.getPublicKey().getAlgorithm(), HashAlgorithmTags.SHA1), new JcePBESecretKeyEncryptorBuilder(PGPEncryptedData.AES_256, sha1Calc).setProvider("BC").build(passPhrase));
+                "key@ega.org", sha1Calc, null, null, new JcaPGPContentSignerBuilder(ecdsaKeyPair.getPublicKey().getAlgorithm(), HashAlgorithmTags.SHA1), new JcePBESecretKeyEncryptorBuilder(PGPEncryptedData.AES_256, sha1Calc).setProvider("BC").build(passPhrase));
 
         //PGPPublicKeyRing pubRing = keyRingGen.generatePublicKeyRing();
         PGPSecretKeyRing secRing = keyRingGen.generateSecretKeyRing();
@@ -304,9 +285,8 @@ public class MyCipherConfig {
         KeyFingerPrintCalculator fingerCalc = new JcaKeyFingerprintCalculator();
 
         //PGPPublicKeyRing pubRingEnc = new PGPPublicKeyRing(pubRing.getEncoded(), fingerCalc);
-        PGPSecretKeyRing secRingEnc = new PGPSecretKeyRing(secRing.getEncoded(), fingerCalc);
-        
-        return secRingEnc;
+
+        return new PGPSecretKeyRing(secRing.getEncoded(), fingerCalc);
     }
-    
+
 }

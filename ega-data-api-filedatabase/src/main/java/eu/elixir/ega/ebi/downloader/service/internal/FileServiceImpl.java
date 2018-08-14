@@ -51,8 +51,8 @@ public class FileServiceImpl implements FileService {
 
     @Override
     @Cacheable(cacheNames = "fileById")
-    public Iterable<File> getFileByStableId(String fileIDs) {
-        return fileRepository.findByFileId(fileIDs);
+    public Iterable<File> getFileByStableId(String fileIds) {
+        return fileRepository.findByFileId(fileIds);
     }
 
     @Override
@@ -60,10 +60,9 @@ public class FileServiceImpl implements FileService {
     public Iterable<FileDataset> getFileDatasetByFileId(String fileID) {
         ArrayList<FileDataset> result = new ArrayList<>();
         Iterable<String> findByFileId = fileDatasetRepository.findCustom(fileID);
-        if (findByFileId!=null) {
-            Iterator<String> iter = findByFileId.iterator();
-            while (iter.hasNext()) {
-                FileDataset fd = new FileDataset(fileID, iter.next());
+        if (findByFileId != null) {
+            for (String aFindByFileId : findByFileId) {
+                FileDataset fd = new FileDataset(fileID, aFindByFileId);
                 System.out.println(" (--) " + fd.getFileId() + ", " + fd.getDatasetId());
                 result.add(fd);
             }
@@ -78,7 +77,7 @@ public class FileServiceImpl implements FileService {
         // Get File IDs
         Iterable<FileDataset> fileIds = fileDatasetRepository.findByDatasetId(datasetId);
         Iterator<FileDataset> iter = fileIds.iterator();
-        ArrayList<DownloaderFile> result = new ArrayList<DownloaderFile>();
+        ArrayList<DownloaderFile> result = new ArrayList<>();
 
         // Get Files
         while (iter.hasNext()) {
@@ -103,7 +102,8 @@ public class FileServiceImpl implements FileService {
 
     @Override
     @Cacheable(cacheNames = "fileIndexFile")
-    public Iterable<FileIndexFile> getFileIndexByFileId(String fileID) {
-        return fileIndexFileRepository.findByFileId(fileID);
+    public Iterable<FileIndexFile> getFileIndexByFileId(String fileId) {
+        return fileIndexFileRepository.findByFileId(fileId);
     }
+
 }

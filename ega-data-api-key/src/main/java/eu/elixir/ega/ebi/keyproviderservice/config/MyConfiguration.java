@@ -39,11 +39,11 @@ public class MyConfiguration {
 
     @Bean
     public MyCipherConfig MyCipherConfig() {
-        return new MyCipherConfig(cipherKeyPath, 
-                                  cipherKeyPassPath,
-                                  sharedKeyPath,
-                                  publicKeyUrl,
-                                  egaLegacyPath);
+        return new MyCipherConfig(cipherKeyPath,
+                cipherKeyPassPath,
+                sharedKeyPath,
+                publicKeyUrl,
+                egaLegacyPath);
     }
 
     @Bean

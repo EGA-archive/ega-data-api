@@ -26,7 +26,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Getter
 public class MyExternalConfig {
+
     private String egaExternalUrl;
     private String cramFastaReferenceA;
     private String cramFastaReferenceB;
+
 }

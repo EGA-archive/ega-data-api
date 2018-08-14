@@ -48,4 +48,5 @@ public class EventEntry implements Serializable {
                 ", email=" + email +
                 ", created=" + created + "]";
     }
+
 }

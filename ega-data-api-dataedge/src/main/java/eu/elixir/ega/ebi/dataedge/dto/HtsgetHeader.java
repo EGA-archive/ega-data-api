@@ -28,5 +28,7 @@ import lombok.Setter;
 @Setter
 @Getter
 public class HtsgetHeader {
+
     private String Authorization;
+
 }

@@ -15,8 +15,13 @@
  */
 package eu.elixir.ega.ebi.reencryptionmvc.service.internal;
 
-import javax.servlet.http.HttpServletResponse;
-
+import eu.elixir.ega.ebi.reencryptionmvc.config.NotFoundException;
+import eu.elixir.ega.ebi.reencryptionmvc.config.ServerErrorException;
+import eu.elixir.ega.ebi.reencryptionmvc.dto.ArchiveSource;
+import eu.elixir.ega.ebi.reencryptionmvc.dto.EgaFile;
+import eu.elixir.ega.ebi.reencryptionmvc.service.ArchiveAdapterService;
+import eu.elixir.ega.ebi.reencryptionmvc.service.ArchiveService;
+import eu.elixir.ega.ebi.reencryptionmvc.service.KeyService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
@@ -29,13 +34,7 @@ import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import eu.elixir.ega.ebi.reencryptionmvc.config.NotFoundException;
-import eu.elixir.ega.ebi.reencryptionmvc.config.ServerErrorException;
-import eu.elixir.ega.ebi.reencryptionmvc.dto.ArchiveSource;
-import eu.elixir.ega.ebi.reencryptionmvc.dto.EgaFile;
-import eu.elixir.ega.ebi.reencryptionmvc.service.ArchiveAdapterService;
-import eu.elixir.ega.ebi.reencryptionmvc.service.ArchiveService;
-import eu.elixir.ega.ebi.reencryptionmvc.service.KeyService;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * @author asenf
@@ -47,7 +46,7 @@ import eu.elixir.ega.ebi.reencryptionmvc.service.KeyService;
 public class FileArchiveServiceImpl implements ArchiveService {
 
     //private final String SERVICE_URL = "http://DOWNLOADER";
-    private final String SERVICE_URL = "http://FILEDATABASE";
+    private static final String SERVICE_URL = "http://FILEDATABASE";
 
     @Autowired
     RestTemplate restTemplate;
@@ -64,7 +63,7 @@ public class FileArchiveServiceImpl implements ArchiveService {
     public ArchiveSource getArchiveFile(String id, HttpServletResponse response) {
 
         // Get Filename from EgaFile ID - via DATA service (potentially multiple files)
-        ResponseEntity<EgaFile[]> forEntity = restTemplate.getForEntity(SERVICE_URL + "/file/{file_id}", EgaFile[].class, id);
+        ResponseEntity<EgaFile[]> forEntity = restTemplate.getForEntity(SERVICE_URL + "/file/{fileId}", EgaFile[].class, id);
         response.setStatus(forEntity.getStatusCodeValue());
         if (forEntity.getStatusCode() != HttpStatus.OK) return null;
 
@@ -76,7 +75,7 @@ public class FileArchiveServiceImpl implements ArchiveService {
         }
         if (fileName.startsWith("/fire")) fileName = fileName.substring(16);
         // Guess Encryption Format from File
-        String encryptionFormat = fileName.toLowerCase().endsWith("gpg") ? "symmetricgpg" : "aes256";        
+        String encryptionFormat = fileName.toLowerCase().endsWith("gpg") ? "symmetricgpg" : "aes256";
         // Get EgaFile encryption Key
         String encryptionKey = keyService.getFileKey(id);
         if (encryptionKey == null || encryptionKey.length() == 0) {
@@ -85,7 +84,7 @@ public class FileArchiveServiceImpl implements ArchiveService {
         }
 
         // Build result object and return it (auth is 'null' --> it is part of the URL now)
-        return new ArchiveSource(body[0].getFileName(),  body[0].getFileSize(), null, encryptionFormat, encryptionKey);
+        return new ArchiveSource(body[0].getFileName(), body[0].getFileSize(), null, encryptionFormat, encryptionKey);
     }
 
 }

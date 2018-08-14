@@ -52,10 +52,10 @@ import eu.elixir.ega.ebi.dataedge.dto.FileDataset;
 @TestPropertySource(locations = "classpath:application-test.properties")
 public class RemoteFileMetaServiceImplTest {
 
-    private final String SERVICE_URL = "http://FILEDATABASE";
-    private final String DATASET1 = "DATASET1";
-    private final String DATASET2 = "DATASET2";
-    private final String FILEID = "fileId";
+    private static final String SERVICE_URL = "http://FILEDATABASE";
+    private static final String DATASET1 = "DATASET1";
+    private static final String DATASET2 = "DATASET2";
+    private static final String FILEID = "fileId";
 
     @InjectMocks
     private RemoteFileMetaServiceImpl remoteFileMetaServiceImpl;
@@ -88,9 +88,9 @@ public class RemoteFileMetaServiceImplTest {
         final File[] files = { f };
 
         when(auth.getAuthorities()).thenReturn(authorities);
-        when(syncRestTemplate.getForEntity(SERVICE_URL + "/file/{file_id}/datasets", FileDataset[].class, FILEID))
+        when(syncRestTemplate.getForEntity(SERVICE_URL + "/file/{fileId}/datasets", FileDataset[].class, FILEID))
                 .thenReturn(forEntityDataset);
-        when(syncRestTemplate.getForEntity(SERVICE_URL + "/file/{file_id}", File[].class, FILEID))
+        when(syncRestTemplate.getForEntity(SERVICE_URL + "/file/{fileId}", File[].class, FILEID))
                 .thenReturn(forEntity);
         when(forEntityDataset.getBody()).thenReturn(datasets);
         when(forEntity.getBody()).thenReturn(files);
@@ -111,7 +111,7 @@ public class RemoteFileMetaServiceImplTest {
         f.setFileId(FILEID);
         final File[] files = { f };
 
-        when(syncRestTemplate.getForObject(SERVICE_URL + "/datasets/{dataset_id}/files", File[].class, DATASET1))
+        when(syncRestTemplate.getForObject(SERVICE_URL + "/datasets/{datasetId}/files", File[].class, DATASET1))
                 .thenReturn(files);
 
         final Iterable<File> fileOutput = remoteFileMetaServiceImpl.getDatasetFiles(DATASET1);

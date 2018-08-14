@@ -78,10 +78,6 @@ public class File implements Serializable {
 
     @Column(insertable = false, updatable = false)
     private String header;
-    
-    /*
-     *
-     */
 
     public String toString() {
         String line = "";
@@ -95,4 +91,5 @@ public class File implements Serializable {
 
         return line;
     }
+
 }

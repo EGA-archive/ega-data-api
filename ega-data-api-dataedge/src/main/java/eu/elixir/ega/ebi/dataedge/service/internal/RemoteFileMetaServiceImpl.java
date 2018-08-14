@@ -43,7 +43,7 @@ import java.util.Iterator;
 @EnableDiscoveryClient
 public class RemoteFileMetaServiceImpl implements FileMetaService {
 
-    private final String SERVICE_URL = "http://FILEDATABASE";
+    private static final String SERVICE_URL = "http://FILEDATABASE";
 
     @Autowired
     RestTemplate restTemplate;
@@ -51,8 +51,8 @@ public class RemoteFileMetaServiceImpl implements FileMetaService {
     @Override
     //@HystrixCommand
     @Cacheable(cacheNames = "fileFile")
-    public File getFile(Authentication auth, String file_id) {
-        ResponseEntity<FileDataset[]> forEntityDataset = restTemplate.getForEntity(SERVICE_URL + "/file/{file_id}/datasets", FileDataset[].class, file_id);
+    public File getFile(Authentication auth, String fileId) {
+        ResponseEntity<FileDataset[]> forEntityDataset = restTemplate.getForEntity(SERVICE_URL + "/file/{fileId}/datasets", FileDataset[].class, fileId);
         FileDataset[] bodyDataset = forEntityDataset.getBody();
 //for (int i=0; i<bodyDataset.length; i++)
 //    System.out.println("(1) ["+i+"] " + bodyDataset[i].getFileId() + ", " + bodyDataset[i].getDatasetId());
@@ -70,16 +70,16 @@ public class RemoteFileMetaServiceImpl implements FileMetaService {
         }
 
         // Is this File in at least one Authorised Dataset?
-        ResponseEntity<File[]> forEntity = restTemplate.getForEntity(SERVICE_URL + "/file/{file_id}", File[].class, file_id);
+        ResponseEntity<File[]> forEntity = restTemplate.getForEntity(SERVICE_URL + "/file/{fileId}", File[].class, fileId);
 //for (int j=0; j<forEntity.getBody().length; j++)
 //    System.out.println("(3) ["+j+"] " +forEntity.getBody()[j].getFileName() );
         File[] body = forEntity.getBody();
         if (body != null && bodyDataset != null) {
             for (FileDataset f : bodyDataset) {
-                String dataset_id = f.getDatasetId();
-                if (permissions.contains(dataset_id) && body.length >= 1) {
+                String datasetId = f.getDatasetId();
+                if (permissions.contains(datasetId) && body.length >= 1) {
                     File ff = body[0];
-                    ff.setDatasetId(dataset_id);
+                    ff.setDatasetId(datasetId);
                     //ff.setFileName(ff.getFileId()); // Hiding Filename from Outside
                     return ff;
                 }
@@ -92,8 +92,8 @@ public class RemoteFileMetaServiceImpl implements FileMetaService {
     @Override
     //@HystrixCommand
     @Cacheable(cacheNames = "fileDatasetFile")
-    public Iterable<File> getDatasetFiles(String dataset_id) {
-        File[] response = restTemplate.getForObject(SERVICE_URL + "/datasets/{dataset_id}/files", File[].class, dataset_id);
+    public Iterable<File> getDatasetFiles(String datasetId) {
+        File[] response = restTemplate.getForObject(SERVICE_URL + "/datasets/{datasetId}/files", File[].class, datasetId);
         //if (response!=null) for (int i=0; i<response.length; i++) {response[i].setFileName(response[i].getFileId());}
         return Arrays.asList(response);
     }

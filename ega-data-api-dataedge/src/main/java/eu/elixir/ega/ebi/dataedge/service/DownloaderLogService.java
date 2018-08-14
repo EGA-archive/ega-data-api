@@ -23,8 +23,8 @@ import eu.elixir.ega.ebi.dataedge.dto.EventEntry;
  */
 public interface DownloaderLogService {
 
-    public void logDownload(DownloadEntry downloadEntry);
+    void logDownload(DownloadEntry downloadEntry);
 
-    public void logEvent(EventEntry eventEntry);
+    void logEvent(EventEntry eventEntry);
 
 }

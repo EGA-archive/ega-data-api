@@ -80,12 +80,12 @@ import htsjdk.variant.vcf.VCFHeader;
 @TestPropertySource(locations = "classpath:application-test.properties")
 public class RemoteFileServiceImplTest {
 
-    private final String SERVICE_URL = "http://FILEDATABASE";
-    private final String RES_URL = "http://RES2";
-    private final String DATASET1 = "DATASET1";
-    private final String DATASET2 = "DATASET2";
-    private final String FILEID = "fileId";
-    private final String HOMEPAGE_URL = "http://HomePageUrl";
+    private static final String SERVICE_URL = "http://FILEDATABASE";
+    private static final String RES_URL = "http://RES2";
+    private static final String DATASET1 = "DATASET1";
+    private static final String DATASET2 = "DATASET2";
+    private static final String FILEID = "fileId";
+    private static final String HOMEPAGE_URL = "http://HomePageUrl";
 
     private Authentication authentication;
     private SAMFileHeader samFileHeader;
@@ -284,16 +284,16 @@ public class RemoteFileServiceImplTest {
         when(samReaderFactory.open(any(SamInputResource.class))).thenReturn(samReader);
         when(samReader.getFileHeader()).thenReturn(samFileHeader);
 
-        when(restTemplate.getForEntity(SERVICE_URL + "/file/{file_id}/datasets", FileDataset[].class, FILEID))
+        when(restTemplate.getForEntity(SERVICE_URL + "/file/{fileId}/datasets", FileDataset[].class, FILEID))
                 .thenReturn(forEntityDataset);
-        when(restTemplate.getForEntity(SERVICE_URL + "/file/{file_id}/datasets", FileDataset[].class, "indexFileId"))
+        when(restTemplate.getForEntity(SERVICE_URL + "/file/{fileId}/datasets", FileDataset[].class, "indexFileId"))
                 .thenReturn(forEntityDataset);
-        when(restTemplate.getForEntity(SERVICE_URL + "/file/{file_id}", File[].class, FILEID)).thenReturn(forEntity);
-        when(restTemplate.getForEntity(SERVICE_URL + "/file/{file_id}", File[].class, "indexFileId"))
+        when(restTemplate.getForEntity(SERVICE_URL + "/file/{fileId}", File[].class, FILEID)).thenReturn(forEntity);
+        when(restTemplate.getForEntity(SERVICE_URL + "/file/{fileId}", File[].class, "indexFileId"))
                 .thenReturn(forEntity);
-        when(restTemplate.getForEntity(SERVICE_URL + "/file/{file_id}/index", FileIndexFile[].class, FILEID))
+        when(restTemplate.getForEntity(SERVICE_URL + "/file/{fileId}/index", FileIndexFile[].class, FILEID))
                 .thenReturn(forResponseEntity);
-        when(restTemplate.getForEntity(RES_URL + "/file/archive/{file_id}/size", Long.class, FILEID))
+        when(restTemplate.getForEntity(RES_URL + "/file/archive/{fileId}/size", Long.class, FILEID))
                 .thenReturn(forSize);
         when(restTemplate.execute(any(), any(), any(), any())).thenReturn(xferResult);
         when(instance.getHomePageUrl()).thenReturn(HOMEPAGE_URL);

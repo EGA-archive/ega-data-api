@@ -32,4 +32,5 @@ public class EurekaDiscoveryServerApplication {
     protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
         return application.sources(EurekaDiscoveryServerApplication.class);
     }
+
 }

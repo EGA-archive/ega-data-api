@@ -28,6 +28,8 @@ import lombok.Setter;
 @Setter
 @Getter
 public class HtsgetResponse implements HtsgetResponseInterface {
+
     private String format;
     private HtsgetUrl[] urls;
+
 }

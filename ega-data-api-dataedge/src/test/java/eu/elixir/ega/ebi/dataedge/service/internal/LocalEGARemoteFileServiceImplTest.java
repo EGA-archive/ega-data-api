@@ -59,11 +59,11 @@ import htsjdk.samtools.cram.ref.CRAMReferenceSource;
 @TestPropertySource(locations = "classpath:application-test.properties")
 public class LocalEGARemoteFileServiceImplTest {
 
-    private final String SERVICE_URL = "http://FILEDATABASE";
-    private final String RES_URL = "http://RES2";
-    private final String DATASET1 = "DATASET1";
-    private final String DATASET2 = "DATASET2";
-    private final String FILEID = "fileId";
+    private static final String SERVICE_URL = "http://FILEDATABASE";
+    private static final String RES_URL = "http://RES2";
+    private static final String DATASET1 = "DATASET1";
+    private static final String DATASET2 = "DATASET2";
+    private static final String FILEID = "fileId";
     private Authentication auth;
 
 
@@ -110,11 +110,11 @@ public class LocalEGARemoteFileServiceImplTest {
             when(forEntity.getBody()).thenReturn(file);
             when(forSize.getBody()).thenReturn(1000l);
 
-            when(restTemplate.getForEntity(SERVICE_URL + "/file/{file_id}/datasets", FileDataset[].class, FILEID))
+            when(restTemplate.getForEntity(SERVICE_URL + "/file/{fileId}/datasets", FileDataset[].class, FILEID))
                     .thenReturn(forEntityDataset);
-            when(restTemplate.getForEntity(SERVICE_URL + "/file/{file_id}", File[].class, FILEID))
+            when(restTemplate.getForEntity(SERVICE_URL + "/file/{fileId}", File[].class, FILEID))
                     .thenReturn(forEntity);
-            when(restTemplate.getForEntity(RES_URL + "/file/archive/{file_id}/size", Long.class, FILEID))
+            when(restTemplate.getForEntity(RES_URL + "/file/archive/{fileId}/size", Long.class, FILEID))
                     .thenReturn(forSize);
 
             localEGARemoteFileServiceImpl.getFile(auth, FILEID, "plain", "destinationKey", "destinationIV", 0, 0,

@@ -16,73 +16,37 @@
 
 /*
  * Implementation for S3 Interface at the EGA-EBI
- * 
+ *
  * Load archive data as Cache Pages, keep unencrypted data in cache memory
  * Serve data requests from cache only
  */
 package eu.elixir.ega.ebi.reencryptionmvc.service.internal;
 
-import static com.amazonaws.HttpMethod.GET;
-
-import java.io.BufferedInputStream;
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
-import java.io.FileInputStream;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.math.BigInteger;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.security.DigestOutputStream;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.SecureRandom;
-import java.security.Security;
-import java.security.spec.AlgorithmParameterSpec;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
-import javax.crypto.Cipher;
-import javax.crypto.CipherOutputStream;
-import javax.crypto.NoSuchPaddingException;
-import javax.crypto.SecretKey;
-import javax.crypto.spec.IvParameterSpec;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
+import com.amazonaws.auth.AWSCredentials;
+import com.amazonaws.auth.AWSStaticCredentialsProvider;
+import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.client.builder.AwsClientBuilder;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
+import com.google.common.io.ByteStreams;
+import eu.elixir.ega.ebi.reencryptionmvc.config.GeneralStreamingException;
+import eu.elixir.ega.ebi.reencryptionmvc.config.ServerErrorException;
+import eu.elixir.ega.ebi.reencryptionmvc.dto.CachePage;
+import eu.elixir.ega.ebi.reencryptionmvc.dto.EgaAESFileHeader;
+import eu.elixir.ega.ebi.reencryptionmvc.dto.KeyPath;
+import eu.elixir.ega.ebi.reencryptionmvc.dto.MyAwsConfig;
+import eu.elixir.ega.ebi.reencryptionmvc.service.KeyService;
+import eu.elixir.ega.ebi.reencryptionmvc.service.ResService;
+import htsjdk.samtools.seekablestream.*;
+import htsjdk.samtools.seekablestream.cipher.ebi.*;
+import htsjdk.samtools.seekablestream.ebi.BufferedBackgroundSeekableInputStream;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.bouncycastle.openpgp.PGPCompressedData;
-import org.bouncycastle.openpgp.PGPEncryptedDataList;
-import org.bouncycastle.openpgp.PGPException;
-import org.bouncycastle.openpgp.PGPLiteralData;
-import org.bouncycastle.openpgp.PGPObjectFactory;
-import org.bouncycastle.openpgp.PGPPrivateKey;
-import org.bouncycastle.openpgp.PGPPublicKey;
-import org.bouncycastle.openpgp.PGPPublicKeyEncryptedData;
-import org.bouncycastle.openpgp.PGPPublicKeyRing;
-import org.bouncycastle.openpgp.PGPPublicKeyRingCollection;
-import org.bouncycastle.openpgp.PGPSecretKey;
-import org.bouncycastle.openpgp.PGPSecretKeyRingCollection;
-import org.bouncycastle.openpgp.PGPUtil;
+import org.bouncycastle.openpgp.*;
 import org.bouncycastle.openpgp.operator.KeyFingerPrintCalculator;
 import org.bouncycastle.openpgp.operator.PBESecretKeyDecryptor;
 import org.bouncycastle.openpgp.operator.bc.BcKeyFingerprintCalculator;
@@ -96,34 +60,32 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
-import com.amazonaws.auth.AWSCredentials;
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
-import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.client.builder.AwsClientBuilder;
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
-import com.google.common.io.ByteStreams;
+import javax.crypto.Cipher;
+import javax.crypto.CipherOutputStream;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.IvParameterSpec;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.*;
+import java.math.BigInteger;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.security.*;
+import java.security.spec.AlgorithmParameterSpec;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
-import eu.elixir.ega.ebi.reencryptionmvc.config.GeneralStreamingException;
-import eu.elixir.ega.ebi.reencryptionmvc.config.ServerErrorException;
-import eu.elixir.ega.ebi.reencryptionmvc.dto.CachePage;
-import eu.elixir.ega.ebi.reencryptionmvc.dto.EgaAESFileHeader;
-import eu.elixir.ega.ebi.reencryptionmvc.dto.KeyPath;
-import eu.elixir.ega.ebi.reencryptionmvc.dto.MyAwsConfig;
-import eu.elixir.ega.ebi.reencryptionmvc.service.KeyService;
-import eu.elixir.ega.ebi.reencryptionmvc.service.ResService;
-import htsjdk.samtools.seekablestream.FakeSeekableStream;
-import htsjdk.samtools.seekablestream.SeekableBasicAuthHTTPStream;
-import htsjdk.samtools.seekablestream.SeekableHTTPStream;
-import htsjdk.samtools.seekablestream.SeekablePathStream;
-import htsjdk.samtools.seekablestream.SeekableStream;
-import htsjdk.samtools.seekablestream.cipher.ebi.GPGOutputStream;
-import htsjdk.samtools.seekablestream.cipher.ebi.GPGStream;
-import htsjdk.samtools.seekablestream.cipher.ebi.Glue;
-import htsjdk.samtools.seekablestream.cipher.ebi.RemoteSeekableCipherStream;
-import htsjdk.samtools.seekablestream.cipher.ebi.SeekableCipherStream;
-import htsjdk.samtools.seekablestream.ebi.BufferedBackgroundSeekableInputStream;
+import static com.amazonaws.HttpMethod.GET;
 
 
 /**
@@ -135,42 +97,106 @@ import htsjdk.samtools.seekablestream.ebi.BufferedBackgroundSeekableInputStream;
 @EnableDiscoveryClient
 public class CacheResServiceImpl implements ResService {
 
-    @Autowired
-    private KeyService keyService;
-
-    @Autowired
-    private MyAwsConfig myAwsConfig;
-
-    @Autowired
-    private Cache<String, EgaAESFileHeader> myHeaderCache;
-
-    @Autowired
-    private Cache<String, CachePage> myPageCache;
-
-    /**
-     * Background processing
-     */
-    ExecutorService executorService2 = Executors.newFixedThreadPool(200);
-
     /**
      * Size of a byte buffer to read/write file (for Random Stream)
      */
     //private static final int BUFFER_SIZE = 16;
     private static final long BUFFER_SIZE = 1024 * 1024 * 12;
     private static final int MAX_CONCURRENT = 4;
-
-    private static ConcurrentHashMap loadQueue = new ConcurrentHashMap<>(); 
-    private static Set concurrentHashSet = loadQueue.newKeySet();
-    
     /**
      * Bouncy Castle code for Public Key encrypted Files
      */
     private static final KeyFingerPrintCalculator fingerPrintCalculater = new BcKeyFingerprintCalculator();
     private static final BcPGPDigestCalculatorProvider calc = new BcPGPDigestCalculatorProvider();
+    private static ConcurrentHashMap loadQueue = new ConcurrentHashMap<>();
+    private static Set concurrentHashSet = ConcurrentHashMap.newKeySet();
+    /**
+     * Background processing
+     */
+    ExecutorService executorService2 = Executors.newFixedThreadPool(200);
+    @Autowired
+    private KeyService keyService;
+    @Autowired
+    private MyAwsConfig myAwsConfig;
+    @Autowired
+    private Cache<String, EgaAESFileHeader> myHeaderCache;
+    @Autowired
+    private Cache<String, CachePage> myPageCache;
 
     /*
      * Perform Data Transfer Requested by File Controller
      */
+
+    private static PGPPublicKeyRing getKeyring(InputStream keyBlockStream) throws IOException {
+        // PGPUtil.getDecoderStream() will detect ASCII-armor automatically and decode it,
+        // the PGPObject factory then knows how to read all the data in the encoded stream
+        PGPObjectFactory factory = new PGPObjectFactory(PGPUtil.getDecoderStream(keyBlockStream), fingerPrintCalculater);
+
+        // these files should really just have one object in them,
+        // and that object should be a PGPPublicKeyRing.
+        Object o = factory.nextObject();
+        if (o instanceof PGPPublicKeyRing) {
+            return (PGPPublicKeyRing) o;
+        }
+        throw new IllegalArgumentException("Input text does not contain a PGP Public Key");
+    }
+
+    // -------------------------------------------------------------------------
+    private static PGPPublicKey getEncryptionKey(PGPPublicKeyRing keyRing) {
+        if (keyRing == null)
+            return null;
+
+        // iterate over the keys on the ring, look for one
+        // which is suitable for encryption.
+        Iterator keys = keyRing.getPublicKeys();
+        PGPPublicKey key = null;
+        while (keys.hasNext()) {
+            key = (PGPPublicKey) keys.next();
+            if (key.isEncryptionKey()) {
+                return key;
+            }
+        }
+        return null;
+    }
+
+    private static void byte_increment_fast(byte[] data, long increment) {
+        long countdown = increment / 16; // Count number of block updates
+
+        ArrayList<Integer> digits_ = new ArrayList<>();
+        int cnt = 0;
+        long d = 256, cn = 0;
+        while (countdown > cn && d > 0) {
+            int l = (int) ((countdown % d) / (d / 256));
+            digits_.add(l);
+            cn += (l * (d / 256));
+            d *= 256;
+        }
+        int size = digits_.size();
+        int[] digits = new int[size];
+        for (int i = 0; i < size; i++) {
+            digits[size - 1 - i] = digits_.get(i); // intValue()
+        }
+
+        int cur_pos = data.length - 1, carryover = 0, delta = data.length - digits.length;
+
+        for (int i = cur_pos; i >= delta; i--) { // Work on individual digits
+            int digit = digits[i - delta] + carryover; // convert to integer
+            int place = (int) (data[i] & 0xFF); // convert data[] to integer
+            int new_place = digit + place;
+            if (new_place >= 256) carryover = 1;
+            else carryover = 0;
+            data[i] = (byte) (new_place % 256);
+        }
+
+        // Deal with potential last carryovers
+        cur_pos -= digits.length;
+        while (carryover == 1 && cur_pos >= 0) {
+            data[cur_pos]++;
+            if (data[cur_pos] == 0) carryover = 1;
+            else carryover = 0;
+            cur_pos--;
+        }
+    }
 
     @Override
     public void transfer(String sourceFormat,
@@ -231,8 +257,8 @@ public class CacheResServiceImpl implements ResService {
             if (endCoordinate > fileSize)
                 endCoordinate = fileSize;
             // Adjust start coordinate requested - to match 16 byte block structure
-            if (destintionFormat.toLowerCase().startsWith("aes") && 
-                    destinationIV!= null && destinationIV.length() > 0) {
+            if (destintionFormat.toLowerCase().startsWith("aes") &&
+                    destinationIV != null && destinationIV.length() > 0) {
                 long blockStart = (startCoordinate / 16) * 16;
                 int blockDelta = (int) (startCoordinate - blockStart);
                 startCoordinate -= blockDelta;
@@ -251,7 +277,7 @@ public class CacheResServiceImpl implements ResService {
 
             while (bytesTransferred < bytesToTransfer) {
                 errorLocation = 3;
-                
+
                 // New: Cache Loader takes care of loading autonomously, based on Key
                 key = id + "_" + cachePage;
                 byte[] get = myPageCache.get(key).getPage(); // Get Cache page that contains requested data
@@ -333,7 +359,7 @@ public class CacheResServiceImpl implements ResService {
                 URL url = new URL(fileLocation);
                 fileIn = httpAuth == null ? new SeekableHTTPStream(url) : new SeekableBasicAuthHTTPStream(url, httpAuth);
             } else if (fileLocation.toLowerCase().startsWith("s3")) { // S3
-                URL url = new URL(getS3ObjectUrl(fileLocation));        
+                URL url = new URL(getS3ObjectUrl(fileLocation));
                 fileIn = new SeekableHTTPStream(url);
             } else { // No Protocol -- Assume File Path
                 fileLocation = "file://" + fileLocation;
@@ -364,25 +390,25 @@ public class CacheResServiceImpl implements ResService {
     }
 
     // Return ReEncrypted Output Stream for Target
-    // This function also takes a specified IV as parameter, to produce a target 
-    // "random access" encrypting output stream, properly initialised 
+    // This function also takes a specified IV as parameter, to produce a target
+    // "random access" encrypting output stream, properly initialised
     private OutputStream getTarget(OutputStream outStream,
                                    String destinationFormat,
                                    String destinationKey,
                                    String destinationIV,
                                    long startCoordinate) throws NoSuchAlgorithmException,
-                                                                NoSuchPaddingException,
-                                                                InvalidKeyException,
-                                                                InvalidAlgorithmParameterException,
-                                                                IOException {
+            NoSuchPaddingException,
+            InvalidKeyException,
+            InvalidAlgorithmParameterException,
+            IOException {
         OutputStream out = null; // Return Stream - an Encrypted File
-        boolean IVSpecified = (destinationIV != null && destinationIV.length()>0);
+        boolean IVSpecified = (destinationIV != null && destinationIV.length() > 0);
 
         if (destinationFormat.equalsIgnoreCase("plain")) {
             out = outStream; // No Encryption Necessary
 
         } else if (destinationFormat.equalsIgnoreCase("aes128") ||
-                   destinationFormat.equalsIgnoreCase("aes256")) {
+                destinationFormat.equalsIgnoreCase("aes256")) {
             // Specify Encryption stength with specified key
             int bits = 128;
             if (destinationFormat.equalsIgnoreCase("aes256"))
@@ -401,16 +427,15 @@ public class CacheResServiceImpl implements ResService {
             }
             AlgorithmParameterSpec paramSpec = new IvParameterSpec(random_iv);
             // If the random IV was generated in here, write it to the output stream
-            if (!IVSpecified) 
-                    outStream.write(random_iv);
+            if (!IVSpecified)
+                outStream.write(random_iv);
             Cipher cipher = Cipher.getInstance("AES/CTR/NoPadding"); // load a cipher AES / Segmented Integer Counter
             cipher.init(Cipher.ENCRYPT_MODE, secret, paramSpec);
             out = new CipherOutputStream(outStream, cipher);
-            
+
         } else if (destinationFormat.toLowerCase().startsWith("publicgpg")) {
             PGPPublicKey gpgKey = getPublicGPGKey(destinationFormat);
             out = new GPGOutputStream(outStream, gpgKey); // Public Key GPG
-
         }
 
         return out;
@@ -483,9 +508,7 @@ public class CacheResServiceImpl implements ResService {
                     pbe = it.next();
 
                     PGPSecretKey pgpSecKey = pgpSec.getSecretKey(pbe.getKeyID());
-                    if (pgpSecKey == null) {
-                        sKey = null;
-                    } else {
+                    if (pgpSecKey != null) {
                         PBESecretKeyDecryptor decryptor = new BcPBESecretKeyDecryptorBuilder(new BcPGPDigestCalculatorProvider()).build(key.toCharArray());
                         sKey = pgpSecKey.extractPrivateKey(decryptor);
                     }
@@ -548,8 +571,7 @@ public class CacheResServiceImpl implements ResService {
         if (pgKey == null || error) {
             try {
                 pgKey = getEncryptionKey(getKeyring(in)); // exported key file (should be standard)
-            } catch (IOException ex) {
-                ;
+            } catch (IOException ignored) {
             }
         }
         in.close();
@@ -578,7 +600,6 @@ public class CacheResServiceImpl implements ResService {
         while (key == null && rIt.hasNext()) {
             PGPPublicKeyRing kRing = (PGPPublicKeyRing) rIt.next();
             Iterator kIt = kRing.getPublicKeys();
-            boolean encryptionKeyFound = false;
 
             while (key == null && kIt.hasNext()) {
                 PGPPublicKey k = (PGPPublicKey) kIt.next();
@@ -596,38 +617,6 @@ public class CacheResServiceImpl implements ResService {
         return key;
     }
 
-    private static PGPPublicKeyRing getKeyring(InputStream keyBlockStream) throws IOException {
-        // PGPUtil.getDecoderStream() will detect ASCII-armor automatically and decode it,
-        // the PGPObject factory then knows how to read all the data in the encoded stream
-        PGPObjectFactory factory = new PGPObjectFactory(PGPUtil.getDecoderStream(keyBlockStream), fingerPrintCalculater);
-
-        // these files should really just have one object in them,
-        // and that object should be a PGPPublicKeyRing.
-        Object o = factory.nextObject();
-        if (o instanceof PGPPublicKeyRing) {
-            return (PGPPublicKeyRing) o;
-        }
-        throw new IllegalArgumentException("Input text does not contain a PGP Public Key");
-    }
-
-    // -------------------------------------------------------------------------
-    private static PGPPublicKey getEncryptionKey(PGPPublicKeyRing keyRing) {
-        if (keyRing == null)
-            return null;
-
-        // iterate over the keys on the ring, look for one
-        // which is suitable for encryption.
-        Iterator keys = keyRing.getPublicKeys();
-        PGPPublicKey key = null;
-        while (keys.hasNext()) {
-            key = (PGPPublicKey) keys.next();
-            if (key.isEncryptionKey()) {
-                return key;
-            }
-        }
-        return null;
-    }
-
     private void loadHeaderCleversafe(String id, String url, String httpAuth,
                                       long fileSize, HttpServletResponse response_, String sourceKey) {
         boolean close = false;
@@ -635,7 +624,7 @@ public class CacheResServiceImpl implements ResService {
         if (url.startsWith("s3")) {
             url = getS3ObjectUrl(url);
         }
-        
+
         // Load first 16 bytes; set stats
         HttpClient httpclient = HttpClientBuilder.create().build();
         HttpGet request = new HttpGet(url);
@@ -655,9 +644,9 @@ public class CacheResServiceImpl implements ResService {
                     String auth = "Basic " + encoding;
                     request.addHeader("Authorization", auth);
                 }
-            } catch (MalformedURLException ex) {
+            } catch (MalformedURLException ignored) {
             }
-        }  
+        }
 
         byte[] IV = new byte[16];
         try {
@@ -668,7 +657,6 @@ public class CacheResServiceImpl implements ResService {
             }
             DataInputStream content = new DataInputStream(response.getEntity().getContent());
             content.readFully(IV);
-            if (close) content.close();
 
             EgaAESFileHeader header = new EgaAESFileHeader(IV, "aes256", fileSize, url, sourceKey);
             myHeaderCache.put(id, header);
@@ -676,65 +664,27 @@ public class CacheResServiceImpl implements ResService {
             throw new ServerErrorException("LoadHeader: " + ex.toString() + " :: ", url);
         }
     }
-    
+
     private String getS3ObjectUrl(String fileLocation) {
         final String bucket = fileLocation.substring(5, fileLocation.indexOf("/", 5));
         final String awsPath = fileLocation.substring(fileLocation.indexOf("/", 5) + 1);
-        
+
         final AWSCredentials credentials = new BasicAWSCredentials(myAwsConfig.getAwsAccessKeyId(),
                 myAwsConfig.getAwsSecretAccessKey());
         final AmazonS3 s3 = AmazonS3ClientBuilder.standard()
                 .withCredentials(new AWSStaticCredentialsProvider(credentials)).withPathStyleAccessEnabled(true)
                 .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(myAwsConfig.getAwsEndpointUrl(), myAwsConfig.getAwsRegion()))
                 .build();
-        
+
         Date expiration = new Date();
         long expTimeMillis = expiration.getTime();
-        expTimeMillis += (1000 * 3600) * 24 ;
+        expTimeMillis += (1000 * 3600) * 24;
         expiration.setTime(expTimeMillis);
-        
+
         GeneratePresignedUrlRequest generatePresignedUrlRequest = new GeneratePresignedUrlRequest(bucket, awsPath).withMethod(GET)
                 .withExpiration(expiration);
         URL url = s3.generatePresignedUrl(generatePresignedUrlRequest);
         return url.toString();
     }
 
-    private static void byte_increment_fast(byte[] data, long increment) {
-        long countdown = increment / 16; // Count number of block updates
-
-        ArrayList<Integer> digits_ = new ArrayList<>();
-        int cnt = 0;
-        long d = 256, cn = 0;
-        while (countdown > cn && d > 0) {
-            int l = (int) ((countdown % d) / (d / 256));
-            digits_.add(l);
-            cn += (l * (d / 256));
-            d *= 256;
-        }
-        int size = digits_.size();
-        int[] digits = new int[size];
-        for (int i = 0; i < size; i++) {
-            digits[size - 1 - i] = digits_.get(i); // intValue()
-        }
-
-        int cur_pos = data.length - 1, carryover = 0, delta = data.length - digits.length;
-
-        for (int i = cur_pos; i >= delta; i--) { // Work on individual digits
-            int digit = digits[i - delta] + carryover; // convert to integer
-            int place = (int) (data[i] & 0xFF); // convert data[] to integer
-            int new_place = digit + place;
-            if (new_place >= 256) carryover = 1;
-            else carryover = 0;
-            data[i] = (byte) (new_place % 256);
-        }
-
-        // Deal with potential last carryovers
-        cur_pos -= digits.length;
-        while (carryover == 1 && cur_pos >= 0) {
-            data[cur_pos]++;
-            if (data[cur_pos] == 0) carryover = 1;
-            else carryover = 0;
-            cur_pos--;
-        }
-    }
 }

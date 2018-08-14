@@ -71,8 +71,7 @@ public class FileControllerTest {
 		file.setFileId("fileId");
 
 		when(fileService.getFileByStableId(any(String.class))).thenReturn(files);
-		final MockHttpServletResponse response = mockMvc.perform(get("/file/file_id").accept(APPLICATION_JSON))
-				.andReturn().getResponse();
+		final MockHttpServletResponse response = mockMvc.perform(get("/file/fileId").accept(APPLICATION_JSON)).andReturn().getResponse();
 		assertThat(response.getStatus(), equalTo(OK.value()));
 	}
 
@@ -107,7 +106,7 @@ public class FileControllerTest {
 		fileIndexFile.setFileId("fileId");
 
 		when(fileService.getFileIndexByFileId(any(String.class))).thenReturn(fileIndexFiles);
-		final MockHttpServletResponse response = mockMvc.perform(get("/file/file_id/index").accept(APPLICATION_JSON))
+		final MockHttpServletResponse response = mockMvc.perform(get("/file/fileId/index").accept(APPLICATION_JSON))
 				.andReturn().getResponse();
 		assertThat(response.getStatus(), equalTo(OK.value()));
 	}

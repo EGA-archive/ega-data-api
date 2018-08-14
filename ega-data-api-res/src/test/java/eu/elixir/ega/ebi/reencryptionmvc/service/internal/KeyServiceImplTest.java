@@ -63,7 +63,7 @@ import org.springframework.web.client.RestTemplate;
 @PrepareForTest({ KeyServiceImpl.class, Gson.class, IOUtils.class })
 public class KeyServiceImplTest {
 
-    private final String SERVICE_URL = "http://KEYSERVER";
+    private static final String SERVICE_URL = "http://KEYSERVER";
 
     @InjectMocks
     private KeyServiceImpl keyServiceImpl;
@@ -84,7 +84,7 @@ public class KeyServiceImplTest {
     public void testGetFileKey() {
         final ResponseEntity<String> mockResponseEntity = mock(ResponseEntity.class);
         final String keyMock = "body Output";
-        when(restTemplate.getForEntity(SERVICE_URL + "/keys/filekeys/{file_id}", String.class, "fileId"))
+        when(restTemplate.getForEntity(SERVICE_URL + "/keys/filekeys/{fileId}", String.class, "fileId"))
                 .thenReturn(mockResponseEntity);
         when(mockResponseEntity.getBody()).thenReturn(keyMock);
 

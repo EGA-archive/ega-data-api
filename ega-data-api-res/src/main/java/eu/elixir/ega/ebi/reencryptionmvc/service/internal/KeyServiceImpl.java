@@ -17,21 +17,10 @@ package eu.elixir.ega.ebi.reencryptionmvc.service.internal;
 
 import eu.elixir.ega.ebi.reencryptionmvc.dto.KeyPath;
 import eu.elixir.ega.ebi.reencryptionmvc.service.KeyService;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.URL;
-import java.nio.charset.Charset;
-import java.util.Iterator;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.IOUtils;
-import org.bouncycastle.openpgp.PGPException;
-import org.bouncycastle.openpgp.PGPPublicKey;
-import org.bouncycastle.openpgp.PGPPublicKeyRing;
-import org.bouncycastle.openpgp.PGPPublicKeyRingCollection;
-import org.bouncycastle.openpgp.PGPUtil;
+import org.bouncycastle.openpgp.*;
 import org.bouncycastle.openpgp.operator.bc.BcKeyFingerprintCalculator;
 import org.bouncycastle.util.io.pem.PemReader;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,6 +31,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.nio.charset.Charset;
+import java.util.Iterator;
+
 /**
  * @author asenf
  */
@@ -49,24 +46,23 @@ import org.springframework.web.client.RestTemplate;
 @EnableDiscoveryClient
 public class KeyServiceImpl implements KeyService {
 
-    private final String SERVICE_URL = "http://KEYSERVER"; //ICE";
+    private static final String SERVICE_URL = "http://KEYSERVER"; //ICE";
 
     @Autowired
     RestTemplate restTemplate;
 
     private String keyServiceURL;
     private String cegaURL;
-    
+
     @Override
 //    @HystrixCommand
     //@Retryable(maxAttempts = 4, backoff = @Backoff(delay = 5000))
     @Cacheable(cacheNames = "key")
     public String getFileKey(String fileId) {
 
-        ResponseEntity<String> forEntity = restTemplate.getForEntity(SERVICE_URL + "/keys/filekeys/{file_id}", String.class, fileId);
-        String body = forEntity.getBody();
+        ResponseEntity<String> forEntity = restTemplate.getForEntity(SERVICE_URL + "/keys/filekeys/{fileId}", String.class, fileId);
 
-        return body;
+        return forEntity.getBody();
     }
 
     @Override
@@ -75,21 +71,20 @@ public class KeyServiceImpl implements KeyService {
     public KeyPath getKeyPath(String key) {
 
         ResponseEntity<KeyPath> forEntity = restTemplate.getForEntity(SERVICE_URL + "/keys/retrieve/{keyId}/private/path", KeyPath.class, key);
-        KeyPath body = forEntity.getBody();
 
-        return body;
+        return forEntity.getBody();
     }
 
     // Local EGA Functionality - Not Required for Central EGA / EBI
     // Imported from LocalEgaKeyServiceImpl
-    
+
     @Override
     public byte[] getRSAKeyById(String id) throws IOException, DecoderException {
         // TODO: bring that back after LocalEGA key server becomes able to register itself against Eureka
         // ResponseEntity<Resource> responseEntity =
         //        restTemplate.getForEntity(keyServiceURL + "/temp/rsa/" + id, Resource.class);
 
-        String rawKey =  IOUtils.toString(new URL(keyServiceURL + "/temp/rsa/" + id).openStream(), Charset.defaultCharset());
+        String rawKey = IOUtils.toString(new URL(keyServiceURL + "/temp/rsa/" + id).openStream(), Charset.defaultCharset());
         System.out.println("DEBUG getRSAKey: rawKey=" + rawKey);
         String privateKey = String.valueOf(rawKey);
         byte[] privateKeyBytes = Hex.decodeHex(privateKey.toCharArray());

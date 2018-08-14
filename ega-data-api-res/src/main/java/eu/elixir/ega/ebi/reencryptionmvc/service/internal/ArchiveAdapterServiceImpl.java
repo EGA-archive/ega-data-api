@@ -49,7 +49,6 @@ public class ArchiveAdapterServiceImpl implements ArchiveAdapterService {
             result[0] = "";
             result[1] = "";
             result[3] = path;
-            String path_ = path;
 
             // Sending Request; 4 re-try attempts
             int reTryCount = 4;
@@ -61,7 +60,7 @@ public class ArchiveAdapterServiceImpl implements ArchiveAdapterService {
                     connection.setRequestMethod("GET");
                     connection.setRequestProperty("X-FIRE-Archive", myFireConfig.getFireArchive());
                     connection.setRequestProperty("X-FIRE-Key", myFireConfig.getFireKey());
-                    connection.setRequestProperty("X-FIRE-FilePath", path_);
+                    connection.setRequestProperty("X-FIRE-FilePath", path);
 
                     // Reading Response - with Retries
                     responseCode = connection.getResponseCode();

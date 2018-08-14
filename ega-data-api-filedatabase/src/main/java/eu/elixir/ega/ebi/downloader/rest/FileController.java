@@ -37,21 +37,22 @@ public class FileController {
     @Autowired
     private FileService fileService;
 
-    @RequestMapping(value = "/{file_id}", method = GET)
+    @RequestMapping(value = "/{fileId}", method = GET)
     @ResponseBody
-    public Iterable<File> get(@PathVariable String file_id) {
-        return fileService.getFileByStableId(file_id);
+    public Iterable<File> get(@PathVariable String fileId) {
+        return fileService.getFileByStableId(fileId);
     }
 
-    @RequestMapping(value = "/{file_id}/datasets", method = GET)
+    @RequestMapping(value = "/{fileId}/datasets", method = GET)
     @ResponseBody
-    public Iterable<FileDataset> getDatasets(@PathVariable String file_id) {
-        return fileService.getFileDatasetByFileId(file_id);
+    public Iterable<FileDataset> getDatasets(@PathVariable String fileId) {
+        return fileService.getFileDatasetByFileId(fileId);
     }
 
-    @RequestMapping(value = "/{file_id}/index", method = GET)
+    @RequestMapping(value = "/{fileId}/index", method = GET)
     @ResponseBody
-    public Iterable<FileIndexFile> getIndex(@PathVariable String file_id) {
-        return fileService.getFileIndexByFileId(file_id);
+    public Iterable<FileIndexFile> getIndex(@PathVariable String fileId) {
+        return fileService.getFileIndexByFileId(fileId);
     }
+
 }

@@ -36,13 +36,14 @@ public class SessionController {
     @Autowired
     private SessionService sessionService;
 
-    @RequestMapping(value = "/{session_id}", method = GET)
+    @RequestMapping(value = "/{sessionId}", method = GET)
     @ResponseBody
-    public Transfer get(@PathVariable String session_id) {
-        Transfer session = sessionService.getSessionStats(session_id);
+    public Transfer get(@PathVariable String sessionId) {
+        Transfer session = sessionService.getSessionStats(sessionId);
         if (session == null) {
-            throw new NotFoundException("Session not found for UUID", session_id);
+            throw new NotFoundException("Session not found for UUID", sessionId);
         }
         return session;
     }
+
 }

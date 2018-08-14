@@ -59,7 +59,8 @@ public class DownloadEntry implements Serializable {
                 ", startCoordinate=" + startCoordinate +
                 ", endCoordinate=" + endCoordinate +
                 ", bytes=" + bytes +
-                ", created=" + created + 
+                ", created=" + created +
                 ", TokenSource=" + tokenSource + "]";
     }
+
 }

@@ -27,13 +27,13 @@ import org.springframework.data.repository.query.Param;
 public interface FileDatasetRepository extends CrudRepository<FileDataset, String> {
 
     @Cacheable(cacheNames = "byFileId")
-    public Iterable<FileDataset> findByFileId(@Param("fileId") String fileId);
+    Iterable<FileDataset> findByFileId(@Param("fileId") String fileId);
 
     @Cacheable(cacheNames = "byFileIdCustom")
     @Query("SELECT p.datasetId FROM FileDataset p WHERE p.fileId = :fileId")
-    public Iterable<String> findCustom(@Param("fileId") String fileId);
-    
+    Iterable<String> findCustom(@Param("fileId") String fileId);
+
     @Cacheable(cacheNames = "byDatasetId")
-    public Iterable<FileDataset> findByDatasetId(@Param("datasetId") String datasetId);
+    Iterable<FileDataset> findByDatasetId(@Param("datasetId") String datasetId);
 
 }

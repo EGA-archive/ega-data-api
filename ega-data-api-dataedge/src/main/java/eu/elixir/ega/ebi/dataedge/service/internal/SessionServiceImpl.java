@@ -34,9 +34,8 @@ public class SessionServiceImpl implements SessionService {
 
     @Override
     //@HystrixCommand
-    public Transfer getSessionStats(String session_uuid) {
-        return transferRepository.findOne(session_uuid);
+    public Transfer getSessionStats(String sessionUuid) {
+        return transferRepository.findOne(sessionUuid);
     }
-
 
 }

@@ -46,6 +46,7 @@ import java.util.concurrent.TimeUnit;
 @EnableCaching
 @EnableRetry
 public class MyConfiguration {
+
     @Value("${ega.ega.external.url}")
     String externalUrl;
     @Value("${ega.ega.cram.fasta.a}")
@@ -138,7 +139,7 @@ public class MyConfiguration {
                 .expireAfterWrite(24, TimeUnit.HOURS)
                 .build());
 
-        simpleCacheManager.setCaches(Arrays.asList(tokens, access, reqFile, index, 
+        simpleCacheManager.setCaches(Arrays.asList(tokens, access, reqFile, index,
                 fileHead, headerFile, fileSize, fileFile, fileDatasetFile));
         return simpleCacheManager;
     }
@@ -147,4 +148,5 @@ public class MyConfiguration {
     public MyExternalConfig MyArchiveConfig() {
         return new MyExternalConfig(externalUrl, cramFastaReferenceA, cramFastaReferenceB);
     }
+
 }

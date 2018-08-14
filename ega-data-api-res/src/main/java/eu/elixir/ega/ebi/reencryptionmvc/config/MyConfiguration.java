@@ -15,9 +15,8 @@
  */
 package eu.elixir.ega.ebi.reencryptionmvc.config;
 
-import java.util.Arrays;
-import java.util.concurrent.TimeUnit;
-
+import com.google.common.cache.CacheBuilder;
+import eu.elixir.ega.ebi.reencryptionmvc.dto.*;
 import org.cache2k.Cache;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.CacheManager;
@@ -30,13 +29,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestTemplate;
 
-import com.google.common.cache.CacheBuilder;
-
-import eu.elixir.ega.ebi.reencryptionmvc.dto.CachePage;
-import eu.elixir.ega.ebi.reencryptionmvc.dto.EgaAESFileHeader;
-import eu.elixir.ega.ebi.reencryptionmvc.dto.MyArchiveConfig;
-import eu.elixir.ega.ebi.reencryptionmvc.dto.MyAwsConfig;
-import eu.elixir.ega.ebi.reencryptionmvc.dto.MyFireConfig;
+import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author asenf
@@ -140,4 +134,5 @@ public class MyConfiguration {
         simpleCacheManager.setCaches(Arrays.asList(key, archive, path));
         return simpleCacheManager;
     }
+
 }

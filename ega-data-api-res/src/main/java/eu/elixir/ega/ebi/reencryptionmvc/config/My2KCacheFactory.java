@@ -49,4 +49,5 @@ public class My2KCacheFactory implements FactoryBean<Cache<String, EgaAESFileHea
     public boolean isSingleton() {
         return true;
     }
+
 }

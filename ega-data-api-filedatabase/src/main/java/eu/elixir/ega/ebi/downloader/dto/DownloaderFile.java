@@ -28,6 +28,7 @@ import lombok.Setter;
 @Setter
 @Getter
 public class DownloaderFile {
+
     private String fileId;
     private String datasetId;
     private String displayFileName;
@@ -36,4 +37,5 @@ public class DownloaderFile {
     private String unencryptedChecksum;
     private String unencryptedChecksumType;
     private String fileStatus;
+
 }

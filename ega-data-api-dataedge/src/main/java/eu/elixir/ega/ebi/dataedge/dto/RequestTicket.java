@@ -46,4 +46,5 @@ public class RequestTicket {
     public String toString() {
         return email + ":" + downloadTicket + ":" + clientIp + ":" + fileId + ":" + encryptionKey + ":" + encryptionType + ":" + ticketStatus + ":" + label + ":" + startCoordinate + ":" + endCoordinate;
     }
+
 }

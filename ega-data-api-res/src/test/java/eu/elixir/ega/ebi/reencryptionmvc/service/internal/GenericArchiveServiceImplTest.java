@@ -50,7 +50,7 @@ import eu.elixir.ega.ebi.reencryptionmvc.service.KeyService;
 public class GenericArchiveServiceImplTest {
 
     //private final String SERVICE_URL = "http://DOWNLOADER";
-    private final String SERVICE_URL = "http://FILEDATABASE";
+    private static final String SERVICE_URL = "http://FILEDATABASE";
 
     @InjectMocks
     private GenericArchiveServiceImpl genericArchiveServiceImpl;
@@ -78,14 +78,13 @@ public class GenericArchiveServiceImplTest {
         body[0] = new EgaFile("fileId0", "/fire/0000TR.CEL.gpg", 100, "fileStatus0");
         final String encryptionKey = "encryptionKey";
 
-        when(restTemplate.getForEntity(SERVICE_URL + "/file/{file_id}", EgaFile[].class, "id"))
+        when(restTemplate.getForEntity(SERVICE_URL + "/file/{fileId}", EgaFile[].class, "id"))
                 .thenReturn(mockResponseEntity);
         when(mockResponseEntity.getStatusCode()).thenReturn(HttpStatus.OK);
         when(mockResponseEntity.getBody()).thenReturn(body);
         when(keyService.getFileKey(anyString())).thenReturn(encryptionKey);
 
-        final ArchiveSource archiveSource = genericArchiveServiceImpl.getArchiveFile("id",
-                new MockHttpServletResponse());
+        final ArchiveSource archiveSource = genericArchiveServiceImpl.getArchiveFile("id", new MockHttpServletResponse());
         
         assertThat(archiveSource.getFileUrl(), equalTo(body[0].getFileName()));
         assertThat(archiveSource.getSize(), equalTo(body[0].getFileSize()));

@@ -60,10 +60,10 @@ public class LocalEGAFileServiceImpl implements FileService {
             long fileSize = Math.round(Double.parseDouble(String.valueOf(response.get("filesize"))));
             String checksum = String.valueOf(response.get("checksum"));
             String checksumType = String.valueOf(response.get("algo"));
-            file = new File(fileIDs, filePath, "{path}", "{displayName}", 
-                            fileSize, checksum, checksumType, 
-                            "{unencryptedMD5}", "{unencType}", "available", 
-                            "{Crypt4GH Header}");
+            file = new File(fileIDs, filePath, "{path}", "{displayName}",
+                    fileSize, checksum, checksumType,
+                    "{unencryptedMD5}", "{unencType}", "available",
+                    "{Crypt4GH Header}");
         } catch (IOException e) {
             log.error(e.getMessage(), e);
         }

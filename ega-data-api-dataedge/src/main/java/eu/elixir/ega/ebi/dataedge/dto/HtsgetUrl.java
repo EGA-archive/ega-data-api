@@ -28,6 +28,8 @@ import lombok.Setter;
 @Setter
 @Getter
 public class HtsgetUrl {
+
     private String url;
     private HtsgetHeader headers;
+
 }

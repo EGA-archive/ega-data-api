@@ -51,7 +51,7 @@ import eu.elixir.ega.ebi.reencryptionmvc.service.KeyService;
 public class CleversaveArchiveServiceImplTest {
 
     //private final String SERVICE_URL = "http://DOWNLOADER";
-    private final String SERVICE_URL = "http://FILEDATABASE";
+    private static final String SERVICE_URL = "http://FILEDATABASE";
 
     @InjectMocks
     private CleversaveArchiveServiceImpl cleversaveArchiveServiceImpl;
@@ -88,7 +88,7 @@ public class CleversaveArchiveServiceImplTest {
         final String encryptionKey = "encryptionKey";
 
         final String[] filePath = { object_get, object_length, object_storage_class, pathInput };
-        when(restTemplate.getForEntity(SERVICE_URL + "/file/{file_id}", EgaFile[].class, "id"))
+        when(restTemplate.getForEntity(SERVICE_URL + "/file/{fileId}", EgaFile[].class, "id"))
                 .thenReturn(mockResponseEntity);
         when(mockResponseEntity.getStatusCode()).thenReturn(HttpStatus.OK);
         when(mockResponseEntity.getBody()).thenReturn(body);

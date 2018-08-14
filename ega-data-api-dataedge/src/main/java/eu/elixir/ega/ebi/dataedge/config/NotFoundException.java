@@ -29,4 +29,5 @@ public class NotFoundException extends RuntimeException {
     public NotFoundException(String error, String id) {
         super(error + ": " + id);
     }
+
 }

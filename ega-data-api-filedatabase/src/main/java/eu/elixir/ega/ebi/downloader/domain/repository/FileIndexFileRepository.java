@@ -26,6 +26,6 @@ import org.springframework.data.repository.query.Param;
 public interface FileIndexFileRepository extends CrudRepository<FileIndexFile, String> {
 
     @Cacheable(cacheNames = "byFileIndexId")
-    public Iterable<FileIndexFile> findByFileId(@Param("fileId") String fileId);
+    Iterable<FileIndexFile> findByFileId(@Param("fileId") String fileId);
 
 }

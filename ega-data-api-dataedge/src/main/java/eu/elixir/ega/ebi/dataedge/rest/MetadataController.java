@@ -50,7 +50,6 @@ public class MetadataController {
     public @ResponseBody
     Iterable<String> list(HttpServletRequest request) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Map<String, String[]> parameters = request.getParameterMap();
 
         // EGA AAI: Permissions Provided by EGA AAI
         ArrayList<String> result = new ArrayList<>();
@@ -73,15 +72,15 @@ public class MetadataController {
                         if (ds != null && ds.length() > 0) result.add(ds);
                     }
                 }
-            } catch (Exception ex) {
+            } catch (Exception ignored) {
             }
         }
         return result; // List of datasets authorized for this user
     }
 
-    @RequestMapping(value = "/datasets/{dataset_id}/files", method = GET)
+    @RequestMapping(value = "/datasets/{datasetId}/files", method = GET)
     public @ResponseBody
-    Iterable<File> getDatasetFiles(@PathVariable String dataset_id,
+    Iterable<File> getDatasetFiles(@PathVariable String datasetId,
                                    HttpServletRequest request) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         //Map<String, String[]> parameters = request.getParameterMap();
@@ -95,7 +94,7 @@ public class MetadataController {
             Iterator<? extends GrantedAuthority> iterator = authorities.iterator();
             while (iterator.hasNext()) {
                 GrantedAuthority next = iterator.next();
-                if (dataset_id.equalsIgnoreCase(next.getAuthority())) {
+                if (datasetId.equalsIgnoreCase(next.getAuthority())) {
                     permission = true;
                     break;
                 }
@@ -109,25 +108,25 @@ public class MetadataController {
                     //while (t!=null && t.hasMoreTokens()) {
                     for (String ds : permissions) {
                         //String ds = t.nextToken();
-                        if (ds != null && dataset_id.equalsIgnoreCase(ds)) {
+                        if (datasetId.equalsIgnoreCase(ds)) {
                             permission = true;
                             break;
                         }
                     }
                 }
-            } catch (Exception ex) {
+            } catch (Exception ignored) {
             }
         }
 
-        return permission ? (fileService.getDatasetFiles(dataset_id)) : (new ArrayList<>());
+        return permission ? (fileService.getDatasetFiles(datasetId)) : (new ArrayList<>());
     }
 
-    @RequestMapping(value = "/files/{file_id}", method = GET)
+    @RequestMapping(value = "/files/{fileId}", method = GET)
     @ResponseBody
-    public File getFile(@PathVariable String file_id) {
+    public File getFile(@PathVariable String fileId) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         // I don't know the dataset ID yet - pass on auth object to implementation for access control
-        return fileService.getFile(auth, file_id);
+        return fileService.getFile(auth, fileId);
     }
 
 }

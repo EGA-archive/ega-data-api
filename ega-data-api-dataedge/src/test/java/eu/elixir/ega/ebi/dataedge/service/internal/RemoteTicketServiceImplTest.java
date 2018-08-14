@@ -64,13 +64,13 @@ import eu.elixir.ega.ebi.dataedge.dto.MyExternalConfig;
 @TestPropertySource(locations = "classpath:application-test.properties")
 public class RemoteTicketServiceImplTest {
 
-    private final String SERVICE_URL = "http://FILEDATABASE";
-    private final String FILEID = "fileId";
-    private final String DATASET1 = "DATASET1";
-    private final String DATASET2 = "DATASET2";
+    private static final String SERVICE_URL = "http://FILEDATABASE";
+    private static final String FILEID = "fileId";
+    private static final String DATASET1 = "DATASET1";
+    private static final String DATASET2 = "DATASET2";
     private Authentication authentication;
     private HttpServletRequest httpServletRequest;
-    private final String HOMEPAGE_URL = "http://HomePageUrl";
+    private static final String HOMEPAGE_URL = "http://HomePageUrl";
 
     @InjectMocks
     private RemoteTicketServiceImpl remoteTicketServiceImpl;
@@ -173,9 +173,9 @@ public class RemoteTicketServiceImplTest {
         when(externalConfig.getEgaExternalUrl()).thenReturn("egaExternalUrl");
         when(authentication.getAuthorities()).thenReturn(authorities);
         when(httpServletRequest.getHeader(any())).thenReturn("token");
-        when(restTemplate.getForEntity(SERVICE_URL + "/file/{file_id}/datasets", FileDataset[].class, FILEID))
+        when(restTemplate.getForEntity(SERVICE_URL + "/file/{fileId}/datasets", FileDataset[].class, FILEID))
                 .thenReturn(forEntityDataset);
-        when(restTemplate.getForEntity(SERVICE_URL + "/file/{file_id}", File[].class, FILEID)).thenReturn(forEntity);
+        when(restTemplate.getForEntity(SERVICE_URL + "/file/{fileId}", File[].class, FILEID)).thenReturn(forEntity);
 
     }
 }

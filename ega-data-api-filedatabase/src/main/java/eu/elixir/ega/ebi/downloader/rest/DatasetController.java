@@ -35,10 +35,10 @@ public class DatasetController {
     @Autowired
     private FileService fileService;
 
-    @RequestMapping(value = "/{dataset_id}/files", method = GET)
+    @RequestMapping(value = "/{datasetId}/files", method = GET)
     @ResponseBody
-    public Iterable<DownloaderFile> getDatasetFiles(@PathVariable String dataset_id) {
-        return fileService.getDatasetFiles(dataset_id);
+    public Iterable<DownloaderFile> getDatasetFiles(@PathVariable String datasetId) {
+        return fileService.getDatasetFiles(datasetId);
     }
 
 }

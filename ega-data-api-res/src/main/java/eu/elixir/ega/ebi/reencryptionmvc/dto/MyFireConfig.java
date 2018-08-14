@@ -26,7 +26,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Getter
 public class MyFireConfig {
+
     private String fireUrl;
     private String fireArchive;
     private String fireKey;
+
 }

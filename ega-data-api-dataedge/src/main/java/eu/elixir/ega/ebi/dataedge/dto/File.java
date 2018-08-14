@@ -28,6 +28,7 @@ import lombok.Setter;
 @Setter
 @Getter
 public class File {
+
     private String fileId;
     private String datasetId;
     private String displayFileName;
@@ -36,4 +37,5 @@ public class File {
     private String unencryptedChecksum;
     private String unencryptedChecksumType;
     private String fileStatus;
+
 }

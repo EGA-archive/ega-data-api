@@ -98,9 +98,6 @@ public class DownloadLog implements Serializable {
     @Column(name = "token_source", nullable = false, length = 255)
     private String tokenSource;
 
-    /*
-     *
-     */
     public String toString() {
         String line = "";
 
