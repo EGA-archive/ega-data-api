@@ -1,0 +1,33 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: config-deploy
+spec:
+  replicas: {{ .Values.replicaCount }}
+  strategy:
+        type: RollingUpdate
+        rollingUpdate:
+          maxUnavailable: {{ .Values.replicaCount }}
+          maxSurge: {{ .Values.replicaCount }}
+  selector:
+        matchLabels:
+          app: {{ .Values.image.metadata.config }}
+  template:
+        metadata:
+          labels:
+            app: {{ .Values.image.metadata.config }}
+        spec:
+          containers:
+          - name: config
+            image: "{{ .Values.image.repository.config.value }}:{{ .Values.image.repository.config.tag }}"
+            imagePullPolicy: {{ .Values.image.pullPolicy }}
+            ports:
+            - containerPort: {{ .Values.image.repository.config.port }}
+            livenessProbe:
+              tcpSocket:
+                port: {{ .Values.image.repository.config.port }}
+              initialDelaySeconds: 60
+              periodSeconds: 60			  
+          nodeSelector:
+            group: {{ .Values.group.one }}			

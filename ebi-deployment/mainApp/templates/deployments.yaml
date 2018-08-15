@@ -1,0 +1,144 @@
+---
+apiVersion: apps/v1 
+kind: Deployment
+metadata:
+  name: eureka-deploy
+spec:
+  replicas: {{ .Values.replicaCount }}
+  strategy:
+        type: RollingUpdate
+        rollingUpdate:
+          maxUnavailable: {{ .Values.replicaCount }}
+          maxSurge: {{ .Values.replicaCount }}
+  selector:
+        matchLabels:
+          app: {{ .Values.image.metadata.eureka }}
+  template:
+        metadata:
+          labels:
+            app: {{ .Values.image.metadata.eureka }}
+        spec:
+          containers:
+          - name: eureka
+            image: "{{ .Values.image.repository.eureka.value }}:{{ .Values.image.repository.eureka.tag }}"
+            imagePullPolicy: {{ .Values.image.pullPolicy }}
+            env:
+            - name: CONFIG_SERVICE
+              value: {{ .Values.configService }}
+            ports:
+            - containerPort: {{ .Values.image.repository.eureka.port }}
+            livenessProbe:
+              tcpSocket:
+                port: {{ .Values.image.repository.eureka.port }}
+              initialDelaySeconds: 60
+              periodSeconds: 60
+          nodeSelector:
+            group: {{ .Values.group.one }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: key-deploy
+spec:
+  replicas: {{ .Values.replicaCount }}
+  strategy:
+        type: RollingUpdate
+        rollingUpdate:
+          maxUnavailable: {{ .Values.replicaCount }}
+          maxSurge: {{ .Values.replicaCount }}
+  selector:
+        matchLabels:
+          app: {{ .Values.image.metadata.key }}
+  template:
+        metadata:
+          labels:
+            app: {{ .Values.image.metadata.key }}
+        spec:
+          containers:
+          - name: key
+            image: "{{ .Values.image.repository.key.value }}:{{ .Values.image.repository.key.tag }}"
+            imagePullPolicy: {{ .Values.image.pullPolicy }}
+            env:
+            - name: CONFIG_SERVICE
+              value: {{ .Values.configService }}
+            ports:
+            - containerPort: {{ .Values.image.repository.key.port }}
+            livenessProbe:
+              tcpSocket:
+                port: {{ .Values.image.repository.key.port }}
+              initialDelaySeconds: 60
+              periodSeconds: 60
+          nodeSelector:
+            group: {{ .Values.group.one }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: filedatabase-deploy
+spec:
+  replicas: {{ .Values.replicaCount }}
+  strategy:
+        type: RollingUpdate
+        rollingUpdate:
+          maxUnavailable: {{ .Values.replicaCount }}
+          maxSurge: {{ .Values.replicaCount }}
+  selector:
+        matchLabels:
+          app: {{ .Values.image.metadata.filedatabase }}          
+  template:
+        metadata:
+          labels:
+            app: {{ .Values.image.metadata.filedatabase }}
+        spec:
+          containers:
+          - name: filedatabase
+            image: "{{ .Values.image.repository.filedatabase.value }}:{{ .Values.image.repository.filedatabase.tag }}"
+            imagePullPolicy: {{ .Values.image.pullPolicy }}
+            env:
+            - name: CONFIG_SERVICE
+              value: {{ .Values.configService }}
+            ports:
+            - containerPort: {{ .Values.image.repository.filedatabase.port }}
+            livenessProbe:
+              tcpSocket:
+                port: {{ .Values.image.repository.filedatabase.port }}
+              initialDelaySeconds: 60
+              periodSeconds: 60
+          nodeSelector:
+            group: {{ .Values.group.one }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: res-deploy
+spec:
+  replicas: {{ .Values.replicaCount }}
+  strategy:
+        type: RollingUpdate
+        rollingUpdate:
+          maxUnavailable: {{ .Values.replicaCount }}
+          maxSurge: {{ .Values.replicaCount }}
+  selector:
+        matchLabels:
+          app: {{ .Values.image.metadata.res }} 
+  template:
+        metadata:
+          labels:
+            app: {{ .Values.image.metadata.res }} 
+        spec:
+          containers:
+          - name: res
+            image: "{{ .Values.image.repository.res.value }}:{{ .Values.image.repository.res.tag }}"
+            imagePullPolicy: {{ .Values.image.pullPolicy }}
+            env:
+            - name: SPRING_CONFIG_URI
+              value: {{ .Values.configService }}
+            ports:
+            - containerPort: {{ .Values.image.repository.res.port }}
+            livenessProbe:
+              tcpSocket:
+                port: {{ .Values.image.repository.res.port }}
+              initialDelaySeconds: 60
+              periodSeconds: 60
+          nodeSelector:
+            group: {{ .Values.group.two }}
