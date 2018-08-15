@@ -1,0 +1,60 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+    name: eureka
+    labels:
+        app: {{ .Values.image.metadata.eureka }}
+spec:
+    type: NodePort
+    ports:
+    -   port: {{ .Values.image.repository.eureka.port }}
+        nodePort: {{ .Values.image.repository.eureka.nodeport }} 
+        protocol: TCP
+    selector:
+        app: {{ .Values.image.metadata.eureka }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+    name: key
+    labels:
+        app: {{ .Values.image.metadata.key }}
+spec:
+    type: NodePort
+    ports:
+    -   port: {{ .Values.image.repository.key.port }}
+        nodePort: {{ .Values.image.repository.key.nodeport }} 
+        protocol: TCP
+    selector:
+        app: {{ .Values.image.metadata.key }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+    name: filedatabase
+    labels:
+        app: {{ .Values.image.metadata.filedatabase }}
+spec:
+    type: NodePort
+    ports:
+    -   port: {{ .Values.image.repository.filedatabase.port }}
+        nodePort: {{ .Values.image.repository.filedatabase.nodeport }} 
+        protocol: TCP
+    selector:
+        app: {{ .Values.image.metadata.filedatabase }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+    name: res
+    labels:
+        app: {{ .Values.image.metadata.res }}
+spec:
+    type: NodePort
+    ports:
+    -   port: {{ .Values.image.repository.res.port }}
+        nodePort: {{ .Values.image.repository.res.nodeport }} 
+        protocol: TCP
+    selector:
+        app: {{ .Values.image.metadata.res }}
