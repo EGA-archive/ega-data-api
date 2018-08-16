@@ -112,37 +112,6 @@ public class TicketController {
                 response);
     }
 
-    /*
-        @RequestMapping(value = "/direct/{file_id}", method = GET)
-        public Object getDirectTicket(@PathVariable String file_id,
-                                      @RequestParam(name = "format", required = false, defaultValue = "BAM") String format,
-                                      @RequestParam(name = "referenceIndex", required = false, defaultValue = "-1") Integer referenceIndex,
-                                      @RequestParam(name = "referenceName", required = false, defaultValue = "") String referenceName,
-                                      @RequestParam(name = "referenceMD5", required = false, defaultValue = "") String referenceMD5,
-                                      @RequestParam(name = "start", required = false, defaultValue = "") String start,
-                                      @RequestParam(name = "end", required = false, defaultValue = "") String end,
-                                      @RequestParam(name = "fields", required = false) List<String> fields,
-                                      @RequestParam(name = "tags", required = false) List<String> tags,
-                                      @RequestParam(name = "notags", required = false) List<String> notags,
-                                      HttpServletRequest request,
-                                      HttpServletResponse response) {
-            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-
-            return ticketService.getTicket(auth,
-                                           file_id,
-                                           format,
-                                           referenceIndex,
-                                           referenceName,
-                                           referenceMD5,
-                                           start,
-                                           end,
-                                           fields,
-                                           tags,
-                                           notags,
-                                           request,
-                                           response);
-        }
-    */
     @RequestMapping(value = "/**", method = RequestMethod.OPTIONS)
     public ResponseEntity handle() {
         return new ResponseEntity(HttpStatus.OK);

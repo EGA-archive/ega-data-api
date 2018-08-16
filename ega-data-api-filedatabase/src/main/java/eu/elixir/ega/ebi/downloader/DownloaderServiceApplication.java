@@ -53,20 +53,6 @@ public class DownloaderServiceApplication extends SpringBootServletInitializer {
         return new RestTemplate();
     }
 
-    //@Bean
-    //public CacheManager cacheManager() {
-    //
-    //	ConcurrentMapCache simplefilecache = new ConcurrentMapCache("bySimpleFileId");
-    //	ConcurrentMapCache filecache = new ConcurrentMapCache("byFileId");
-    //	ConcurrentMapCache fileindexcache = new ConcurrentMapCache("byFileIndexId");
-    //	ConcurrentMapCache datasetcache = new ConcurrentMapCache("byDatasetId");
-    //
-    //	SimpleCacheManager manager = new SimpleCacheManager();
-    //	manager.setCaches(Arrays.asList(simplefilecache, filecache, fileindexcache, datasetcache));
-    //
-    //	return manager;
-    //}
-
     @Bean
     public CacheManager cacheManager() {
         SimpleCacheManager simpleCacheManager = new SimpleCacheManager();
@@ -104,26 +90,4 @@ public class DownloaderServiceApplication extends SpringBootServletInitializer {
         return simpleCacheManager;
     }
 
-/*        
-        @Bean
-        public CacheManager cacheManager() {
-            SimpleCacheManager simpleCacheManager = new SimpleCacheManager();
-
-            GuavaCache fileById = new GuavaCache("fileById", CacheBuilder.newBuilder()
-                    .expireAfterAccess(4, TimeUnit.HOURS)
-                    .build());
-            GuavaCache datasetByFile = new GuavaCache("datasetByFile", CacheBuilder.newBuilder()
-                    .expireAfterAccess(4, TimeUnit.HOURS)
-                    .build());
-            GuavaCache datasetFiles = new GuavaCache("datasetFiles", CacheBuilder.newBuilder()
-                    .expireAfterAccess(4, TimeUnit.HOURS)
-                    .build());
-            GuavaCache fileIndexFile = new GuavaCache("fileIndexFile", CacheBuilder.newBuilder()
-                    .expireAfterAccess(4, TimeUnit.HOURS)
-                    .build());
-
-            simpleCacheManager.setCaches(Arrays.asList(fileById, datasetByFile, datasetFiles, fileIndexFile));
-            return simpleCacheManager;
-        }
-*/
 }

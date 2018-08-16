@@ -94,20 +94,6 @@ public class MyConfiguration {
                 .pathMapping("/");
     }
 
-    //@Bean
-    //public CacheManager cacheManager() {
-    //    return new ConcurrentMapCacheManager("tokens");
-    //}    
-
-    //@Bean
-    //public CacheManager concurrentCacheManager() {
-    //
-    //        ConcurrentMapCacheManager manager = new ConcurrentMapCacheManager();
-    //        manager.setCacheNames(Arrays.asList("tokens", "reqFile", "index", "headerFile", "fileSize"));
-    //
-    //        return manager;
-    //}
-
     @Bean
     public CacheManager cacheManager() {
         SimpleCacheManager simpleCacheManager = new SimpleCacheManager();

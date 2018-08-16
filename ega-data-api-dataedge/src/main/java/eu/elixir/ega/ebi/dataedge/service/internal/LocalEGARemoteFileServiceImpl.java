@@ -186,22 +186,9 @@ public class LocalEGARemoteFileServiceImpl implements FileService {
             throw new GeneralStreamingException(t.toString(), 4);
         } finally {
             if (xferResult != null) {
-                //Transfer received = getResSession(xferResult.getSession().get(0)); // Shortcut -- Same Database; otherwise perform a REST call to RES
-                //System.out.println("Received? " + (received==null?"null":received.toString()));
-
                 // Compare received MD5 with RES
                 String inHashtext = xferResult.getMd5();
                 String outHashtext = getDigestText(outDigest.digest());
-
-                // Store with UUID for later retrieval - in case of error or success
-                //            Transfer transfer = new Transfer(headerValue,
-                //                                             new java.sql.Timestamp(Calendar.getInstance().getTime().getTime()),
-                //                                             inHashtext,
-                //                                             outHashtext,
-                //                                             xferResult.getBytes(),
-                //                                             xferResult.getBytes(),
-                //                                             "DATAEDGE");
-                //            Transfer save = transferRepository.save(transfer);
 
                 // Compare - Sent MD5 equals Received MD5? - Log Download in DB
                 boolean success = outHashtext.equals(inHashtext);

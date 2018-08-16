@@ -54,18 +54,4 @@ public interface TicketService {
                             HttpServletRequest request,
                             HttpServletResponse response);
     
-//    Object getDirectTicket(Authentication auth,
-//                           String file_id,
-//                           String format,
-//                           int referenceIndex,
-//                           String referenceName,
-//                           String referenceMD5,
-//                           String start,
-//                           String end,
-//                           List<String> fields,
-//                           List<String> tags,
-//                           List<String> notags,
-//                           HttpServletRequest request,
-//                           HttpServletResponse response);
-
 }

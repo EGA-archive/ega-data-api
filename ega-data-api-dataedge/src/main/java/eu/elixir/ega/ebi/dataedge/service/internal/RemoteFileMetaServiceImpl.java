@@ -63,16 +63,11 @@ public class RemoteFileMetaServiceImpl implements FileMetaService {
         Iterator<? extends GrantedAuthority> iterator = authorities.iterator();
         while (iterator.hasNext()) {
             GrantedAuthority next = iterator.next();
-//String x = next.getAuthority();
-//System.out.println("(2) " + x);
-//permissions.add(x);
             permissions.add(next.getAuthority());
         }
 
         // Is this File in at least one Authorised Dataset?
         ResponseEntity<File[]> forEntity = restTemplate.getForEntity(SERVICE_URL + "/file/{fileId}", File[].class, fileId);
-//for (int j=0; j<forEntity.getBody().length; j++)
-//    System.out.println("(3) ["+j+"] " +forEntity.getBody()[j].getFileName() );
         File[] body = forEntity.getBody();
         if (body != null && bodyDataset != null) {
             for (FileDataset f : bodyDataset) {
@@ -94,7 +89,6 @@ public class RemoteFileMetaServiceImpl implements FileMetaService {
     @Cacheable(cacheNames = "fileDatasetFile")
     public Iterable<File> getDatasetFiles(String datasetId) {
         File[] response = restTemplate.getForObject(SERVICE_URL + "/datasets/{datasetId}/files", File[].class, datasetId);
-        //if (response!=null) for (int i=0; i<response.length; i++) {response[i].setFileName(response[i].getFileId());}
         return Arrays.asList(response);
     }
 

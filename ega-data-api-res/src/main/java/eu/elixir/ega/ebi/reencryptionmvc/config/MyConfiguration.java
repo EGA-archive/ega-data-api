@@ -92,10 +92,6 @@ public class MyConfiguration {
         return (new My2KCacheFactory()).getObject();
     }
 
-    //@Bean
-    //public Cache<String, byte[]> myPageCache() throws Exception {
-    //    return (new My2KCachePageFactory()).getObject();
-    //}
     @Bean
     public Cache<String, CachePage> myPageCache() throws Exception {
         int pagesize = 1024 * 1024 * 12;    // 12 MB Page Size
@@ -111,15 +107,6 @@ public class MyConfiguration {
                 awsRegion,
                 eurekaUrl)).getObject();
     }
-
-    //@Bean
-    //public CacheManager concurrentCacheManager() {
-    //
-    //        ConcurrentMapCacheManager manager = new ConcurrentMapCacheManager();
-    //        manager.setCacheNames(Arrays.asList("path", "key", "archive"));
-    //
-    //        return manager;
-    //}
 
     @Bean
     public CacheManager cacheManager() {

@@ -20,7 +20,6 @@ import com.google.common.io.CountingOutputStream;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
 import eu.elixir.ega.ebi.dataedge.config.*;
-import eu.elixir.ega.ebi.dataedge.domain.entity.Transfer;
 import eu.elixir.ega.ebi.dataedge.dto.*;
 import eu.elixir.ega.ebi.dataedge.service.DownloaderLogService;
 import eu.elixir.ega.ebi.dataedge.service.FileService;
@@ -51,7 +50,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RequestCallback;
 import org.springframework.web.client.ResponseExtractor;
 import org.springframework.web.client.RestTemplate;
@@ -76,11 +74,6 @@ import java.util.stream.Stream;
 
 import static org.apache.catalina.connector.OutputBuffer.DEFAULT_BUFFER_SIZE;
 
-//import htsjdk.samtools.seekablestream.SeekableRESStream;
-//import htsjdk.samtools.seekablestream.ebi.SeekableCachedResStream;
-
-//import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
-
 /**
  * @author asenf
  */
@@ -100,9 +93,6 @@ public class RemoteFileServiceImpl implements FileService {
     RetryTemplate retryTemplate;
 
     // Database Repositories/Services
-
-    //@Autowired
-    //private TransferRepository transferRepository;
 
     @Autowired
     MyExternalConfig externalConfig;
@@ -257,22 +247,10 @@ public class RemoteFileServiceImpl implements FileService {
             throw new GeneralStreamingException(t.toString(), 4);
         } finally {
             if (xferResult != null) {
-                //Transfer received = getResSession(xferResult.getSession().get(0)); // Shortcut -- Same Database; otherwise perform a REST call to RES
-                //System.out.println("Received? " + (received==null?"null":received.toString()));
 
                 // Compare received MD5 with RES
                 String inHashtext = xferResult.getMd5();
                 String outHashtext = getDigestText(outDigest.digest());
-
-                // Store with UUID for later retrieval - in case of error or success
-                //            Transfer transfer = new Transfer(headerValue,
-                //                                             new java.sql.Timestamp(Calendar.getInstance().getTime().getTime()),
-                //                                             inHashtext,
-                //                                             outHashtext,
-                //                                             xferResult.getBytes(),
-                //                                             xferResult.getBytes(),
-                //                                             "DATAEDGE");
-                //            Transfer save = transferRepository.save(transfer);
 
                 // Compare - Sent MD5 equals Received MD5? - Log Download in DB
                 boolean success = outHashtext.equals(inHashtext);
@@ -332,14 +310,7 @@ public class RemoteFileServiceImpl implements FileService {
             URL resUrl;
             try {
                 resUrl = new URL(resUrl() + "/file/archive/" + reqFile.getFileId()); // Just specify file ID
-                //SeekableStream cIn = new EgaSeekableResStream(resUrl, null, -1); // Deals with coordinates
                 SeekableStream cIn = new EgaSeekableCachedResStream(resUrl, null, null, reqFile.getFileSize()); // Deals with coordinates
-                // SamReader with input stream based on RES URL
-                //    SamReader reader =
-                //            SamReaderFactory.make()
-                //                    .validationStringency(ValidationStringency.LENIENT)
-                //                    .samRecordFactory(DefaultSAMRecordFactory.getInstance())
-                //                    .open(SamInputResource.of(cIn));
                 SamReader reader = (x == null) ?
                         (SamReaderFactory.make()            // BAM File
                                 .validationStringency(ValidationStringency.LENIENT)
@@ -428,7 +399,6 @@ public class RemoteFileServiceImpl implements FileService {
 
                 // BAM/CRAM File
                 URL resUrl = new URL(resUrl() + "file/archive/" + reqFile.getFileId()); // Just specify file ID
-                //SeekableStream cIn = (new EgaSeekableResStream(resUrl, null, null, reqFile.getFileSize())).setExtension(extension); // Deals with coordinates
                 SeekableStream cIn = (new EgaSeekableCachedResStream(resUrl, null, null, reqFile.getFileSize())).setExtension(extension); // Deals with coordinates
                 //bIn = new SeekableBufferedStream(cIn);
                 // BAI/CRAI File
@@ -436,7 +406,6 @@ public class RemoteFileServiceImpl implements FileService {
                 File reqIndexFile = getReqFile(fileIndexFile.getIndexFileId(), auth, null);
                 URL indexUrl = new URL(resUrl() + "file/archive/" + fileIndexFile.getIndexFileId()); // Just specify index ID
                 SeekableStream cIndexIn = (new EgaSeekableCachedResStream(indexUrl, null, null, reqIndexFile.getFileSize()));
-                //bIndexIn = new SeekableBufferedStream(cIndexIn);
 
                 inputResource = SamInputResource.of(cIn).index(cIndexIn);
             } catch (Exception ex) {
@@ -494,8 +463,6 @@ public class RemoteFileServiceImpl implements FileService {
                             externalConfig.getCramFastaReferenceB() :
                             externalConfig.getCramFastaReferenceA();
 
-                    //try (CRAMFileWriter writer = writerFactory
-                    //        .makeCRAMWriter(fileHeader, out, new java.io.File(externalConfig.getCramFastaReference()))) {
                     try (CRAMFileWriter writer = writerFactory
                             .makeCRAMWriter(fileHeader, out, new java.io.File(refFPath))) {
                         Stream<SAMRecord> stream = query.stream();
@@ -734,17 +701,6 @@ public class RemoteFileServiceImpl implements FileService {
         }
 
         return builder.build().encode().toUri();
-    }
-
-    //@HystrixCommand
-    private Transfer getResSession(String resSession) {
-        Transfer sessionResponse;
-        try {
-            sessionResponse = restTemplate.getForObject(RES_URL + "/session/{ticket}/", Transfer.class, resSession);
-        } catch (HttpClientErrorException ex) {
-            sessionResponse = new Transfer();
-        }
-        return sessionResponse;
     }
 
     //@HystrixCommand

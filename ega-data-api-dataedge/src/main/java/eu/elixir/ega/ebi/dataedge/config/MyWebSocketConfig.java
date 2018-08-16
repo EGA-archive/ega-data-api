@@ -30,17 +30,6 @@ import org.springframework.web.socket.server.standard.ServletServerContainerFact
 @EnableWebSocket
 public class MyWebSocketConfig implements WebSocketConfigurer {
 
-    //@Override
-    //public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
-    //    registry.addHandler(myHandler(), "/myHandler");
-    //}
-
-    //@Override
-    //public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
-    //    registry.addHandler(new MyHandler(), "/myHandler")
-    //        .addInterceptors(new HttpSessionHandshakeInterceptor());
-    //}
-
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
         registry.addHandler(myHandler(), "/myHandler").setAllowedOrigins("http://mydomain.com");

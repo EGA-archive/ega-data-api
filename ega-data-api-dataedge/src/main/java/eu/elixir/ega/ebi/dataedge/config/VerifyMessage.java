@@ -84,10 +84,4 @@ public class VerifyMessage {
         return this.messages;
     }
 
-    //public static void main(String[] args) throws Exception{
-    //    VerifyMessage verifyMessage = new VerifyMessage("rO0ABXNyABNqYXZhLnV0aWwuQXJyYXlMaXN0eIHSHZnHYZ0DAAFJAARzaXpleHAAAAACdwQAAAACdXIAAltCrPMX+AYIVOACAAB4cAAAAB1FR0FEMDAwMDEwMDMxOTUsMTQ5MDY5NzQ1MDUwM3VxAH4AAgAAAQAHUeMYkSvH+VWTu6QeoaE/OvHZ43cRk7d5S7Lo389v5n+UOJejQ/2/3Zw6eg81ADY76g2JGa3J4C7LYb1kHZNuDN83Ah0xCis5V/zsPPgOuZ2jqy1VP2Gf7pxXtJ65Go5OH4RTVBJB12LWvz3KErsANrGkkLsyuLcovk0bXHtSXqbCCUWyCdb2jeM1M+JvhdaIyUsPK+n4xl4GmLO7AtKcuD1CDCOnnSPl99pSKgPeqbLskdPbjCeSkcIOLb6URzo52TjvlLv67ziQO6SBai5bxgW28wp3zjA6yRm0EHign2RJj1xhtz5+QoXZapRCB4F5a8GnMksAFypwVFzJLIO/eA==");
-    //    List<String> list = verifyMessage.getPermissions();
-    //    System.out.println();
-    //}
-
 }

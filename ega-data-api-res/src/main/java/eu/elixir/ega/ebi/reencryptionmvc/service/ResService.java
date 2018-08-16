@@ -22,15 +22,7 @@ import javax.servlet.http.HttpServletResponse;
  * @author asenf
  */
 public interface ResService {
-    /*
-             InputStream getSource(String sourceFormat,
-                                            String sourceKey,
-                                            String destintionFormat,
-                                            String destinationKey,
-                                            String fileLocation,
-                                            long startCoordinate,
-                                            long endCoordinate);
-    */
+
     void transfer(String sourceFormat,
                   String sourceKey,
                   String destinationFormat,

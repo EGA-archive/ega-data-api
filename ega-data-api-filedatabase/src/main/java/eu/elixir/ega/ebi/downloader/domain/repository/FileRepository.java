@@ -28,6 +28,4 @@ public interface FileRepository extends CrudRepository<File, String> {
     @Cacheable(cacheNames = "bySimpleFileId")
     Iterable<File> findByFileId(@Param("fileId") String fileId);
 
-    //Iterable<File> findByDatasetId(@Param("datasetId") String datasetId);
-
 }
