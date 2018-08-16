@@ -18,7 +18,7 @@
  * Created: 17-Feb-2017
  */
 
-CREATE TABLE file.file (
+CREATE TABLE dev_ega_file.file (
 	file_id  varchar(128) NULL,
 	file_name varchar(256) NULL,
         file_path varchar (256) NULL,
