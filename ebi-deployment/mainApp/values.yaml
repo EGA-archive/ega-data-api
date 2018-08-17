@@ -14,25 +14,33 @@ image:
   pullPolicy: Always
   repository: 
       eureka:
-        value: 192.168.0.37/eureka
-        tag: v1
+        value: anandmohan777/eureka
+        tag: v2
         port: 8761
         nodeport: 30761
+        debug: 5060
+        debugNodePort: 30060       
       key:
-        value: 192.168.0.37/key
-        tag: v1  
+        value: anandmohan777/key
+        tag: v2  
         port: 9095
         nodeport: 30095
+        debug: 5094
+        debugNodePort: 30094      
       filedatabase:
-        value: 192.168.0.37/filedatabase
-        tag: v1
+        value: anandmohan777/filedatabase
+        tag: v2
         port: 9050
         nodeport: 30050
+        debug: 5049
+        debugNodePort: 30049   
       res:
-        value: 192.168.0.37/res
-        tag: v1
+        value: anandmohan777/res
+        tag: v2
         port: 9090
         nodeport: 30090
+        debug: 5089
+        debugNodePort: 30089    
 
 configService: "http://config.default.svc.cluster.local"
   

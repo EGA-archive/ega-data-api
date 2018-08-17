@@ -31,3 +31,40 @@ spec:
               periodSeconds: 60			  
           nodeSelector:
             group: {{ .Values.group.one }}			
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres-deploy
+spec:
+  replicas: {{ .Values.replicaCount }}
+  strategy:
+        type: RollingUpdate
+        rollingUpdate:
+          maxUnavailable: {{ .Values.replicaCount }}
+          maxSurge: {{ .Values.replicaCount }}
+  selector:
+        matchLabels:
+          app: {{ .Values.image.metadata.postgres }}
+  template:
+        metadata:
+          labels:
+            app: {{ .Values.image.metadata.postgres }}
+        spec:
+          containers:
+          - name: postgres
+            image: "{{ .Values.image.repository.postgres.value }}:{{ .Values.image.repository.postgres.tag }}"
+            imagePullPolicy: {{ .Values.image.pullPolicy }}
+            env:
+            - name: POSTGRES_USER
+              value: testuser
+            - name: POSTGRES_PASSWORD
+              value: testpassw0rd
+            - name: POSTGRES_DB
+              value: egapro
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+            ports:
+            - containerPort: {{ .Values.image.repository.postgres.port }}
+          nodeSelector:
+            group: {{ .Values.group.one }}			            
