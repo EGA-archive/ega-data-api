@@ -9,5 +9,22 @@ spec:
     ports:
     -   port: {{ .Values.image.repository.config.port }}
         protocol: TCP
+        name: config-app-port        
     selector:
         app: {{ .Values.image.metadata.config }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+    name: postgres
+    labels:
+        app: {{ .Values.image.metadata.postgres }}
+spec:
+    type: NodePort
+    ports:
+    -   port: {{ .Values.image.repository.postgres.port }}
+        nodePort: {{ .Values.image.repository.postgres.nodePort }} 
+        protocol: TCP
+    selector:
+        app: postgres-app
+        

@@ -7,13 +7,19 @@ replicaCount: 1
 image:
   metadata: 
       config: config-app
+      postgres: postgres-app
   tag: stable
   pullPolicy: Always
   repository: 
       config:
-        value: 192.168.0.37/config
-        tag: v1
+        value: anandmohan777/config
+        tag: v2
         port: 8888
+      postgres:
+        value: anandmohan777/postgres
+        tag: v2
+        port: 5432
+        nodePort: 30432
   
 group:
   one: group1

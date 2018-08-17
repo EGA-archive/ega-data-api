@@ -11,6 +11,11 @@ spec:
     -   port: {{ .Values.image.repository.eureka.port }}
         nodePort: {{ .Values.image.repository.eureka.nodeport }} 
         protocol: TCP
+        name: eureka-app-port
+    -   port: {{ .Values.image.repository.eureka.debug }} 
+        nodePort: {{ .Values.image.repository.eureka.debugNodePort }}
+        protocol: TCP 
+        name: eureka-debug-port          
     selector:
         app: {{ .Values.image.metadata.eureka }}
 ---
@@ -26,6 +31,11 @@ spec:
     -   port: {{ .Values.image.repository.key.port }}
         nodePort: {{ .Values.image.repository.key.nodeport }} 
         protocol: TCP
+        name: key-app-port
+    -   port: {{ .Values.image.repository.key.debug }} 
+        nodePort: {{ .Values.image.repository.key.debugNodePort }}
+        protocol: TCP 
+        name: key-debug-port          
     selector:
         app: {{ .Values.image.metadata.key }}
 ---
@@ -41,6 +51,11 @@ spec:
     -   port: {{ .Values.image.repository.filedatabase.port }}
         nodePort: {{ .Values.image.repository.filedatabase.nodeport }} 
         protocol: TCP
+        name: filedatabase-app-port
+    -   port: {{ .Values.image.repository.filedatabase.debug }} 
+        nodePort: {{ .Values.image.repository.filedatabase.debugNodePort }}
+        protocol: TCP 
+        name: filedatabase-debug-port          
     selector:
         app: {{ .Values.image.metadata.filedatabase }}
 ---
@@ -56,5 +71,10 @@ spec:
     -   port: {{ .Values.image.repository.res.port }}
         nodePort: {{ .Values.image.repository.res.nodeport }} 
         protocol: TCP
+        name: res-app-port
+    -   port: {{ .Values.image.repository.res.debug }} 
+        nodePort: {{ .Values.image.repository.res.debugNodePort }}
+        protocol: TCP 
+        name: res-debug-port          
     selector:
         app: {{ .Values.image.metadata.res }}
