@@ -17,8 +17,6 @@ package eu.elixir.ega.ebi.dataedge.service.internal;
 
 import com.google.common.io.ByteStreams;
 import com.google.common.io.CountingOutputStream;
-import com.netflix.appinfo.InstanceInfo;
-import com.netflix.discovery.EurekaClient;
 import eu.elixir.ega.ebi.dataedge.config.*;
 import eu.elixir.ega.ebi.dataedge.dto.*;
 import eu.elixir.ega.ebi.dataedge.service.DownloaderLogService;
@@ -87,21 +85,18 @@ public class RemoteFileServiceImpl implements FileService {
     public static final String RES_URL = "http://RES2";
 
     @Autowired
-    RestTemplate restTemplate;
+    private RestTemplate restTemplate;
 
     @Autowired
-    RetryTemplate retryTemplate;
+    private RetryTemplate retryTemplate;
 
     // Database Repositories/Services
 
     @Autowired
-    MyExternalConfig externalConfig;
+    private MyExternalConfig externalConfig;
 
     @Autowired
     private DownloaderLogService downloaderLogService;
-
-    @Autowired
-    private EurekaClient discoveryClient;
 
     @Override
     //@HystrixCommand
@@ -379,7 +374,7 @@ public class RemoteFileServiceImpl implements FileService {
         if (reqFile != null) {
 
             // SeekableStream on top of RES (using Eureka to obtain RES Base URL)
-            SamInputResource inputResource = null;
+            SamInputResource inputResource;
             CRAMReferenceSource x = null;
             //SeekableBufferedStream bIn = null, 
             //                       bIndexIn = null;
@@ -576,7 +571,7 @@ public class RemoteFileServiceImpl implements FileService {
             // Handle Request here - query Reader according to parameters
             int iStart = (int) (start);
             int iEnd = (int) (end);
-            CloseableIterator<VariantContext> query = null;
+            CloseableIterator<VariantContext> query;
             if (iEnd > 0 && iEnd >= iStart && iStart > 0 && reference != null && reference.length() > 0) { // ref was specified
                 query = reader.query(reference, iStart, iEnd);
             } else { // no ref - ignore start/end
@@ -621,7 +616,6 @@ public class RemoteFileServiceImpl implements FileService {
                         ipAddress, "htsget vcf/bcf", user_email, destinationFormat,
                         start, end, bytes);
                 downloaderLogService.logDownload(dle);
-
             }
 
 
@@ -838,14 +832,12 @@ public class RemoteFileServiceImpl implements FileService {
 
     //@HystrixCommand
     public String resUrl() {
-        InstanceInfo instance = discoveryClient.getNextServerFromEureka("RES2", false);
-        return instance.getHomePageUrl();
+        return RES_URL;
     }
 
     //@HystrixCommand
     public String downloaderUrl() {
-        InstanceInfo instance = discoveryClient.getNextServerFromEureka("FILEDATABASE", false);
-        return instance.getHomePageUrl();
+        return SERVICE_URL;
     }
 
     //@HystrixCommand

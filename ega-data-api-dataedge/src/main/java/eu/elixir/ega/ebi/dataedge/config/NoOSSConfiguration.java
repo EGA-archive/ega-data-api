@@ -22,9 +22,9 @@ import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cache.guava.GuavaCache;
 import org.springframework.cache.support.SimpleCacheManager;
-import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.retry.annotation.EnableRetry;
 import org.springframework.retry.backoff.FixedBackOffPolicy;
 import org.springframework.retry.policy.SimpleRetryPolicy;
@@ -45,31 +45,29 @@ import java.util.concurrent.TimeUnit;
 @Configuration
 @EnableCaching
 @EnableRetry
-public class MyConfiguration {
+@Profile("no-oss")
+public class NoOSSConfiguration {
 
     @Value("${ega.ega.external.url}")
-    String externalUrl;
+    private String externalUrl;
     @Value("${ega.ega.cram.fasta.a}")
-    String cramFastaReferenceA;
+    private String cramFastaReferenceA;
     @Value("${ega.ega.cram.fasta.b}")
-    String cramFastaReferenceB;
+    private String cramFastaReferenceB;
 
     // Ribbon Load Balanced Rest Template for communication with other Microservices
 
     @Bean
-    @LoadBalanced
-    RestTemplate restTemplate() {
+    public RestTemplate restTemplate() {
         return new RestTemplate();
     }
 
     @Bean
-    @LoadBalanced
-    AsyncRestTemplate asyncRestTemplate() {
+    public AsyncRestTemplate asyncRestTemplate() {
         return new AsyncRestTemplate();
     }
 
     @Bean
-    @LoadBalanced
     public RetryTemplate retryTemplate() {
         RetryTemplate retryTemplate = new RetryTemplate();
 
@@ -93,6 +91,20 @@ public class MyConfiguration {
                 .build()
                 .pathMapping("/");
     }
+
+    //@Bean
+    //public CacheManager cacheManager() {
+    //    return new ConcurrentMapCacheManager("tokens");
+    //}    
+
+    //@Bean
+    //public CacheManager concurrentCacheManager() {
+    //
+    //        ConcurrentMapCacheManager manager = new ConcurrentMapCacheManager();
+    //        manager.setCacheNames(Arrays.asList("tokens", "reqFile", "index", "headerFile", "fileSize"));
+    //
+    //        return manager;
+    //}
 
     @Bean
     public CacheManager cacheManager() {

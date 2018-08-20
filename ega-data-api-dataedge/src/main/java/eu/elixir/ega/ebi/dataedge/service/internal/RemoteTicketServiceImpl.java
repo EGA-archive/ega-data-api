@@ -15,8 +15,6 @@
  */
 package eu.elixir.ega.ebi.dataedge.service.internal;
 
-import com.netflix.appinfo.InstanceInfo;
-import com.netflix.discovery.EurekaClient;
 import eu.elixir.ega.ebi.dataedge.config.NotFoundException;
 import eu.elixir.ega.ebi.dataedge.config.VerifyMessageNew;
 import eu.elixir.ega.ebi.dataedge.dto.*;
@@ -50,16 +48,14 @@ import java.util.*;
 @EnableDiscoveryClient
 public class RemoteTicketServiceImpl implements TicketService {
 
-    private static final String SERVICE_URL = "http://FILEDATABASE";
+    public static final String SERVICE_URL = "http://FILEDATABASE";
+    public static final String RES_URL = "http://RES2";
 
     @Autowired
-    MyExternalConfig externalConfig;
+    private MyExternalConfig externalConfig;
 
     @Autowired
-    RestTemplate restTemplate;
-
-    @Autowired
-    private EurekaClient discoveryClient;
+    private RestTemplate restTemplate;
 
     /**
      * Use the index to determine the chunk boundaries for the required intervals.
@@ -338,8 +334,7 @@ public class RemoteTicketServiceImpl implements TicketService {
 
     //@HystrixCommand
     public String resUrl() {
-        InstanceInfo instance = discoveryClient.getNextServerFromEureka("RES", false);
-        return instance.getHomePageUrl();
+        return RES_URL;
     }
 
 }

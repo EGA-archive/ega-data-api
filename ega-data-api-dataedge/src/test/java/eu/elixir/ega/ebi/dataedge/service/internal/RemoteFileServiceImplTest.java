@@ -15,22 +15,18 @@
  */
 package eu.elixir.ega.ebi.dataedge.service.internal;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.fail;
-import static org.mockito.Matchers.any;
-import static org.powermock.api.mockito.PowerMockito.mock;
-import static org.powermock.api.mockito.PowerMockito.mockStatic;
-import static org.powermock.api.mockito.PowerMockito.when;
-import static org.powermock.api.mockito.PowerMockito.whenNew;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
+import eu.elixir.ega.ebi.dataedge.dto.*;
+import eu.elixir.ega.ebi.dataedge.service.DownloaderLogService;
+import htsjdk.samtools.SAMFileHeader;
+import htsjdk.samtools.SamInputResource;
+import htsjdk.samtools.SamReader;
+import htsjdk.samtools.SamReaderFactory;
+import htsjdk.samtools.cram.ref.CRAMReferenceSource;
+import htsjdk.samtools.seekablestream.EgaSeekableCachedResStream;
+import htsjdk.samtools.util.CloseableIterator;
+import htsjdk.variant.variantcontext.VariantContext;
+import htsjdk.variant.vcf.MyVCFFileReader;
+import htsjdk.variant.vcf.VCFHeader;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -50,33 +46,25 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.web.client.RestTemplate;
 
-import com.netflix.appinfo.InstanceInfo;
-import com.netflix.discovery.EurekaClient;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
-import eu.elixir.ega.ebi.dataedge.dto.File;
-import eu.elixir.ega.ebi.dataedge.dto.FileDataset;
-import eu.elixir.ega.ebi.dataedge.dto.FileIndexFile;
-import eu.elixir.ega.ebi.dataedge.dto.HttpResult;
-import eu.elixir.ega.ebi.dataedge.dto.MyExternalConfig;
-import eu.elixir.ega.ebi.dataedge.service.DownloaderLogService;
-import htsjdk.samtools.SAMFileHeader;
-import htsjdk.samtools.SamInputResource;
-import htsjdk.samtools.SamReader;
-import htsjdk.samtools.SamReaderFactory;
-import htsjdk.samtools.cram.ref.CRAMReferenceSource;
-import htsjdk.samtools.seekablestream.EgaSeekableCachedResStream;
-import htsjdk.samtools.util.CloseableIterator;
-import htsjdk.variant.variantcontext.VariantContext;
-import htsjdk.variant.vcf.MyVCFFileReader;
-import htsjdk.variant.vcf.VCFHeader;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.fail;
+import static org.mockito.Matchers.any;
+import static org.powermock.api.mockito.PowerMockito.*;
 
 /**
  * Test class for {@link RemoteFileServiceImpl}.
- * 
+ *
  * @author amohan
  */
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({ RemoteFileServiceImpl.class, SamReaderFactory.class })
+@PrepareForTest({RemoteFileServiceImpl.class, SamReaderFactory.class})
 @TestPropertySource(locations = "classpath:application-test.properties")
 public class RemoteFileServiceImplTest {
 
@@ -96,16 +84,13 @@ public class RemoteFileServiceImplTest {
     RestTemplate restTemplate;
 
     @Mock
-    RetryTemplate retryTemplate;
+    private RetryTemplate retryTemplate;
 
     @Mock
     MyExternalConfig externalConfig;
 
     @Mock
     private DownloaderLogService downloaderLogService;
-
-    @Mock
-    private EurekaClient discoveryClient;
 
     /**
      * Test class for
@@ -202,7 +187,7 @@ public class RemoteFileServiceImplTest {
     @Test
     public void testResUrl() {
         final String resUrl = remoteFileServiceImpl.resUrl();
-        assertThat(resUrl, equalTo(HOMEPAGE_URL));
+        assertThat(resUrl, equalTo(RES_URL));
     }
 
     /**
@@ -212,7 +197,7 @@ public class RemoteFileServiceImplTest {
     @Test
     public void testDownloadUrl() {
         final String downloadUrl = remoteFileServiceImpl.downloaderUrl();
-        assertThat(downloadUrl, equalTo(HOMEPAGE_URL));
+        assertThat(downloadUrl, equalTo(SERVICE_URL));
     }
 
     /**
@@ -228,7 +213,7 @@ public class RemoteFileServiceImplTest {
         assertThat(response.getStatusCode(), equalTo(HttpStatus.OK));
     }
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @SuppressWarnings({"rawtypes", "unchecked"})
     @Before
     public void initMocks() throws Exception {
         MockitoAnnotations.initMocks(this);
@@ -242,7 +227,6 @@ public class RemoteFileServiceImplTest {
         final ResponseEntity<Long> forSize = mock(ResponseEntity.class);
         final ResponseEntity<FileIndexFile[]> forResponseEntity = mock(ResponseEntity.class);
         final HttpResult xferResult = mock(HttpResult.class);
-        final InstanceInfo instance = mock(InstanceInfo.class);
         final EgaSeekableCachedResStream egaSeekableCachedResStream = mock(EgaSeekableCachedResStream.class);
         final SamReaderFactory samReaderFactory = mock(SamReaderFactory.class);
         final SamReader samReader = mock(SamReader.class);
@@ -250,18 +234,18 @@ public class RemoteFileServiceImplTest {
         final VCFHeader vcfHeader = mock(VCFHeader.class);
         final CloseableIterator<VariantContext> closeableIterator = mock(CloseableIterator.class);
 
-        final FileDataset[] datasets = { new FileDataset(FILEID, DATASET1) };
+        final FileDataset[] datasets = {new FileDataset(FILEID, DATASET1)};
         final File f = new File();
         f.setFileId(FILEID);
         f.setFileName("fileName");
         f.setFileSize(100l);
-        final File[] file = { f };
+        final File[] file = {f};
         authentication = mock(Authentication.class);
         samFileHeader = mock(SAMFileHeader.class);
         final FileIndexFile fi = new FileIndexFile();
         fi.setFileId(FILEID);
         fi.setIndexFileId("indexFileId");
-        final FileIndexFile[] fileIndexFiles = { fi };
+        final FileIndexFile[] fileIndexFiles = {fi};
 
         when(authentication.getAuthorities()).thenReturn(authorities);
         when(forEntityDataset.getBody()).thenReturn(datasets);
@@ -295,9 +279,6 @@ public class RemoteFileServiceImplTest {
         when(restTemplate.getForEntity(RES_URL + "/file/archive/{fileId}/size", Long.class, FILEID))
                 .thenReturn(forSize);
         when(restTemplate.execute(any(), any(), any(), any())).thenReturn(xferResult);
-        when(instance.getHomePageUrl()).thenReturn(HOMEPAGE_URL);
-        when(discoveryClient.getNextServerFromEureka("RES2", false)).thenReturn(instance);
-        when(discoveryClient.getNextServerFromEureka("FILEDATABASE", false)).thenReturn(instance);
     }
 
 }

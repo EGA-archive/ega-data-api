@@ -46,7 +46,7 @@ public class RemoteFileMetaServiceImpl implements FileMetaService {
     public static final String SERVICE_URL = "http://FILEDATABASE";
 
     @Autowired
-    RestTemplate restTemplate;
+    private RestTemplate restTemplate;
 
     @Override
     //@HystrixCommand

@@ -1,12 +1,7 @@
-spring:
-  application:
-    name: downloader
----
+spring.cloud.config.uri: ${CONFIG_SERVICE:http://pg-ega-pro-04.ebi.ac.uk}:8888
+spring.application.name: filedatabase
+logging.file: filedatabase.application.log
 
-spring:
-  application:
-    name: downloader     
-    profiles: docker        
-  cloud:
-    config:
-      uri: http://config:8888        
+---
+spring.profiles: no-oss
+spring.cloud.config.enabled: false

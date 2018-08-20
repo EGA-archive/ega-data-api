@@ -92,7 +92,7 @@ public class My2KCachePageFactory implements FactoryBean<Cache<String, CachePage
     private final ArrayList<String> downloaderUrls;
     private final ArrayList<String> keyUrls;
 
-    My2KCachePageFactory(int pageSize,
+    public My2KCachePageFactory(int pageSize,
                          int pageCount,
                          String awsAccessKeyId,
                          String awsSecretAccessKey,

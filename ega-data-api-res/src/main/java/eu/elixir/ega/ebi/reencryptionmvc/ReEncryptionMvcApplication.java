@@ -15,15 +15,12 @@
  */
 package eu.elixir.ega.ebi.reencryptionmvc;
 
-import eu.elixir.ega.ebi.reencryptionmvc.config.MyConfiguration;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
-import org.springframework.context.annotation.Import;
 
 @SpringBootApplication
-@Import({MyConfiguration.class})
 @EnableCaching
 @EnableEurekaClient
 public class ReEncryptionMvcApplication {

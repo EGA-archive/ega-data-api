@@ -27,6 +27,7 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Arrays;
@@ -41,31 +42,38 @@ import java.util.concurrent.TimeUnit;
 public class MyConfiguration {
 
     @Value("${ega.ebi.fire.url}")
-    String fireUrl;
+    private String fireUrl;
     @Value("${ega.ebi.fire.archive}")
-    String fireArchive;
+    private String fireArchive;
     @Value("${ega.ebi.fire.key}")
-    String fireKey;
+    private String fireKey;
 
     @Value("${ega.ebi.aws.access.key}")
-    String awsKey;
+    private String awsKey;
     @Value("${ega.ebi.aws.access.secret}")
-    String awsSecretKey;
+    private String awsSecretKey;
     @Value("${ega.ebi.aws.endpoint.url}")
-    String awsEndpointUrl;
+    private String awsEndpointUrl;
     @Value("${ega.ebi.aws.endpoint.region}")
-    String awsRegion;
+    private String awsRegion;
 
     @Value("${service.archive.class}")
-    String archiveImplBean;
+    private String archiveImplBean;
 
     //@Value("${ega.ebi.cachepage.size}") int pageSize;
     @Value("${eureka.client.serviceUrl.defaultZone}")
-    String eurekaUrl;
+    private String eurekaUrl;
 
+    @Profile("!no-oss")
     @Bean
     @LoadBalanced
-    RestTemplate restTemplate() {
+    public RestTemplate ossRestTemplate() {
+        return new RestTemplate();
+    }
+
+    @Profile("no-oss")
+    @Bean
+    public RestTemplate restTemplate() {
         return new RestTemplate();
     }
 
