@@ -43,7 +43,7 @@ import java.util.Iterator;
 @EnableDiscoveryClient
 public class RemoteFileMetaServiceImpl implements FileMetaService {
 
-    private static final String SERVICE_URL = "http://FILEDATABASE";
+    public static final String SERVICE_URL = "http://FILEDATABASE";
 
     @Autowired
     RestTemplate restTemplate;

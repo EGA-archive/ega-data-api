@@ -63,7 +63,7 @@ import org.springframework.web.client.RestTemplate;
 @PrepareForTest({ KeyServiceImpl.class, Gson.class, IOUtils.class })
 public class KeyServiceImplTest {
 
-    private static final String SERVICE_URL = "http://KEYSERVER";
+    public static final String SERVICE_URL = "http://KEYSERVER";
 
     @InjectMocks
     private KeyServiceImpl keyServiceImpl;

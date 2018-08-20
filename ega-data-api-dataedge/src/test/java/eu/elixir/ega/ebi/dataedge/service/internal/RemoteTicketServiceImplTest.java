@@ -70,7 +70,6 @@ public class RemoteTicketServiceImplTest {
     private static final String DATASET2 = "DATASET2";
     private Authentication authentication;
     private HttpServletRequest httpServletRequest;
-    private static final String HOMEPAGE_URL = "http://HomePageUrl";
 
     @InjectMocks
     private RemoteTicketServiceImpl remoteTicketServiceImpl;
@@ -176,6 +175,5 @@ public class RemoteTicketServiceImplTest {
         when(restTemplate.getForEntity(SERVICE_URL + "/file/{fileId}/datasets", FileDataset[].class, FILEID))
                 .thenReturn(forEntityDataset);
         when(restTemplate.getForEntity(SERVICE_URL + "/file/{fileId}", File[].class, FILEID)).thenReturn(forEntity);
-
     }
 }

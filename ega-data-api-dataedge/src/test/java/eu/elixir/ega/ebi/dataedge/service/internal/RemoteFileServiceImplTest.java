@@ -80,12 +80,11 @@ import htsjdk.variant.vcf.VCFHeader;
 @TestPropertySource(locations = "classpath:application-test.properties")
 public class RemoteFileServiceImplTest {
 
-    private static final String SERVICE_URL = "http://FILEDATABASE";
-    private static final String RES_URL = "http://RES2";
-    private static final String DATASET1 = "DATASET1";
-    private static final String DATASET2 = "DATASET2";
-    private static final String FILEID = "fileId";
-    private static final String HOMEPAGE_URL = "http://HomePageUrl";
+    public static final String SERVICE_URL = "http://FILEDATABASE";
+    public static final String RES_URL = "http://RES2";
+    public static final String DATASET1 = "DATASET1";
+    public static final String DATASET2 = "DATASET2";
+    public static final String FILEID = "fileId";
 
     private Authentication authentication;
     private SAMFileHeader samFileHeader;
