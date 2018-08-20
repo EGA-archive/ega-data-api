@@ -257,9 +257,6 @@
 						<version>${docker.maven.version}</version>
 						<configuration>
 							<imageName>${dockerRegistry}/key:${image.version}</imageName>
-							<imageTags>
-           						<imageTag>${project.version}</imageTag>
-           					</imageTags>
 							<baseImage>java:8</baseImage>
 							<entryPoint>["java", "${debug.config}${debug.key.port}", "-jar", "/${project.build.finalName}.jar"]</entryPoint>
 							<resources>

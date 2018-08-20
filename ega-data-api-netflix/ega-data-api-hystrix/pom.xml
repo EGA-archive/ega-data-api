@@ -127,9 +127,6 @@
 						<version>${docker.maven.version}</version>
 						<configuration>
 							<imageName>${dockerRegistry}/hystrix:${image.version}</imageName>
-							<imageTags>
-           						<imageTag>${project.version}</imageTag>
-           					</imageTags>
 							<baseImage>java:8</baseImage>
 							<entryPoint>["java", "${debug.config}${debug.hystrix.port}", "-jar", "/${project.build.finalName}.jar"]</entryPoint>
 							<resources>
