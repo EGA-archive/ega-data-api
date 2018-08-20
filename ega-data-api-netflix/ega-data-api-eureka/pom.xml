@@ -89,7 +89,7 @@
 						<artifactId>docker-maven-plugin</artifactId>
 						<version>${docker.maven.version}</version>
 						<configuration>
-							<imageName>${dockerRegistry}/eureka</imageName>
+							<imageName>${dockerRegistry}/eureka:${image.version}</imageName>
 							<baseImage>java:8</baseImage>
 							<entryPoint>["java", "-jar", "/${project.build.finalName}.jar"]</entryPoint>
 							<resources>
@@ -129,7 +129,7 @@
 						<artifactId>docker-maven-plugin</artifactId>
 						<version>${docker.maven.version}</version>
 						<configuration>
-							<imageName>${dockerRegistry}/eureka</imageName>
+							<imageName>${dockerRegistry}/eureka:${image.version}</imageName>
 							<baseImage>java:8</baseImage>
 							<entryPoint>["java", "${debug.config}${debug.eureka.port}", "-jar", "/${project.build.finalName}.jar"]</entryPoint>
 							<resources>
