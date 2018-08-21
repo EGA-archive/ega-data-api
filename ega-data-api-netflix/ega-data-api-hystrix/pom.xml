@@ -8,7 +8,7 @@
 		<version>0.0.1-SNAPSHOT</version>
 	</parent>
 	<artifactId>ega-data-api-hystrix</artifactId>
-	<name>Ega Data API Hystrix</name>
+	<name>EGA Data API Hystrix</name>
 	<description>Plain Vanilla Hystrix Dashboard Server</description>
 	<packaging>jar</packaging>
 

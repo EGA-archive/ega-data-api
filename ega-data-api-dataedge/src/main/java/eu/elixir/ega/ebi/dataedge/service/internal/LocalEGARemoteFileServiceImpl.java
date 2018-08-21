@@ -51,14 +51,14 @@ import java.security.DigestOutputStream;
 import java.security.MessageDigest;
 import java.util.*;
 
+import static eu.elixir.ega.ebi.shared.Constants.FILEDATABASE_SERVICE;
+import static eu.elixir.ega.ebi.shared.Constants.RES_SERVICE;
+
 @Profile("LocalEGA")
 @Service
 @Transactional
 @EnableDiscoveryClient
 public class LocalEGARemoteFileServiceImpl implements FileService {
-
-    public static final String SERVICE_URL = "http://FILEDATABASE2";
-    public static final String RES_URL = "http://RES2";
 
     @Autowired
     private RestTemplate restTemplate;
@@ -300,7 +300,7 @@ public class LocalEGARemoteFileServiceImpl implements FileService {
                           Long startCoord,
                           Long endCoord) {
         destFormat = destFormat.equals("AES") ? "aes128" : destFormat; // default to 128-bit if not specified
-        String url = RES_URL + "/file";
+        String url = RES_SERVICE + "/file";
 
         // Build components based on Parameters provided
         UriComponentsBuilder builder;
@@ -419,11 +419,11 @@ public class LocalEGARemoteFileServiceImpl implements FileService {
             }
         }
 
-        ResponseEntity<FileDataset[]> forEntityDataset = restTemplate.getForEntity(SERVICE_URL + "/file/{fileId}/datasets", FileDataset[].class, fileId);
+        ResponseEntity<FileDataset[]> forEntityDataset = restTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}/datasets", FileDataset[].class, fileId);
         FileDataset[] bodyDataset = forEntityDataset.getBody();
 
         File reqFile = null;
-        ResponseEntity<File[]> forEntity = restTemplate.getForEntity(SERVICE_URL + "/file/{fileId}", File[].class, fileId);
+        ResponseEntity<File[]> forEntity = restTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}", File[].class, fileId);
         File[] body = forEntity.getBody();
         if (body != null && bodyDataset != null) {
             for (FileDataset f : bodyDataset) {
@@ -438,7 +438,7 @@ public class LocalEGARemoteFileServiceImpl implements FileService {
             if (reqFile != null) {
                 // If there's no file size in the database, obtain it from RES
                 if (reqFile.getFileSize() == 0) {
-                    ResponseEntity<Long> forSize = restTemplate.getForEntity(RES_URL + "/file/archive/{fileId}/size", Long.class, fileId);
+                    ResponseEntity<Long> forSize = restTemplate.getForEntity(RES_SERVICE + "/file/archive/{fileId}/size", Long.class, fileId);
                     reqFile.setFileSize(forSize.getBody());
                 }
             } else { // 403 Unauthorized

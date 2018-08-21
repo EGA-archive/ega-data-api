@@ -39,6 +39,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
+import static eu.elixir.ega.ebi.shared.Constants.FILEDATABASE_SERVICE;
+import static eu.elixir.ega.ebi.shared.Constants.RES_SERVICE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.Matchers.any;
@@ -55,8 +57,6 @@ import static org.powermock.api.mockito.PowerMockito.when;
 @TestPropertySource(locations = "classpath:application-test.properties")
 public class RemoteTicketServiceImplTest {
 
-    public static final String SERVICE_URL = "http://FILEDATABASE2";
-    public static final String RES_URL = "http://RES2";
     public static final String FILEID = "fileId";
     public static final String DATASET1 = "DATASET1";
     public static final String DATASET2 = "DATASET2";
@@ -130,7 +130,7 @@ public class RemoteTicketServiceImplTest {
     @Test
     public void testResUrl() {
         final String resUrl = remoteTicketServiceImpl.resUrl();
-        assertThat(resUrl, equalTo(RES_URL));
+        assertThat(resUrl, equalTo(RES_SERVICE));
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
@@ -159,9 +159,9 @@ public class RemoteTicketServiceImplTest {
         when(externalConfig.getEgaExternalUrl()).thenReturn("egaExternalUrl");
         when(authentication.getAuthorities()).thenReturn(authorities);
         when(httpServletRequest.getHeader(any())).thenReturn("token");
-        when(restTemplate.getForEntity(SERVICE_URL + "/file/{fileId}/datasets", FileDataset[].class, FILEID))
+        when(restTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}/datasets", FileDataset[].class, FILEID))
                 .thenReturn(forEntityDataset);
-        when(restTemplate.getForEntity(SERVICE_URL + "/file/{fileId}", File[].class, FILEID)).thenReturn(forEntity);
+        when(restTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}", File[].class, FILEID)).thenReturn(forEntity);
     }
 
 }

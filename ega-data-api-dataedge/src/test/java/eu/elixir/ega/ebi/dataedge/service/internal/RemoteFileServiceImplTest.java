@@ -52,6 +52,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import static eu.elixir.ega.ebi.shared.Constants.FILEDATABASE_SERVICE;
+import static eu.elixir.ega.ebi.shared.Constants.RES_SERVICE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.fail;
@@ -68,8 +70,6 @@ import static org.powermock.api.mockito.PowerMockito.*;
 @TestPropertySource(locations = "classpath:application-test.properties")
 public class RemoteFileServiceImplTest {
 
-    public static final String SERVICE_URL = "http://FILEDATABASE2";
-    public static final String RES_URL = "http://RES2";
     public static final String DATASET1 = "DATASET1";
     public static final String DATASET2 = "DATASET2";
     public static final String FILEID = "fileId";
@@ -187,7 +187,7 @@ public class RemoteFileServiceImplTest {
     @Test
     public void testResUrl() {
         final String resUrl = remoteFileServiceImpl.resUrl();
-        assertThat(resUrl, equalTo(RES_URL));
+        assertThat(resUrl, equalTo(RES_SERVICE));
     }
 
     /**
@@ -197,7 +197,7 @@ public class RemoteFileServiceImplTest {
     @Test
     public void testDownloadUrl() {
         final String downloadUrl = remoteFileServiceImpl.downloaderUrl();
-        assertThat(downloadUrl, equalTo(SERVICE_URL));
+        assertThat(downloadUrl, equalTo(FILEDATABASE_SERVICE));
     }
 
     /**
@@ -267,16 +267,16 @@ public class RemoteFileServiceImplTest {
         when(samReaderFactory.open(any(SamInputResource.class))).thenReturn(samReader);
         when(samReader.getFileHeader()).thenReturn(samFileHeader);
 
-        when(restTemplate.getForEntity(SERVICE_URL + "/file/{fileId}/datasets", FileDataset[].class, FILEID))
+        when(restTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}/datasets", FileDataset[].class, FILEID))
                 .thenReturn(forEntityDataset);
-        when(restTemplate.getForEntity(SERVICE_URL + "/file/{fileId}/datasets", FileDataset[].class, "indexFileId"))
+        when(restTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}/datasets", FileDataset[].class, "indexFileId"))
                 .thenReturn(forEntityDataset);
-        when(restTemplate.getForEntity(SERVICE_URL + "/file/{fileId}", File[].class, FILEID)).thenReturn(forEntity);
-        when(restTemplate.getForEntity(SERVICE_URL + "/file/{fileId}", File[].class, "indexFileId"))
+        when(restTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}", File[].class, FILEID)).thenReturn(forEntity);
+        when(restTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}", File[].class, "indexFileId"))
                 .thenReturn(forEntity);
-        when(restTemplate.getForEntity(SERVICE_URL + "/file/{fileId}/index", FileIndexFile[].class, FILEID))
+        when(restTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}/index", FileIndexFile[].class, FILEID))
                 .thenReturn(forResponseEntity);
-        when(restTemplate.getForEntity(RES_URL + "/file/archive/{fileId}/size", Long.class, FILEID))
+        when(restTemplate.getForEntity(RES_SERVICE + "/file/archive/{fileId}/size", Long.class, FILEID))
                 .thenReturn(forSize);
         when(restTemplate.execute(any(), any(), any(), any())).thenReturn(xferResult);
     }

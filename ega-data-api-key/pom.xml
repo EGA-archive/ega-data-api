@@ -9,7 +9,7 @@
 	</parent>
 
 	<artifactId>ega-data-api-key</artifactId>
-	<name>Ega Data API Key</name>
+	<name>EGA Data API Key</name>
 	<description>Provider for all Encryption Key related Services</description>
 	<packaging>jar</packaging>
 

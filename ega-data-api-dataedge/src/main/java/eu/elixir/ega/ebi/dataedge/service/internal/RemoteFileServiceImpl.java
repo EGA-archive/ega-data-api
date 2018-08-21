@@ -70,6 +70,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
+import static eu.elixir.ega.ebi.shared.Constants.FILEDATABASE_SERVICE;
+import static eu.elixir.ega.ebi.shared.Constants.RES_SERVICE;
 import static org.apache.catalina.connector.OutputBuffer.DEFAULT_BUFFER_SIZE;
 
 /**
@@ -80,9 +82,6 @@ import static org.apache.catalina.connector.OutputBuffer.DEFAULT_BUFFER_SIZE;
 @Transactional
 @EnableDiscoveryClient
 public class RemoteFileServiceImpl implements FileService {
-
-    public static final String SERVICE_URL = "http://FILEDATABASE2";
-    public static final String RES_URL = "http://RES2";
 
     @Autowired
     private RestTemplate restTemplate;
@@ -661,7 +660,7 @@ public class RemoteFileServiceImpl implements FileService {
                           Long startCoord,
                           Long endCoord) {
         destFormat = destFormat.equals("AES") ? "aes128" : destFormat; // default to 128-bit if not specified
-        String url = RES_URL + "/file";
+        String url = RES_SERVICE + "/file";
         if (fileStableIdPath.startsWith("EGAF")) { // If an ID is specified - resolve this in RES
             url += "/archive/" + fileStableIdPath;
         }
@@ -791,11 +790,11 @@ public class RemoteFileServiceImpl implements FileService {
             }
         }
 
-        ResponseEntity<FileDataset[]> forEntityDataset = restTemplate.getForEntity(SERVICE_URL + "/file/{fileId}/datasets", FileDataset[].class, fileId);
+        ResponseEntity<FileDataset[]> forEntityDataset = restTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}/datasets", FileDataset[].class, fileId);
         FileDataset[] bodyDataset = forEntityDataset.getBody();
 
         File reqFile = null;
-        ResponseEntity<File[]> forEntity = restTemplate.getForEntity(SERVICE_URL + "/file/{fileId}", File[].class, fileId);
+        ResponseEntity<File[]> forEntity = restTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}", File[].class, fileId);
         File[] body = forEntity.getBody();
         if (body != null && bodyDataset != null) {
             for (FileDataset f : bodyDataset) {
@@ -810,7 +809,7 @@ public class RemoteFileServiceImpl implements FileService {
             if (reqFile != null) {
                 // If there's no file size in the database, obtain it from RES
                 if (reqFile.getFileSize() == 0) {
-                    ResponseEntity<Long> forSize = restTemplate.getForEntity(RES_URL + "/file/archive/{fileId}/size", Long.class, fileId);
+                    ResponseEntity<Long> forSize = restTemplate.getForEntity(RES_SERVICE + "/file/archive/{fileId}/size", Long.class, fileId);
                     reqFile.setFileSize(forSize.getBody());
                 }
             } else { // 403 Unauthorized
@@ -832,19 +831,19 @@ public class RemoteFileServiceImpl implements FileService {
 
     //@HystrixCommand
     public String resUrl() {
-        return RES_URL;
+        return RES_SERVICE;
     }
 
     //@HystrixCommand
     public String downloaderUrl() {
-        return SERVICE_URL;
+        return FILEDATABASE_SERVICE;
     }
 
     //@HystrixCommand
     @Cacheable(cacheNames = "indexFile")
     private FileIndexFile getFileIndexFile(String fileId) {
         FileIndexFile indexFile = null;
-        ResponseEntity<FileIndexFile[]> forEntity = restTemplate.getForEntity(SERVICE_URL + "/file/{fileId}/index", FileIndexFile[].class, fileId);
+        ResponseEntity<FileIndexFile[]> forEntity = restTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}/index", FileIndexFile[].class, fileId);
         FileIndexFile[] body = forEntity.getBody();
         if (body != null && body.length >= 1) {
             indexFile = body[0];

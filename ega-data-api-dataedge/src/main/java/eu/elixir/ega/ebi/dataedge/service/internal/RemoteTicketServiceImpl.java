@@ -38,6 +38,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.*;
 
+import static eu.elixir.ega.ebi.shared.Constants.FILEDATABASE_SERVICE;
+import static eu.elixir.ega.ebi.shared.Constants.RES_SERVICE;
+
 //import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 
 /**
@@ -47,9 +50,6 @@ import java.util.*;
 @Transactional
 @EnableDiscoveryClient
 public class RemoteTicketServiceImpl implements TicketService {
-
-    public static final String SERVICE_URL = "http://FILEDATABASE2";
-    public static final String RES_URL = "http://RES2";
 
     @Autowired
     private MyExternalConfig externalConfig;
@@ -298,11 +298,11 @@ public class RemoteTicketServiceImpl implements TicketService {
             }
         }
 
-        ResponseEntity<FileDataset[]> forEntityDataset = restTemplate.getForEntity(SERVICE_URL + "/file/{fileId}/datasets", FileDataset[].class, fileId);
+        ResponseEntity<FileDataset[]> forEntityDataset = restTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}/datasets", FileDataset[].class, fileId);
         FileDataset[] bodyDataset = forEntityDataset.getBody();
 
         File reqFile = null;
-        ResponseEntity<File[]> forEntity = restTemplate.getForEntity(SERVICE_URL + "/file/{fileId}", File[].class, fileId);
+        ResponseEntity<File[]> forEntity = restTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}", File[].class, fileId);
         File[] body = forEntity.getBody();
         if ((body != null && body.length > 0) && bodyDataset != null) {
             for (FileDataset f : bodyDataset) {
@@ -324,7 +324,7 @@ public class RemoteTicketServiceImpl implements TicketService {
     @Cacheable(cacheNames = "indexFile")
     private FileIndexFile getFileIndexFile(String fileId) {
         FileIndexFile indexFile = null;
-        ResponseEntity<FileIndexFile[]> forEntity = restTemplate.getForEntity(SERVICE_URL + "/file/{fileId}/index", FileIndexFile[].class, fileId);
+        ResponseEntity<FileIndexFile[]> forEntity = restTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}/index", FileIndexFile[].class, fileId);
         FileIndexFile[] body = forEntity.getBody();
         if (body != null && body.length >= 1) {
             indexFile = body[0];
@@ -334,7 +334,7 @@ public class RemoteTicketServiceImpl implements TicketService {
 
     //@HystrixCommand
     public String resUrl() {
-        return RES_URL;
+        return RES_SERVICE;
     }
 
 }

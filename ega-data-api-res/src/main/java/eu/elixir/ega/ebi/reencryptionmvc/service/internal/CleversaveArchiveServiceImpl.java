@@ -34,6 +34,8 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.servlet.http.HttpServletResponse;
 
+import static eu.elixir.ega.ebi.shared.Constants.FILEDATABASE_SERVICE;
+
 /**
  * @author asenf
  */
@@ -42,8 +44,6 @@ import javax.servlet.http.HttpServletResponse;
 @Primary
 @EnableDiscoveryClient
 public class CleversaveArchiveServiceImpl implements ArchiveService {
-
-    public static final String SERVICE_URL = "http://FILEDATABASE2";
 
     @Autowired
     RestTemplate restTemplate;
@@ -60,7 +60,7 @@ public class CleversaveArchiveServiceImpl implements ArchiveService {
     public ArchiveSource getArchiveFile(String id, HttpServletResponse response) {
 
         // Get Filename from EgaFile ID - via DATA service (potentially multiple files)
-        ResponseEntity<EgaFile[]> forEntity = restTemplate.getForEntity(SERVICE_URL + "/file/{fileId}", EgaFile[].class, id);
+        ResponseEntity<EgaFile[]> forEntity = restTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}", EgaFile[].class, id);
         response.setStatus(forEntity.getStatusCodeValue());
         if (forEntity.getStatusCode() != HttpStatus.OK) return null;
 

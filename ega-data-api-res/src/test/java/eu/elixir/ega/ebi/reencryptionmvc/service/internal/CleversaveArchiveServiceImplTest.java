@@ -15,6 +15,7 @@
  */
 package eu.elixir.ega.ebi.reencryptionmvc.service.internal;
 
+import static eu.elixir.ega.ebi.shared.Constants.FILEDATABASE_SERVICE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.Matchers.anyString;
@@ -49,8 +50,6 @@ import eu.elixir.ega.ebi.reencryptionmvc.service.KeyService;
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(CleversaveArchiveServiceImpl.class)
 public class CleversaveArchiveServiceImplTest {
-
-    public static final String SERVICE_URL = "http://FILEDATABASE2";
 
     @InjectMocks
     private CleversaveArchiveServiceImpl cleversaveArchiveServiceImpl;
@@ -87,7 +86,7 @@ public class CleversaveArchiveServiceImplTest {
         final String encryptionKey = "encryptionKey";
 
         final String[] filePath = { object_get, object_length, object_storage_class, pathInput };
-        when(restTemplate.getForEntity(SERVICE_URL + "/file/{fileId}", EgaFile[].class, "id"))
+        when(restTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}", EgaFile[].class, "id"))
                 .thenReturn(mockResponseEntity);
         when(mockResponseEntity.getStatusCode()).thenReturn(HttpStatus.OK);
         when(mockResponseEntity.getBody()).thenReturn(body);

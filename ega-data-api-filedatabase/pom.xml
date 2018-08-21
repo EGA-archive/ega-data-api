@@ -9,7 +9,7 @@
 	</parent>
 
 	<artifactId>ega-data-api-filedatabase</artifactId>
-	<name>Ega Data API File Database</name>
+	<name>EGA Data API File Database</name>
 	<description>File Database Service</description>
 	<packaging>jar</packaging>
 

@@ -33,6 +33,8 @@ import org.springframework.util.concurrent.ListenableFutureCallback;
 import org.springframework.web.client.AsyncRestTemplate;
 import org.springframework.web.client.RestTemplate;
 
+import static eu.elixir.ega.ebi.shared.Constants.FILEDATABASE_SERVICE;
+
 //import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 
 /**
@@ -42,8 +44,6 @@ import org.springframework.web.client.RestTemplate;
 @Transactional
 @EnableDiscoveryClient
 public class RemoteDownloaderLogServiceImpl implements DownloaderLogService {
-
-    public static final String SERVICE_URL = "http://FILEDATABASE2";
 
     @Autowired
     private AsyncRestTemplate restTemplate;
@@ -69,7 +69,7 @@ public class RemoteDownloaderLogServiceImpl implements DownloaderLogService {
         //HttpEntity entity = new HttpEntity("parameters", headers);
 
         ListenableFuture<ResponseEntity<String>> futureEntity;
-        futureEntity = restTemplate.postForEntity(SERVICE_URL + "/log/download/", entity, String.class);
+        futureEntity = restTemplate.postForEntity(FILEDATABASE_SERVICE + "/log/download/", entity, String.class);
 
         futureEntity
                 .addCallback(new ListenableFutureCallback<ResponseEntity>() {
@@ -108,7 +108,7 @@ public class RemoteDownloaderLogServiceImpl implements DownloaderLogService {
         //HttpEntity entity = new HttpEntity("parameters", headers);
 
         ListenableFuture<ResponseEntity<String>> futureEntity;
-        futureEntity = restTemplate.postForEntity(SERVICE_URL + "/log/download/", entity, String.class);
+        futureEntity = restTemplate.postForEntity(FILEDATABASE_SERVICE + "/log/download/", entity, String.class);
 
         futureEntity
                 .addCallback(new ListenableFutureCallback<ResponseEntity>() {

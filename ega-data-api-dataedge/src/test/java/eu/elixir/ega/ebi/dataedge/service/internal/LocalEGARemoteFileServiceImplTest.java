@@ -15,17 +15,10 @@
  */
 package eu.elixir.ega.ebi.dataedge.service.internal;
 
-import static org.junit.Assert.fail;
-import static org.powermock.api.mockito.PowerMockito.mock;
-import static org.powermock.api.mockito.PowerMockito.when;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
+import eu.elixir.ega.ebi.dataedge.dto.File;
+import eu.elixir.ega.ebi.dataedge.dto.FileDataset;
+import eu.elixir.ega.ebi.dataedge.service.DownloaderLogService;
+import htsjdk.samtools.cram.ref.CRAMReferenceSource;
 import org.apache.commons.lang.NotImplementedException;
 import org.junit.Before;
 import org.junit.Test;
@@ -44,14 +37,21 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.web.client.RestTemplate;
 
-import eu.elixir.ega.ebi.dataedge.dto.File;
-import eu.elixir.ega.ebi.dataedge.dto.FileDataset;
-import eu.elixir.ega.ebi.dataedge.service.DownloaderLogService;
-import htsjdk.samtools.cram.ref.CRAMReferenceSource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
+import static eu.elixir.ega.ebi.shared.Constants.FILEDATABASE_SERVICE;
+import static eu.elixir.ega.ebi.shared.Constants.RES_SERVICE;
+import static org.junit.Assert.fail;
+import static org.powermock.api.mockito.PowerMockito.mock;
+import static org.powermock.api.mockito.PowerMockito.when;
 
 /**
  * Test class for {@link LocalEGARemoteFileServiceImpl}.
- * 
+ *
  * @author amohan
  */
 @RunWith(PowerMockRunner.class)
@@ -59,8 +59,6 @@ import htsjdk.samtools.cram.ref.CRAMReferenceSource;
 @TestPropertySource(locations = "classpath:application-test.properties")
 public class LocalEGARemoteFileServiceImplTest {
 
-    public static final String SERVICE_URL = "http://FILEDATABASE2";
-    public static final String RES_URL = "http://RES2";
     public static final String DATASET1 = "DATASET1";
     public static final String DATASET2 = "DATASET2";
     public static final String FILEID = "fileId";
@@ -86,7 +84,7 @@ public class LocalEGARemoteFileServiceImplTest {
      * {@link LocalEGARemoteFileServiceImpl#getFile(Authentication, String, String, String, String, long, long, HttpServletRequest, HttpServletResponse) }.
      * Verify code is executing without errors.
      */
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @SuppressWarnings({"unchecked", "rawtypes"})
     @Test
     public void testGetFile() {
 
@@ -100,21 +98,21 @@ public class LocalEGARemoteFileServiceImplTest {
             final ResponseEntity<File[]> forEntity = mock(ResponseEntity.class);
             final ResponseEntity<Long> forSize = mock(ResponseEntity.class);
 
-            final FileDataset[] datasets = { new FileDataset(FILEID, DATASET1) };
+            final FileDataset[] datasets = {new FileDataset(FILEID, DATASET1)};
             final File f = new File();
             f.setFileId(FILEID);
-            final File[] file = { f };
+            final File[] file = {f};
 
             when(auth.getAuthorities()).thenReturn(authorities);
             when(forEntityDataset.getBody()).thenReturn(datasets);
             when(forEntity.getBody()).thenReturn(file);
             when(forSize.getBody()).thenReturn(1000l);
 
-            when(restTemplate.getForEntity(SERVICE_URL + "/file/{fileId}/datasets", FileDataset[].class, FILEID))
+            when(restTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}/datasets", FileDataset[].class, FILEID))
                     .thenReturn(forEntityDataset);
-            when(restTemplate.getForEntity(SERVICE_URL + "/file/{fileId}", File[].class, FILEID))
+            when(restTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}", File[].class, FILEID))
                     .thenReturn(forEntity);
-            when(restTemplate.getForEntity(RES_URL + "/file/archive/{fileId}/size", Long.class, FILEID))
+            when(restTemplate.getForEntity(RES_SERVICE + "/file/archive/{fileId}/size", Long.class, FILEID))
                     .thenReturn(forSize);
 
             localEGARemoteFileServiceImpl.getFile(auth, FILEID, "plain", "destinationKey", "destinationIV", 0, 0,

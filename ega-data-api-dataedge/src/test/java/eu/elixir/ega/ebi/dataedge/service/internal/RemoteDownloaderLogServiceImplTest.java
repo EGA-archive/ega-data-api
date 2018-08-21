@@ -34,7 +34,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.net.URI;
 
-import static eu.elixir.ega.ebi.dataedge.service.internal.RemoteDownloaderLogServiceImpl.SERVICE_URL;
+import static eu.elixir.ega.ebi.shared.Constants.FILEDATABASE_SERVICE;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
@@ -68,7 +68,7 @@ public class RemoteDownloaderLogServiceImplTest {
         @SuppressWarnings("unchecked") final ListenableFuture<ResponseEntity<String>> futureEntityMock = mock(ListenableFuture.class);
 
         whenNew(URI.class).withAnyArguments().thenReturn(uriMock);
-        when(restTemplate.postForEntity(eq(SERVICE_URL + "/log/download/"), any(), eq(String.class))).thenReturn(futureEntityMock);
+        when(restTemplate.postForEntity(eq(FILEDATABASE_SERVICE + "/log/download/"), any(), eq(String.class))).thenReturn(futureEntityMock);
     }
 
     /**

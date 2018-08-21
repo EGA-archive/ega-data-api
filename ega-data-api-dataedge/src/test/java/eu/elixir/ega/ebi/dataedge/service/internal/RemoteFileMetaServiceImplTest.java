@@ -36,6 +36,7 @@ import org.springframework.web.client.RestTemplate;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import static eu.elixir.ega.ebi.shared.Constants.FILEDATABASE_SERVICE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.powermock.api.mockito.PowerMockito.mock;
@@ -51,7 +52,6 @@ import static org.powermock.api.mockito.PowerMockito.when;
 @TestPropertySource(locations = "classpath:application-test.properties")
 public class RemoteFileMetaServiceImplTest {
 
-    public static final String SERVICE_URL = "http://FILEDATABASE2";
     public static final String DATASET1 = "DATASET1";
     public static final String DATASET2 = "DATASET2";
     public static final String FILEID = "fileId";
@@ -87,9 +87,9 @@ public class RemoteFileMetaServiceImplTest {
         final File[] files = {f};
 
         when(auth.getAuthorities()).thenReturn(authorities);
-        when(syncRestTemplate.getForEntity(SERVICE_URL + "/file/{fileId}/datasets", FileDataset[].class, FILEID))
+        when(syncRestTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}/datasets", FileDataset[].class, FILEID))
                 .thenReturn(forEntityDataset);
-        when(syncRestTemplate.getForEntity(SERVICE_URL + "/file/{fileId}", File[].class, FILEID))
+        when(syncRestTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}", File[].class, FILEID))
                 .thenReturn(forEntity);
         when(forEntityDataset.getBody()).thenReturn(datasets);
         when(forEntity.getBody()).thenReturn(files);
@@ -110,7 +110,7 @@ public class RemoteFileMetaServiceImplTest {
         f.setFileId(FILEID);
         final File[] files = {f};
 
-        when(syncRestTemplate.getForObject(SERVICE_URL + "/datasets/{datasetId}/files", File[].class, DATASET1))
+        when(syncRestTemplate.getForObject(FILEDATABASE_SERVICE + "/datasets/{datasetId}/files", File[].class, DATASET1))
                 .thenReturn(files);
 
         final Iterable<File> fileOutput = remoteFileMetaServiceImpl.getDatasetFiles(DATASET1);

@@ -8,5 +8,5 @@ FILEDATABASE2:
 RES2:
   listOfServers: ${RES_SERVERS:res}
 
-KEYSERVER:
+KEYSERVER2:
   listOfServers: ${KEYS_SERVERS:keys}

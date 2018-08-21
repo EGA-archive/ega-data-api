@@ -15,6 +15,7 @@
  */
 package eu.elixir.ega.ebi.reencryptionmvc.service.internal;
 
+import static eu.elixir.ega.ebi.shared.Constants.FILEDATABASE_SERVICE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.Matchers.anyString;
@@ -49,8 +50,6 @@ import eu.elixir.ega.ebi.reencryptionmvc.service.KeyService;
 @PrepareForTest(GenericArchiveServiceImpl.class)
 public class GenericArchiveServiceImplTest {
 
-    public static final String SERVICE_URL = "http://FILEDATABASE2";
-
     @InjectMocks
     private GenericArchiveServiceImpl genericArchiveServiceImpl;
 
@@ -77,7 +76,7 @@ public class GenericArchiveServiceImplTest {
         body[0] = new EgaFile("fileId0", "/fire/0000TR.CEL.gpg", 100, "fileStatus0");
         final String encryptionKey = "encryptionKey";
 
-        when(restTemplate.getForEntity(SERVICE_URL + "/file/{fileId}", EgaFile[].class, "id"))
+        when(restTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}", EgaFile[].class, "id"))
                 .thenReturn(mockResponseEntity);
         when(mockResponseEntity.getStatusCode()).thenReturn(HttpStatus.OK);
         when(mockResponseEntity.getBody()).thenReturn(body);
