@@ -18,6 +18,7 @@ package eu.elixir.ega.ebi.reencryptionmvc.config;
 import com.google.common.cache.CacheBuilder;
 import eu.elixir.ega.ebi.reencryptionmvc.dto.*;
 import org.cache2k.Cache;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
@@ -25,6 +26,7 @@ import org.springframework.cache.guava.GuavaCache;
 import org.springframework.cache.support.SimpleCacheManager;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.cloud.client.loadbalancer.LoadBalanced;
+import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestTemplate;
@@ -59,9 +61,8 @@ public class MyConfiguration {
     @Value("${service.archive.class}")
     private String archiveImplBean;
 
-    //@Value("${ega.ebi.cachepage.size}") int pageSize;
-    @Value("${eureka.client.serviceUrl.defaultZone}")
-    private String eurekaUrl;
+    @Autowired
+    private LoadBalancerClient loadBalancer;
 
     @LoadBalanced
     @Bean
@@ -93,7 +94,8 @@ public class MyConfiguration {
     public Cache<String, CachePage> myPageCache() throws Exception {
         int pagesize = 1024 * 1024 * 12;    // 12 MB Page Size
         int pageCount = 1200;               // 1200 * 12 = 14 GB Cache Size
-        return (new My2KCachePageFactory(pagesize,
+        return (new My2KCachePageFactory(loadBalancer,
+                pagesize,
                 pageCount,
                 awsKey,
                 awsSecretKey,
@@ -101,8 +103,7 @@ public class MyConfiguration {
                 fireArchive,
                 fireKey,
                 awsEndpointUrl,
-                awsRegion,
-                eurekaUrl)).getObject();
+                awsRegion)).getObject();
     }
 
     @Bean
