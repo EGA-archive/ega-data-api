@@ -125,7 +125,7 @@ public class RemoteTicketServiceImplTest {
 
     /**
      * Test class for {@link RemoteTicketServiceImpl#resUrl()}. Verify the output
-     * resUrl.
+     * resURL.
      */
     @Test
     public void testResUrl() {

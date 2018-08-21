@@ -14,11 +14,6 @@
     <packaging>jar</packaging>
 
     <dependencies>
-        <dependency>
-            <groupId>eu.elixir.ega.ebi</groupId>
-            <artifactId>ega-data-api-shared</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
-        </dependency>
         <!-- Spring -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

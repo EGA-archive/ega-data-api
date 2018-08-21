@@ -38,6 +38,7 @@ import htsjdk.variant.vcf.VCFHeader;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
+import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -59,7 +60,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.math.BigInteger;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.security.DigestInputStream;
@@ -82,6 +82,9 @@ import static org.apache.catalina.connector.OutputBuffer.DEFAULT_BUFFER_SIZE;
 @Transactional
 @EnableDiscoveryClient
 public class RemoteFileServiceImpl implements FileService {
+
+    @Autowired
+    private LoadBalancerClient loadBalancer;
 
     @Autowired
     private RestTemplate restTemplate;
@@ -301,10 +304,10 @@ public class RemoteFileServiceImpl implements FileService {
         // Ascertain Access Permissions for specified File ID
         File reqFile = getReqFile(fileId, auth, null);
         if (reqFile != null) {
-            URL resUrl;
+            URL resURL;
             try {
-                resUrl = new URL(resUrl() + "/file/archive/" + reqFile.getFileId()); // Just specify file ID
-                SeekableStream cIn = new EgaSeekableCachedResStream(resUrl, null, null, reqFile.getFileSize()); // Deals with coordinates
+                resURL = new URL(resURL() + "/file/archive/" + reqFile.getFileId()); // Just specify file ID
+                SeekableStream cIn = new EgaSeekableCachedResStream(resURL, null, null, reqFile.getFileSize()); // Deals with coordinates
                 SamReader reader = (x == null) ?
                         (SamReaderFactory.make()            // BAM File
                                 .validationStringency(ValidationStringency.LENIENT)
@@ -319,8 +322,6 @@ public class RemoteFileServiceImpl implements FileService {
                                 .open(SamInputResource.of(cIn)));
                 header = reader.getFileHeader();
                 reader.close();
-            } catch (MalformedURLException ex) {
-                Logger.getLogger(RemoteFileServiceImpl.class.getName()).log(Level.SEVERE, null, ex);
             } catch (IOException ex) {
                 Logger.getLogger(RemoteFileServiceImpl.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -392,13 +393,13 @@ public class RemoteFileServiceImpl implements FileService {
                 }
 
                 // BAM/CRAM File
-                URL resUrl = new URL(resUrl() + "file/archive/" + reqFile.getFileId()); // Just specify file ID
-                SeekableStream cIn = (new EgaSeekableCachedResStream(resUrl, null, null, reqFile.getFileSize())).setExtension(extension); // Deals with coordinates
+                URL resURL = new URL(resURL() + "file/archive/" + reqFile.getFileId()); // Just specify file ID
+                SeekableStream cIn = (new EgaSeekableCachedResStream(resURL, null, null, reqFile.getFileSize())).setExtension(extension); // Deals with coordinates
                 //bIn = new SeekableBufferedStream(cIn);
                 // BAI/CRAI File
                 FileIndexFile fileIndexFile = getFileIndexFile(reqFile.getFileId());
                 File reqIndexFile = getReqFile(fileIndexFile.getIndexFileId(), auth, null);
-                URL indexUrl = new URL(resUrl() + "file/archive/" + fileIndexFile.getIndexFileId()); // Just specify index ID
+                URL indexUrl = new URL(resURL() + "file/archive/" + fileIndexFile.getIndexFileId()); // Just specify index ID
                 SeekableStream cIndexIn = (new EgaSeekableCachedResStream(indexUrl, null, null, reqIndexFile.getFileSize()));
 
                 inputResource = SamInputResource.of(cIn).index(cIndexIn);
@@ -535,7 +536,7 @@ public class RemoteFileServiceImpl implements FileService {
         // Ascertain Access Permissions for specified File ID
         File reqFile = getReqFile(localFileId, auth, request);
         if (reqFile != null) {
-            URL resUrl, indexUrl;
+            URL resURL, indexURL;
             MyVCFFileReader reader;
 
             try {
@@ -547,16 +548,16 @@ public class RemoteFileServiceImpl implements FileService {
                 }
 
                 // VCF File
-                resUrl = new URL(resUrl() + "file/archive/" + reqFile.getFileId() + vcf_ext[0]); // Just specify file ID
+                resURL = new URL(resURL() + "file/archive/" + reqFile.getFileId() + vcf_ext[0]); // Just specify file ID
                 FileIndexFile fileIndexFile = getFileIndexFile(reqFile.getFileId());
-                indexUrl = new URL(resUrl() + "file/archive/" + fileIndexFile.getIndexFileId() + vcf_ext[1]); // Just specify index ID
+                indexURL = new URL(resURL() + "file/archive/" + fileIndexFile.getIndexFileId() + vcf_ext[1]); // Just specify index ID
 
                 System.out.println("Opening Reader!! ");
                 // VCFFileReader with input stream based on RES URL
-                reader = new MyVCFFileReader(resUrl.toString(),
-                        indexUrl.toString(),
+                reader = new MyVCFFileReader(resURL.toString(),
+                        indexURL.toString(),
                         false,
-                        downloaderUrl());
+                        fileDatabaseURL());
                 System.out.println("Reader!! ");
             } catch (Exception ex) {
                 throw new InternalErrorException(ex.getMessage(), "19");
@@ -830,13 +831,13 @@ public class RemoteFileServiceImpl implements FileService {
     }
 
     //@HystrixCommand
-    public String resUrl() {
-        return RES_SERVICE;
+    public String resURL() {
+        return loadBalancer.choose("RES2").getUri().toString();
     }
 
     //@HystrixCommand
-    public String downloaderUrl() {
-        return FILEDATABASE_SERVICE;
+    public String fileDatabaseURL() {
+        return loadBalancer.choose("FILEDATABASE2").getUri().toString();
     }
 
     //@HystrixCommand

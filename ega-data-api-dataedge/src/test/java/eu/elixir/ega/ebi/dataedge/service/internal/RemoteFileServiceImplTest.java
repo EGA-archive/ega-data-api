@@ -35,6 +35,8 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
+import org.springframework.cloud.client.discovery.simple.SimpleDiscoveryProperties;
+import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -48,6 +50,8 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.net.URI;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -81,7 +85,10 @@ public class RemoteFileServiceImplTest {
     private RemoteFileServiceImpl remoteFileServiceImpl;
 
     @Mock
-    RestTemplate restTemplate;
+    private LoadBalancerClient loadBalancer;
+
+    @Mock
+    private RestTemplate restTemplate;
 
     @Mock
     private RetryTemplate retryTemplate;
@@ -102,7 +109,6 @@ public class RemoteFileServiceImplTest {
         try {
             remoteFileServiceImpl.getFile(authentication, FILEID, "plain", "destinationKey", "destinationIV", 0, 0,
                     new MockHttpServletRequest(), new MockHttpServletResponse());
-
         } catch (Exception e) {
             fail("Should not have thrown an exception");
         }
@@ -119,7 +125,6 @@ public class RemoteFileServiceImplTest {
         try {
             remoteFileServiceImpl.getFileHead(authentication, FILEID, "plain", new MockHttpServletRequest(),
                     new MockHttpServletResponse());
-
         } catch (Exception e) {
             fail("Should not have thrown an exception");
         }
@@ -134,11 +139,9 @@ public class RemoteFileServiceImplTest {
     @Test
     public void testGetFileHeader() {
         try {
-
             final CRAMReferenceSource cramReferenceSource = mock(CRAMReferenceSource.class);
             final Object samFileHeaderOutput = remoteFileServiceImpl.getFileHeader(authentication, FILEID, "plain",
                     "destinationKey", cramReferenceSource);
-
             assertThat(samFileHeaderOutput, equalTo(samFileHeader));
         } catch (Exception e) {
             fail("Should not have thrown an exception");
@@ -153,11 +156,9 @@ public class RemoteFileServiceImplTest {
     @Test
     public void testGetById() {
         try {
-
             remoteFileServiceImpl.getById(authentication, "file", FILEID, "plain", "reference", 0, 0, null, null, null,
                     true, "destinationFormat", "destinationKey", new MockHttpServletRequest(),
                     new MockHttpServletResponse());
-
         } catch (Exception e) {
             fail("Should not have thrown an exception");
         }
@@ -174,30 +175,29 @@ public class RemoteFileServiceImplTest {
             remoteFileServiceImpl.getVCFById(authentication, "file", FILEID, "plain", "reference", 0, 0, null, null,
                     null, true, "destinationFormat", "destinationKey", new MockHttpServletRequest(),
                     new MockHttpServletResponse());
-
         } catch (Exception e) {
             fail("Should not have thrown an exception");
         }
     }
 
     /**
-     * Test class for {@link RemoteFileServiceImpl#resUrl()}. Verify the output
-     * resUrl.
+     * Test class for {@link RemoteFileServiceImpl#resURL()}. Verify the output
+     * resURL.
      */
     @Test
-    public void testResUrl() {
-        final String resUrl = remoteFileServiceImpl.resUrl();
-        assertThat(resUrl, equalTo(RES_SERVICE));
+    public void testResURL() {
+        final String resURL = remoteFileServiceImpl.resURL();
+        assertThat(resURL, equalTo("http://res/"));
     }
 
     /**
-     * Test class for {@link RemoteFileServiceImpl#downloaderUrl()}. Verify the
+     * Test class for {@link RemoteFileServiceImpl#fileDatabaseURL()}. Verify the
      * output downloadUrl.
      */
     @Test
-    public void testDownloadUrl() {
-        final String downloadUrl = remoteFileServiceImpl.downloaderUrl();
-        assertThat(downloadUrl, equalTo(FILEDATABASE_SERVICE));
+    public void testFileDatabaseURL() {
+        final String downloadURL = remoteFileServiceImpl.fileDatabaseURL();
+        assertThat(downloadURL, equalTo("http://filedatabase/"));
     }
 
     /**
@@ -266,6 +266,11 @@ public class RemoteFileServiceImplTest {
         when(samReaderFactory.samRecordFactory(any())).thenReturn(samReaderFactory);
         when(samReaderFactory.open(any(SamInputResource.class))).thenReturn(samReader);
         when(samReader.getFileHeader()).thenReturn(samFileHeader);
+
+        SimpleDiscoveryProperties.SimpleServiceInstance fileDatabaseServiceInstance = new SimpleDiscoveryProperties.SimpleServiceInstance(new URL("http://filedatabase/").toURI());
+        when(loadBalancer.choose("FILEDATABASE2")).thenReturn(fileDatabaseServiceInstance);
+        SimpleDiscoveryProperties.SimpleServiceInstance resServiceInstance = new SimpleDiscoveryProperties.SimpleServiceInstance(new URL("http://res/").toURI());
+        when(loadBalancer.choose("RES2")).thenReturn(resServiceInstance);
 
         when(restTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}/datasets", FileDataset[].class, FILEID))
                 .thenReturn(forEntityDataset);
