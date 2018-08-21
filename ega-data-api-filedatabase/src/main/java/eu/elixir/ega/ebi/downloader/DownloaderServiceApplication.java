@@ -27,7 +27,6 @@ import org.springframework.cache.support.SimpleCacheManager;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Profile;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Arrays;
@@ -48,14 +47,7 @@ public class DownloaderServiceApplication extends SpringBootServletInitializer {
         return application.sources(DownloaderServiceApplication.class);
     }
 
-    @Profile("!no-oss")
-    @Bean
     @LoadBalanced
-    public RestTemplate ossRestTemplate() {
-        return new RestTemplate();
-    }
-
-    @Profile("no-oss")
     @Bean
     public RestTemplate restTemplate() {
         return new RestTemplate();

@@ -49,7 +49,7 @@ import eu.elixir.ega.ebi.reencryptionmvc.service.KeyService;
 @PrepareForTest(GenericArchiveServiceImpl.class)
 public class GenericArchiveServiceImplTest {
 
-    public static final String SERVICE_URL = "http://FILEDATABASE";
+    public static final String SERVICE_URL = "http://FILEDATABASE2";
 
     @InjectMocks
     private GenericArchiveServiceImpl genericArchiveServiceImpl;

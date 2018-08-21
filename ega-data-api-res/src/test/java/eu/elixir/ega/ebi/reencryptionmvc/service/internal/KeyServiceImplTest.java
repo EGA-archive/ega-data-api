@@ -69,7 +69,7 @@ public class KeyServiceImplTest {
     private KeyServiceImpl keyServiceImpl;
 
     @Mock
-    RestTemplate restTemplate;
+    private RestTemplate restTemplate;
 
     @Before
     public void initMocks() {

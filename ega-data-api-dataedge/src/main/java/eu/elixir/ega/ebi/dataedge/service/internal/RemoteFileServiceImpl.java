@@ -81,7 +81,7 @@ import static org.apache.catalina.connector.OutputBuffer.DEFAULT_BUFFER_SIZE;
 @EnableDiscoveryClient
 public class RemoteFileServiceImpl implements FileService {
 
-    public static final String SERVICE_URL = "http://FILEDATABASE";
+    public static final String SERVICE_URL = "http://FILEDATABASE2";
     public static final String RES_URL = "http://RES2";
 
     @Autowired

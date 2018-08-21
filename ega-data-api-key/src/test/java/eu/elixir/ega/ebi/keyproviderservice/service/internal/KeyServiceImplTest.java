@@ -155,7 +155,7 @@ public final class KeyServiceImplTest {
     @Test
     public void testGetKeyIDs() {
         final Set<Long> keyIds = new HashSet<>();
-        keyIds.add(1l);
+        keyIds.add(1L);
         when(myCipherConfig.getKeyIDs()).thenReturn(keyIds);
         assertThat(keyService.getKeyIDs(KEY_TYPE), equalTo(keyIds));
     }

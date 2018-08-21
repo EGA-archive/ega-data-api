@@ -41,7 +41,7 @@ import javax.servlet.http.HttpServletResponse;
 @EnableDiscoveryClient
 public class GenericArchiveServiceImpl implements ArchiveService {
 
-    public static final String SERVICE_URL = "http://FILEDATABASE";
+    public static final String SERVICE_URL = "http://FILEDATABASE2";
 
     @Autowired
     RestTemplate restTemplate;

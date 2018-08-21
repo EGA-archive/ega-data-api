@@ -55,7 +55,7 @@ import static org.powermock.api.mockito.PowerMockito.when;
 @TestPropertySource(locations = "classpath:application-test.properties")
 public class RemoteTicketServiceImplTest {
 
-    public static final String SERVICE_URL = "http://FILEDATABASE";
+    public static final String SERVICE_URL = "http://FILEDATABASE2";
     public static final String RES_URL = "http://RES2";
     public static final String FILEID = "fileId";
     public static final String DATASET1 = "DATASET1";
@@ -163,4 +163,5 @@ public class RemoteTicketServiceImplTest {
                 .thenReturn(forEntityDataset);
         when(restTemplate.getForEntity(SERVICE_URL + "/file/{fileId}", File[].class, FILEID)).thenReturn(forEntity);
     }
+
 }

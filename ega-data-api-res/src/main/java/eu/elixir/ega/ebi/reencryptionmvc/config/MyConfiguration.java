@@ -27,7 +27,6 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Arrays;
@@ -64,14 +63,7 @@ public class MyConfiguration {
     @Value("${eureka.client.serviceUrl.defaultZone}")
     private String eurekaUrl;
 
-    @Profile("!no-oss")
-    @Bean
     @LoadBalanced
-    public RestTemplate ossRestTemplate() {
-        return new RestTemplate();
-    }
-
-    @Profile("no-oss")
     @Bean
     public RestTemplate restTemplate() {
         return new RestTemplate();
@@ -79,15 +71,12 @@ public class MyConfiguration {
 
     @Bean
     public MyFireConfig MyCipherConfig() {
-        return new MyFireConfig(fireUrl,
-                fireArchive,
-                fireKey);
+        return new MyFireConfig(fireUrl, fireArchive, fireKey);
     }
 
     @Bean
     public MyAwsConfig MyAwsCipherConfig() {
-        return new MyAwsConfig(awsKey,
-                awsSecretKey, awsEndpointUrl, awsRegion);
+        return new MyAwsConfig(awsKey, awsSecretKey, awsEndpointUrl, awsRegion);
     }
 
     @Bean
@@ -96,7 +85,7 @@ public class MyConfiguration {
     }
 
     @Bean
-    public Cache<String, EgaAESFileHeader> myCache() throws Exception {
+    public Cache<String, EgaAESFileHeader> myCache() {
         return (new My2KCacheFactory()).getObject();
     }
 

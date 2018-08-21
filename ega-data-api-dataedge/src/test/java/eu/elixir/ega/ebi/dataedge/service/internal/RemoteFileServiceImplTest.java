@@ -68,7 +68,7 @@ import static org.powermock.api.mockito.PowerMockito.*;
 @TestPropertySource(locations = "classpath:application-test.properties")
 public class RemoteFileServiceImplTest {
 
-    public static final String SERVICE_URL = "http://FILEDATABASE";
+    public static final String SERVICE_URL = "http://FILEDATABASE2";
     public static final String RES_URL = "http://RES2";
     public static final String DATASET1 = "DATASET1";
     public static final String DATASET2 = "DATASET2";
@@ -238,7 +238,7 @@ public class RemoteFileServiceImplTest {
         final File f = new File();
         f.setFileId(FILEID);
         f.setFileName("fileName");
-        f.setFileSize(100l);
+        f.setFileSize(100L);
         final File[] file = {f};
         authentication = mock(Authentication.class);
         samFileHeader = mock(SAMFileHeader.class);
@@ -250,7 +250,7 @@ public class RemoteFileServiceImplTest {
         when(authentication.getAuthorities()).thenReturn(authorities);
         when(forEntityDataset.getBody()).thenReturn(datasets);
         when(forEntity.getBody()).thenReturn(file);
-        when(forSize.getBody()).thenReturn(1000l);
+        when(forSize.getBody()).thenReturn(1000L);
         when(forResponseEntity.getBody()).thenReturn(fileIndexFiles);
         when(myVCFFileReader.getFileHeader()).thenReturn(vcfHeader);
         when(myVCFFileReader.iterator()).thenReturn(closeableIterator);

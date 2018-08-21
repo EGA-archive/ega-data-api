@@ -48,7 +48,7 @@ import java.util.*;
 @EnableDiscoveryClient
 public class RemoteTicketServiceImpl implements TicketService {
 
-    public static final String SERVICE_URL = "http://FILEDATABASE";
+    public static final String SERVICE_URL = "http://FILEDATABASE2";
     public static final String RES_URL = "http://RES2";
 
     @Autowired

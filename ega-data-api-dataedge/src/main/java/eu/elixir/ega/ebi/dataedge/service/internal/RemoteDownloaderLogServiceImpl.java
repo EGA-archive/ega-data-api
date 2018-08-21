@@ -43,7 +43,7 @@ import org.springframework.web.client.RestTemplate;
 @EnableDiscoveryClient
 public class RemoteDownloaderLogServiceImpl implements DownloaderLogService {
 
-    public static final String SERVICE_URL = "http://FILEDATABASE";
+    public static final String SERVICE_URL = "http://FILEDATABASE2";
 
     @Autowired
     private AsyncRestTemplate restTemplate;

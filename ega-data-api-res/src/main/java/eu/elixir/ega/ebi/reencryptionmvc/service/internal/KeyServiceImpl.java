@@ -49,7 +49,7 @@ public class KeyServiceImpl implements KeyService {
     public static final String SERVICE_URL = "http://KEYSERVER"; //ICE";
 
     @Autowired
-    RestTemplate restTemplate;
+    private RestTemplate restTemplate;
 
     private String keyServiceURL;
     private String cegaURL;
