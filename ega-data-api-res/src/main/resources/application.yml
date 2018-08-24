@@ -2,11 +2,11 @@ spring.profiles: no-oss
 
 eureka.client.enabled: false
 
-FILEDATABASE2:
+FILEDATABASE:
   listOfServers: ${FILEDATABASE_SERVERS:filedatabase}
 
 RES2:
   listOfServers: ${RES_SERVERS:res}
 
-KEYSERVER2:
+KEYSERVER:
   listOfServers: ${KEYS_SERVERS:keys}

@@ -268,7 +268,7 @@ public class RemoteFileServiceImplTest {
         when(samReader.getFileHeader()).thenReturn(samFileHeader);
 
         SimpleDiscoveryProperties.SimpleServiceInstance fileDatabaseServiceInstance = new SimpleDiscoveryProperties.SimpleServiceInstance(new URL("http://filedatabase/").toURI());
-        when(loadBalancer.choose("FILEDATABASE2")).thenReturn(fileDatabaseServiceInstance);
+        when(loadBalancer.choose("FILEDATABASE")).thenReturn(fileDatabaseServiceInstance);
         SimpleDiscoveryProperties.SimpleServiceInstance resServiceInstance = new SimpleDiscoveryProperties.SimpleServiceInstance(new URL("http://res/").toURI());
         when(loadBalancer.choose("RES2")).thenReturn(resServiceInstance);
 

@@ -196,9 +196,9 @@ public class My2KCachePageFactory implements FactoryBean<Cache<String, CachePage
         if (!myHeaderCache.containsKey(id)) { // Get Header (once in 24h)
             ArchiveSource source;
 
-            String fileDatabaseURL = getServiceURL("FILEDATABASE2");
+            String fileDatabaseURL = getServiceURL("FILEDATABASE");
             HttpGet sourceRequest = new HttpGet(fileDatabaseURL + "/file/" + id);
-            String keyServerURL = getServiceURL("KEYSERVER2");
+            String keyServerURL = getServiceURL("KEYSERVER");
             HttpGet keyRequest = new HttpGet(keyServerURL + "/keys/filekeys/" + id);
 
             EgaFile[] files;

@@ -1,5 +1,5 @@
 spring.cloud.config.uri: ${CONFIG_SERVICE:http://pg-ega-pro-04.ebi.ac.uk}:8888
-spring.application.name: filedatabase2
+spring.application.name: filedatabase # not used in OSS setup - overridden by remote application.properties
 logging.file: filedatabase.application.log
 
 ---

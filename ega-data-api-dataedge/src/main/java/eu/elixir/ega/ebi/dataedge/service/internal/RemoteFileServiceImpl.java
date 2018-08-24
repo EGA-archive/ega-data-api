@@ -837,7 +837,7 @@ public class RemoteFileServiceImpl implements FileService {
 
     //@HystrixCommand
     public String fileDatabaseURL() {
-        return loadBalancer.choose("FILEDATABASE2").getUri().toString();
+        return loadBalancer.choose("FILEDATABASE").getUri().toString();
     }
 
     //@HystrixCommand
