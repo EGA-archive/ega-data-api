@@ -108,7 +108,7 @@ public class RemoteDownloaderLogServiceImpl implements DownloaderLogService {
         //HttpEntity entity = new HttpEntity("parameters", headers);
 
         ListenableFuture<ResponseEntity<String>> futureEntity;
-        futureEntity = restTemplate.postForEntity(FILEDATABASE_SERVICE + "/log/download/", entity, String.class);
+        futureEntity = restTemplate.postForEntity(FILEDATABASE_SERVICE + "/log/event/", entity, String.class);
 
         futureEntity
                 .addCallback(new ListenableFutureCallback<ResponseEntity>() {
