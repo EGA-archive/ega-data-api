@@ -69,6 +69,7 @@ public class RemoteDownloaderLogServiceImplTest {
 
         whenNew(URI.class).withAnyArguments().thenReturn(uriMock);
         when(restTemplate.postForEntity(eq(FILEDATABASE_SERVICE + "/log/download/"), any(), eq(String.class))).thenReturn(futureEntityMock);
+        when(restTemplate.postForEntity(eq(FILEDATABASE_SERVICE + "/log/event/"), any(), eq(String.class))).thenReturn(futureEntityMock);
     }
 
     /**
@@ -101,6 +102,7 @@ public class RemoteDownloaderLogServiceImplTest {
 
             remoteDownloaderLogServiceImpl.logEvent(eventEntry);
         } catch (Exception e) {
+            e.printStackTrace(System.out);
             fail("Should not have thrown an exception");
         }
 
