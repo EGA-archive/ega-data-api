@@ -1,0 +1,12 @@
+spring.profiles: no-oss
+
+eureka.client.enabled: false
+
+FILEDATABASE:
+  listOfServers: ${FILEDATABASE_SERVERS:filedatabase}
+
+RES2:
+  listOfServers: ${RES_SERVERS:res}
+
+KEYSERVER:
+  listOfServers: ${KEYS_SERVERS:keys}

@@ -47,9 +47,9 @@ public class DownloaderServiceApplication extends SpringBootServletInitializer {
         return application.sources(DownloaderServiceApplication.class);
     }
 
-    @Bean
     @LoadBalanced
-    RestTemplate restTemplate() {
+    @Bean
+    public RestTemplate restTemplate() {
         return new RestTemplate();
     }
 

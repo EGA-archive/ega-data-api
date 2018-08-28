@@ -28,7 +28,7 @@ import java.util.concurrent.TimeUnit;
 public class My2KCacheFactory implements FactoryBean<Cache<String, EgaAESFileHeader>> { //extends SimpleJdbcDaoSupport
 
     @Override
-    public Cache<String, EgaAESFileHeader> getObject() throws Exception {
+    public Cache<String, EgaAESFileHeader> getObject() {
         return new Cache2kBuilder<String, EgaAESFileHeader>() {
         }
                 .expireAfterWrite(5, TimeUnit.MINUTES)    // expire/refresh after 5 minutes

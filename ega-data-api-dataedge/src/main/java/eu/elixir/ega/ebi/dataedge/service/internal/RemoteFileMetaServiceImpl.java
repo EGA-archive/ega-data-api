@@ -35,6 +35,8 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 
+import static eu.elixir.ega.ebi.shared.Constants.FILEDATABASE_SERVICE;
+
 /**
  * @author asenf
  */
@@ -43,16 +45,14 @@ import java.util.Iterator;
 @EnableDiscoveryClient
 public class RemoteFileMetaServiceImpl implements FileMetaService {
 
-    private static final String SERVICE_URL = "http://FILEDATABASE";
-
     @Autowired
-    RestTemplate restTemplate;
+    private RestTemplate restTemplate;
 
     @Override
     //@HystrixCommand
     @Cacheable(cacheNames = "fileFile")
     public File getFile(Authentication auth, String fileId) {
-        ResponseEntity<FileDataset[]> forEntityDataset = restTemplate.getForEntity(SERVICE_URL + "/file/{fileId}/datasets", FileDataset[].class, fileId);
+        ResponseEntity<FileDataset[]> forEntityDataset = restTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}/datasets", FileDataset[].class, fileId);
         FileDataset[] bodyDataset = forEntityDataset.getBody();
 //for (int i=0; i<bodyDataset.length; i++)
 //    System.out.println("(1) ["+i+"] " + bodyDataset[i].getFileId() + ", " + bodyDataset[i].getDatasetId());
@@ -67,7 +67,7 @@ public class RemoteFileMetaServiceImpl implements FileMetaService {
         }
 
         // Is this File in at least one Authorised Dataset?
-        ResponseEntity<File[]> forEntity = restTemplate.getForEntity(SERVICE_URL + "/file/{fileId}", File[].class, fileId);
+        ResponseEntity<File[]> forEntity = restTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}", File[].class, fileId);
         File[] body = forEntity.getBody();
         if (body != null && bodyDataset != null) {
             for (FileDataset f : bodyDataset) {
@@ -88,7 +88,7 @@ public class RemoteFileMetaServiceImpl implements FileMetaService {
     //@HystrixCommand
     @Cacheable(cacheNames = "fileDatasetFile")
     public Iterable<File> getDatasetFiles(String datasetId) {
-        File[] response = restTemplate.getForObject(SERVICE_URL + "/datasets/{datasetId}/files", File[].class, datasetId);
+        File[] response = restTemplate.getForObject(FILEDATABASE_SERVICE + "/datasets/{datasetId}/files", File[].class, datasetId);
         return Arrays.asList(response);
     }
 

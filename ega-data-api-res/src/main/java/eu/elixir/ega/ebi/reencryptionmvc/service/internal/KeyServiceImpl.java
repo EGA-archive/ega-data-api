@@ -39,6 +39,8 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.Iterator;
 
+import static eu.elixir.ega.ebi.shared.Constants.KEYS_SERVICE;
+
 /**
  * @author asenf
  */
@@ -46,10 +48,8 @@ import java.util.Iterator;
 @EnableDiscoveryClient
 public class KeyServiceImpl implements KeyService {
 
-    private static final String SERVICE_URL = "http://KEYSERVER"; //ICE";
-
     @Autowired
-    RestTemplate restTemplate;
+    private RestTemplate restTemplate;
 
     private String keyServiceURL;
     private String cegaURL;
@@ -60,7 +60,7 @@ public class KeyServiceImpl implements KeyService {
     @Cacheable(cacheNames = "key")
     public String getFileKey(String fileId) {
 
-        ResponseEntity<String> forEntity = restTemplate.getForEntity(SERVICE_URL + "/keys/filekeys/{fileId}", String.class, fileId);
+        ResponseEntity<String> forEntity = restTemplate.getForEntity(KEYS_SERVICE + "/keys/filekeys/{fileId}", String.class, fileId);
 
         return forEntity.getBody();
     }
@@ -70,7 +70,7 @@ public class KeyServiceImpl implements KeyService {
     //@Retryable(maxAttempts = 4, backoff = @Backoff(delay = 5000))
     public KeyPath getKeyPath(String key) {
 
-        ResponseEntity<KeyPath> forEntity = restTemplate.getForEntity(SERVICE_URL + "/keys/retrieve/{keyId}/private/path", KeyPath.class, key);
+        ResponseEntity<KeyPath> forEntity = restTemplate.getForEntity(KEYS_SERVICE + "/keys/retrieve/{keyId}/private/path", KeyPath.class, key);
 
         return forEntity.getBody();
     }

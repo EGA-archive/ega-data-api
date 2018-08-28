@@ -15,14 +15,9 @@
  */
 package eu.elixir.ega.ebi.dataedge.service.internal;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.powermock.api.mockito.PowerMockito.mock;
-import static org.powermock.api.mockito.PowerMockito.when;
-
-import java.util.ArrayList;
-import java.util.Collection;
-
+import eu.elixir.ega.ebi.dataedge.dto.DownloadEntry;
+import eu.elixir.ega.ebi.dataedge.dto.File;
+import eu.elixir.ega.ebi.dataedge.dto.FileDataset;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -38,13 +33,18 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.web.client.RestTemplate;
 
-import eu.elixir.ega.ebi.dataedge.dto.DownloadEntry;
-import eu.elixir.ega.ebi.dataedge.dto.File;
-import eu.elixir.ega.ebi.dataedge.dto.FileDataset;
+import java.util.ArrayList;
+import java.util.Collection;
+
+import static eu.elixir.ega.ebi.shared.Constants.FILEDATABASE_SERVICE;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.powermock.api.mockito.PowerMockito.mock;
+import static org.powermock.api.mockito.PowerMockito.when;
 
 /**
  * Test class for {@link RemoteFileMetaServiceImpl}.
- * 
+ *
  * @author amohan
  */
 @RunWith(PowerMockRunner.class)
@@ -52,10 +52,9 @@ import eu.elixir.ega.ebi.dataedge.dto.FileDataset;
 @TestPropertySource(locations = "classpath:application-test.properties")
 public class RemoteFileMetaServiceImplTest {
 
-    private static final String SERVICE_URL = "http://FILEDATABASE";
-    private static final String DATASET1 = "DATASET1";
-    private static final String DATASET2 = "DATASET2";
-    private static final String FILEID = "fileId";
+    public static final String DATASET1 = "DATASET1";
+    public static final String DATASET2 = "DATASET2";
+    public static final String FILEID = "fileId";
 
     @InjectMocks
     private RemoteFileMetaServiceImpl remoteFileMetaServiceImpl;
@@ -64,7 +63,7 @@ public class RemoteFileMetaServiceImplTest {
     RestTemplate syncRestTemplate;
 
     @Before
-    public void initMocks() throws Exception {
+    public void initMocks() {
         MockitoAnnotations.initMocks(this);
     }
 
@@ -73,24 +72,24 @@ public class RemoteFileMetaServiceImplTest {
      * {@link RemoteDownloaderLogServiceImpl#logDownload(DownloadEntry)}. Verify the
      * fileOutput datasetId.
      */
-    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @SuppressWarnings({"rawtypes", "unchecked"})
     @Test
     public void testLogDownload() {
         final Authentication auth = mock(Authentication.class);
         final ResponseEntity<FileDataset[]> forEntityDataset = mock(ResponseEntity.class);
-        final FileDataset[] datasets = { new FileDataset(FILEID, DATASET1) };
+        final FileDataset[] datasets = {new FileDataset(FILEID, DATASET1)};
         final Collection authorities = new ArrayList<GrantedAuthority>();
         authorities.add(new SimpleGrantedAuthority(DATASET1));
         authorities.add(new SimpleGrantedAuthority(DATASET2));
         final ResponseEntity<File[]> forEntity = mock(ResponseEntity.class);
         final File f = new File();
         f.setFileId(FILEID);
-        final File[] files = { f };
+        final File[] files = {f};
 
         when(auth.getAuthorities()).thenReturn(authorities);
-        when(syncRestTemplate.getForEntity(SERVICE_URL + "/file/{fileId}/datasets", FileDataset[].class, FILEID))
+        when(syncRestTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}/datasets", FileDataset[].class, FILEID))
                 .thenReturn(forEntityDataset);
-        when(syncRestTemplate.getForEntity(SERVICE_URL + "/file/{fileId}", File[].class, FILEID))
+        when(syncRestTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}", File[].class, FILEID))
                 .thenReturn(forEntity);
         when(forEntityDataset.getBody()).thenReturn(datasets);
         when(forEntity.getBody()).thenReturn(files);
@@ -109,9 +108,9 @@ public class RemoteFileMetaServiceImplTest {
     public void testGetDatasetFiles() {
         final File f = new File();
         f.setFileId(FILEID);
-        final File[] files = { f };
+        final File[] files = {f};
 
-        when(syncRestTemplate.getForObject(SERVICE_URL + "/datasets/{datasetId}/files", File[].class, DATASET1))
+        when(syncRestTemplate.getForObject(FILEDATABASE_SERVICE + "/datasets/{datasetId}/files", File[].class, DATASET1))
                 .thenReturn(files);
 
         final Iterable<File> fileOutput = remoteFileMetaServiceImpl.getDatasetFiles(DATASET1);

@@ -17,8 +17,6 @@ package eu.elixir.ega.ebi.dataedge.service.internal;
 
 import com.google.common.io.ByteStreams;
 import com.google.common.io.CountingOutputStream;
-import com.netflix.appinfo.InstanceInfo;
-import com.netflix.discovery.EurekaClient;
 import eu.elixir.ega.ebi.dataedge.config.*;
 import eu.elixir.ega.ebi.dataedge.dto.*;
 import eu.elixir.ega.ebi.dataedge.service.DownloaderLogService;
@@ -40,6 +38,7 @@ import htsjdk.variant.vcf.VCFHeader;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
+import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -61,7 +60,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.math.BigInteger;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.security.DigestInputStream;
@@ -72,6 +70,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
+import static eu.elixir.ega.ebi.shared.Constants.FILEDATABASE_SERVICE;
+import static eu.elixir.ega.ebi.shared.Constants.RES_SERVICE;
 import static org.apache.catalina.connector.OutputBuffer.DEFAULT_BUFFER_SIZE;
 
 /**
@@ -83,25 +83,22 @@ import static org.apache.catalina.connector.OutputBuffer.DEFAULT_BUFFER_SIZE;
 @EnableDiscoveryClient
 public class RemoteFileServiceImpl implements FileService {
 
-    private static final String SERVICE_URL = "http://FILEDATABASE";
-    private static final String RES_URL = "http://RES2";
+    @Autowired
+    private LoadBalancerClient loadBalancer;
 
     @Autowired
-    RestTemplate restTemplate;
+    private RestTemplate restTemplate;
 
     @Autowired
-    RetryTemplate retryTemplate;
+    private RetryTemplate retryTemplate;
 
     // Database Repositories/Services
 
     @Autowired
-    MyExternalConfig externalConfig;
+    private MyExternalConfig externalConfig;
 
     @Autowired
     private DownloaderLogService downloaderLogService;
-
-    @Autowired
-    private EurekaClient discoveryClient;
 
     @Override
     //@HystrixCommand
@@ -307,10 +304,10 @@ public class RemoteFileServiceImpl implements FileService {
         // Ascertain Access Permissions for specified File ID
         File reqFile = getReqFile(fileId, auth, null);
         if (reqFile != null) {
-            URL resUrl;
+            URL resURL;
             try {
-                resUrl = new URL(resUrl() + "/file/archive/" + reqFile.getFileId()); // Just specify file ID
-                SeekableStream cIn = new EgaSeekableCachedResStream(resUrl, null, null, reqFile.getFileSize()); // Deals with coordinates
+                resURL = new URL(resURL() + "/file/archive/" + reqFile.getFileId()); // Just specify file ID
+                SeekableStream cIn = new EgaSeekableCachedResStream(resURL, null, null, reqFile.getFileSize()); // Deals with coordinates
                 SamReader reader = (x == null) ?
                         (SamReaderFactory.make()            // BAM File
                                 .validationStringency(ValidationStringency.LENIENT)
@@ -325,8 +322,6 @@ public class RemoteFileServiceImpl implements FileService {
                                 .open(SamInputResource.of(cIn)));
                 header = reader.getFileHeader();
                 reader.close();
-            } catch (MalformedURLException ex) {
-                Logger.getLogger(RemoteFileServiceImpl.class.getName()).log(Level.SEVERE, null, ex);
             } catch (IOException ex) {
                 Logger.getLogger(RemoteFileServiceImpl.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -379,7 +374,7 @@ public class RemoteFileServiceImpl implements FileService {
         if (reqFile != null) {
 
             // SeekableStream on top of RES (using Eureka to obtain RES Base URL)
-            SamInputResource inputResource = null;
+            SamInputResource inputResource;
             CRAMReferenceSource x = null;
             //SeekableBufferedStream bIn = null, 
             //                       bIndexIn = null;
@@ -398,13 +393,13 @@ public class RemoteFileServiceImpl implements FileService {
                 }
 
                 // BAM/CRAM File
-                URL resUrl = new URL(resUrl() + "file/archive/" + reqFile.getFileId()); // Just specify file ID
-                SeekableStream cIn = (new EgaSeekableCachedResStream(resUrl, null, null, reqFile.getFileSize())).setExtension(extension); // Deals with coordinates
+                URL resURL = new URL(resURL() + "file/archive/" + reqFile.getFileId()); // Just specify file ID
+                SeekableStream cIn = (new EgaSeekableCachedResStream(resURL, null, null, reqFile.getFileSize())).setExtension(extension); // Deals with coordinates
                 //bIn = new SeekableBufferedStream(cIn);
                 // BAI/CRAI File
                 FileIndexFile fileIndexFile = getFileIndexFile(reqFile.getFileId());
                 File reqIndexFile = getReqFile(fileIndexFile.getIndexFileId(), auth, null);
-                URL indexUrl = new URL(resUrl() + "file/archive/" + fileIndexFile.getIndexFileId()); // Just specify index ID
+                URL indexUrl = new URL(resURL() + "file/archive/" + fileIndexFile.getIndexFileId()); // Just specify index ID
                 SeekableStream cIndexIn = (new EgaSeekableCachedResStream(indexUrl, null, null, reqIndexFile.getFileSize()));
 
                 inputResource = SamInputResource.of(cIn).index(cIndexIn);
@@ -541,7 +536,7 @@ public class RemoteFileServiceImpl implements FileService {
         // Ascertain Access Permissions for specified File ID
         File reqFile = getReqFile(localFileId, auth, request);
         if (reqFile != null) {
-            URL resUrl, indexUrl;
+            URL resURL, indexURL;
             MyVCFFileReader reader;
 
             try {
@@ -553,16 +548,16 @@ public class RemoteFileServiceImpl implements FileService {
                 }
 
                 // VCF File
-                resUrl = new URL(resUrl() + "file/archive/" + reqFile.getFileId() + vcf_ext[0]); // Just specify file ID
+                resURL = new URL(resURL() + "file/archive/" + reqFile.getFileId() + vcf_ext[0]); // Just specify file ID
                 FileIndexFile fileIndexFile = getFileIndexFile(reqFile.getFileId());
-                indexUrl = new URL(resUrl() + "file/archive/" + fileIndexFile.getIndexFileId() + vcf_ext[1]); // Just specify index ID
+                indexURL = new URL(resURL() + "file/archive/" + fileIndexFile.getIndexFileId() + vcf_ext[1]); // Just specify index ID
 
                 System.out.println("Opening Reader!! ");
                 // VCFFileReader with input stream based on RES URL
-                reader = new MyVCFFileReader(resUrl.toString(),
-                        indexUrl.toString(),
+                reader = new MyVCFFileReader(resURL.toString(),
+                        indexURL.toString(),
                         false,
-                        downloaderUrl());
+                        fileDatabaseURL());
                 System.out.println("Reader!! ");
             } catch (Exception ex) {
                 throw new InternalErrorException(ex.getMessage(), "19");
@@ -576,7 +571,7 @@ public class RemoteFileServiceImpl implements FileService {
             // Handle Request here - query Reader according to parameters
             int iStart = (int) (start);
             int iEnd = (int) (end);
-            CloseableIterator<VariantContext> query = null;
+            CloseableIterator<VariantContext> query;
             if (iEnd > 0 && iEnd >= iStart && iStart > 0 && reference != null && reference.length() > 0) { // ref was specified
                 query = reader.query(reference, iStart, iEnd);
             } else { // no ref - ignore start/end
@@ -621,7 +616,6 @@ public class RemoteFileServiceImpl implements FileService {
                         ipAddress, "htsget vcf/bcf", user_email, destinationFormat,
                         start, end, bytes);
                 downloaderLogService.logDownload(dle);
-
             }
 
 
@@ -667,7 +661,7 @@ public class RemoteFileServiceImpl implements FileService {
                           Long startCoord,
                           Long endCoord) {
         destFormat = destFormat.equals("AES") ? "aes128" : destFormat; // default to 128-bit if not specified
-        String url = RES_URL + "/file";
+        String url = RES_SERVICE + "/file";
         if (fileStableIdPath.startsWith("EGAF")) { // If an ID is specified - resolve this in RES
             url += "/archive/" + fileStableIdPath;
         }
@@ -797,11 +791,11 @@ public class RemoteFileServiceImpl implements FileService {
             }
         }
 
-        ResponseEntity<FileDataset[]> forEntityDataset = restTemplate.getForEntity(SERVICE_URL + "/file/{fileId}/datasets", FileDataset[].class, fileId);
+        ResponseEntity<FileDataset[]> forEntityDataset = restTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}/datasets", FileDataset[].class, fileId);
         FileDataset[] bodyDataset = forEntityDataset.getBody();
 
         File reqFile = null;
-        ResponseEntity<File[]> forEntity = restTemplate.getForEntity(SERVICE_URL + "/file/{fileId}", File[].class, fileId);
+        ResponseEntity<File[]> forEntity = restTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}", File[].class, fileId);
         File[] body = forEntity.getBody();
         if (body != null && bodyDataset != null) {
             for (FileDataset f : bodyDataset) {
@@ -816,7 +810,7 @@ public class RemoteFileServiceImpl implements FileService {
             if (reqFile != null) {
                 // If there's no file size in the database, obtain it from RES
                 if (reqFile.getFileSize() == 0) {
-                    ResponseEntity<Long> forSize = restTemplate.getForEntity(RES_URL + "/file/archive/{fileId}/size", Long.class, fileId);
+                    ResponseEntity<Long> forSize = restTemplate.getForEntity(RES_SERVICE + "/file/archive/{fileId}/size", Long.class, fileId);
                     reqFile.setFileSize(forSize.getBody());
                 }
             } else { // 403 Unauthorized
@@ -837,22 +831,20 @@ public class RemoteFileServiceImpl implements FileService {
     }
 
     //@HystrixCommand
-    public String resUrl() {
-        InstanceInfo instance = discoveryClient.getNextServerFromEureka("RES2", false);
-        return instance.getHomePageUrl();
+    public String resURL() {
+        return loadBalancer.choose("RES2").getUri().toString();
     }
 
     //@HystrixCommand
-    public String downloaderUrl() {
-        InstanceInfo instance = discoveryClient.getNextServerFromEureka("FILEDATABASE", false);
-        return instance.getHomePageUrl();
+    public String fileDatabaseURL() {
+        return loadBalancer.choose("FILEDATABASE").getUri().toString();
     }
 
     //@HystrixCommand
     @Cacheable(cacheNames = "indexFile")
     private FileIndexFile getFileIndexFile(String fileId) {
         FileIndexFile indexFile = null;
-        ResponseEntity<FileIndexFile[]> forEntity = restTemplate.getForEntity(SERVICE_URL + "/file/{fileId}/index", FileIndexFile[].class, fileId);
+        ResponseEntity<FileIndexFile[]> forEntity = restTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}/index", FileIndexFile[].class, fileId);
         FileIndexFile[] body = forEntity.getBody();
         if (body != null && body.length >= 1) {
             indexFile = body[0];

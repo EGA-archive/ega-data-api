@@ -17,59 +17,51 @@ package eu.elixir.ega.ebi.reencryptionmvc.service.internal;
 
 import com.google.gson.Gson;
 import eu.elixir.ega.ebi.reencryptionmvc.dto.KeyPath;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.HashMap;
-import org.apache.commons.codec.DecoderException;
 import org.apache.commons.io.IOUtils;
-import org.bouncycastle.openpgp.PGPException;
 import org.bouncycastle.openpgp.PGPPublicKeyRing;
 import org.bouncycastle.openpgp.PGPPublicKeyRingCollection;
 import org.bouncycastle.openpgp.jcajce.JcaPGPObjectFactory;
 import org.bouncycastle.util.encoders.Base64;
 import org.bouncycastle.util.io.pem.PemObject;
 import org.bouncycastle.util.io.pem.PemReader;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.fail;
-import static org.powermock.api.mockito.PowerMockito.mock;
-import static org.powermock.api.mockito.PowerMockito.when;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
-import static org.mockito.Matchers.any;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import static org.powermock.api.mockito.PowerMockito.mock;
-import static org.powermock.api.mockito.PowerMockito.mockStatic;
-import static org.powermock.api.mockito.PowerMockito.when;
-import static org.powermock.api.mockito.PowerMockito.whenNew;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.InputStream;
+import java.net.URL;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.HashMap;
+
+import static eu.elixir.ega.ebi.shared.Constants.KEYS_SERVICE;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.fail;
+import static org.mockito.Matchers.any;
+import static org.powermock.api.mockito.PowerMockito.*;
+
 /**
  * Test class for {@link KeyServiceImpl}.
- * 
+ *
  * @author amohan
  */
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({ KeyServiceImpl.class, Gson.class, IOUtils.class })
+@PrepareForTest({KeyServiceImpl.class, Gson.class, IOUtils.class})
 public class KeyServiceImplTest {
-
-    private static final String SERVICE_URL = "http://KEYSERVER";
 
     @InjectMocks
     private KeyServiceImpl keyServiceImpl;
 
     @Mock
-    RestTemplate restTemplate;
+    private RestTemplate restTemplate;
 
     @Before
     public void initMocks() {
@@ -84,7 +76,7 @@ public class KeyServiceImplTest {
     public void testGetFileKey() {
         final ResponseEntity<String> mockResponseEntity = mock(ResponseEntity.class);
         final String keyMock = "body Output";
-        when(restTemplate.getForEntity(SERVICE_URL + "/keys/filekeys/{fileId}", String.class, "fileId"))
+        when(restTemplate.getForEntity(KEYS_SERVICE + "/keys/filekeys/{fileId}", String.class, "fileId"))
                 .thenReturn(mockResponseEntity);
         when(mockResponseEntity.getBody()).thenReturn(keyMock);
 
@@ -100,8 +92,8 @@ public class KeyServiceImplTest {
     @Test
     public void testGetKeyPath() {
         final ResponseEntity<KeyPath> mockResponseEntity = mock(ResponseEntity.class);
-        final KeyPath keyPathsMock = new KeyPath( "path1", "path2" );
-        when(restTemplate.getForEntity(SERVICE_URL + "/keys/retrieve/{keyId}/private/path", KeyPath.class, "key"))
+        final KeyPath keyPathsMock = new KeyPath("path1", "path2");
+        when(restTemplate.getForEntity(KEYS_SERVICE + "/keys/retrieve/{keyId}/private/path", KeyPath.class, "key"))
                 .thenReturn(mockResponseEntity);
         when(mockResponseEntity.getBody()).thenReturn(keyPathsMock);
 
@@ -113,7 +105,7 @@ public class KeyServiceImplTest {
     /**
      * Test class for {@link LocalEgaKeyServiceImpl#getRSAKeyById(String)}. Verify
      * the output RSAKey.
-     * 
+     *
      * @throws Exception
      */
     @Test
@@ -146,11 +138,11 @@ public class KeyServiceImplTest {
     /**
      * Test class for {@link LocalEgaKeyServiceImpl#getPGPPublicKeyById(String)}.
      * Verify code is executing without errors.
-     * 
+     *
      * @throws Exception
      */
     @Test
-    public void testGetPGPPublicKeyById() throws Exception {
+    public void testGetPGPPublicKeyById() {
         try {
             byte[] testPubKeyRing = Base64.decode("mQGiBEAR8jYRBADNifuSopd20JOQ5x30ljIaY0M6927+vo09NeNxS3KqItba"
                     + "nz9o5e2aqdT0W1xgdHYZmdElOHTTsugZxdXTEhghyxoo3KhVcNnTABQyrrvX"

@@ -15,8 +15,6 @@
  */
 package eu.elixir.ega.ebi.dataedge.service.internal;
 
-import com.netflix.appinfo.InstanceInfo;
-import com.netflix.discovery.EurekaClient;
 import eu.elixir.ega.ebi.dataedge.config.NotFoundException;
 import eu.elixir.ega.ebi.dataedge.config.VerifyMessageNew;
 import eu.elixir.ega.ebi.dataedge.dto.*;
@@ -40,6 +38,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.*;
 
+import static eu.elixir.ega.ebi.shared.Constants.FILEDATABASE_SERVICE;
+import static eu.elixir.ega.ebi.shared.Constants.RES_SERVICE;
+
 //import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 
 /**
@@ -50,16 +51,11 @@ import java.util.*;
 @EnableDiscoveryClient
 public class RemoteTicketServiceImpl implements TicketService {
 
-    private static final String SERVICE_URL = "http://FILEDATABASE";
+    @Autowired
+    private MyExternalConfig externalConfig;
 
     @Autowired
-    MyExternalConfig externalConfig;
-
-    @Autowired
-    RestTemplate restTemplate;
-
-    @Autowired
-    private EurekaClient discoveryClient;
+    private RestTemplate restTemplate;
 
     /**
      * Use the index to determine the chunk boundaries for the required intervals.
@@ -302,11 +298,11 @@ public class RemoteTicketServiceImpl implements TicketService {
             }
         }
 
-        ResponseEntity<FileDataset[]> forEntityDataset = restTemplate.getForEntity(SERVICE_URL + "/file/{fileId}/datasets", FileDataset[].class, fileId);
+        ResponseEntity<FileDataset[]> forEntityDataset = restTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}/datasets", FileDataset[].class, fileId);
         FileDataset[] bodyDataset = forEntityDataset.getBody();
 
         File reqFile = null;
-        ResponseEntity<File[]> forEntity = restTemplate.getForEntity(SERVICE_URL + "/file/{fileId}", File[].class, fileId);
+        ResponseEntity<File[]> forEntity = restTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}", File[].class, fileId);
         File[] body = forEntity.getBody();
         if ((body != null && body.length > 0) && bodyDataset != null) {
             for (FileDataset f : bodyDataset) {
@@ -328,7 +324,7 @@ public class RemoteTicketServiceImpl implements TicketService {
     @Cacheable(cacheNames = "indexFile")
     private FileIndexFile getFileIndexFile(String fileId) {
         FileIndexFile indexFile = null;
-        ResponseEntity<FileIndexFile[]> forEntity = restTemplate.getForEntity(SERVICE_URL + "/file/{fileId}/index", FileIndexFile[].class, fileId);
+        ResponseEntity<FileIndexFile[]> forEntity = restTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}/index", FileIndexFile[].class, fileId);
         FileIndexFile[] body = forEntity.getBody();
         if (body != null && body.length >= 1) {
             indexFile = body[0];
@@ -338,8 +334,7 @@ public class RemoteTicketServiceImpl implements TicketService {
 
     //@HystrixCommand
     public String resUrl() {
-        InstanceInfo instance = discoveryClient.getNextServerFromEureka("RES", false);
-        return instance.getHomePageUrl();
+        return RES_SERVICE;
     }
 
 }

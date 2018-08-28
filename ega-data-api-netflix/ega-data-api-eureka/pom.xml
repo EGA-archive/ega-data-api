@@ -8,7 +8,7 @@
 		<version>0.0.1-SNAPSHOT</version>
 	</parent>
 	<artifactId>ega-data-api-eureka</artifactId>
-	<name>Ega Data API Eureka</name>
+	<name>EGA Data API Eureka</name>
 	<description>Plain Vanilla Discovery Server based on Eureka</description>
 	<packaging>jar</packaging>
 

@@ -15,20 +15,7 @@
  */
 package eu.elixir.ega.ebi.dataedge.service.internal;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.mockito.Matchers.any;
-import static org.powermock.api.mockito.PowerMockito.mock;
-import static org.powermock.api.mockito.PowerMockito.when;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
+import eu.elixir.ega.ebi.dataedge.dto.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -45,18 +32,24 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.web.client.RestTemplate;
 
-import com.netflix.appinfo.InstanceInfo;
-import com.netflix.discovery.EurekaClient;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 
-import eu.elixir.ega.ebi.dataedge.dto.File;
-import eu.elixir.ega.ebi.dataedge.dto.FileDataset;
-import eu.elixir.ega.ebi.dataedge.dto.HtsgetContainer;
-import eu.elixir.ega.ebi.dataedge.dto.HtsgetResponse;
-import eu.elixir.ega.ebi.dataedge.dto.MyExternalConfig;
+import static eu.elixir.ega.ebi.shared.Constants.FILEDATABASE_SERVICE;
+import static eu.elixir.ega.ebi.shared.Constants.RES_SERVICE;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.mockito.Matchers.any;
+import static org.powermock.api.mockito.PowerMockito.mock;
+import static org.powermock.api.mockito.PowerMockito.when;
 
 /**
  * Test class for {@link RemoteTicketServiceImpl}.
- * 
+ *
  * @author amohan
  */
 @RunWith(PowerMockRunner.class)
@@ -64,13 +57,12 @@ import eu.elixir.ega.ebi.dataedge.dto.MyExternalConfig;
 @TestPropertySource(locations = "classpath:application-test.properties")
 public class RemoteTicketServiceImplTest {
 
-    private static final String SERVICE_URL = "http://FILEDATABASE";
-    private static final String FILEID = "fileId";
-    private static final String DATASET1 = "DATASET1";
-    private static final String DATASET2 = "DATASET2";
+    public static final String FILEID = "fileId";
+    public static final String DATASET1 = "DATASET1";
+    public static final String DATASET2 = "DATASET2";
+
     private Authentication authentication;
     private HttpServletRequest httpServletRequest;
-    private static final String HOMEPAGE_URL = "http://HomePageUrl";
 
     @InjectMocks
     private RemoteTicketServiceImpl remoteTicketServiceImpl;
@@ -81,20 +73,17 @@ public class RemoteTicketServiceImplTest {
     @Mock
     RestTemplate restTemplate;
 
-    @Mock
-    private EurekaClient discoveryClient;
-
     /**
      * Test class for
      * {@link RemoteTicketServiceImpl#getFile(Authentication, String, String, String, String, long, long, HttpServletRequest, HttpServletResponse)}.
      * Verify the output url is as per the logic.
      */
-    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @SuppressWarnings({"rawtypes", "unchecked"})
     @Test
     public void testGetTicket() {
-        final String[] fields = { "fields" };
-        final String[] tagds = { "tagds" };
-        final String[] notags = { "notags" };
+        final String[] fields = {"fields"};
+        final String[] tagds = {"tagds"};
+        final String[] notags = {"notags"};
         final List<String> fieldsList = Arrays.asList(fields);
         final List<String> tagsList = Arrays.asList(tagds);
         final List<String> notagsList = Arrays.asList(notags);
@@ -114,12 +103,12 @@ public class RemoteTicketServiceImplTest {
      * {@link RemoteTicketServiceImpl#getVariantTicket(Authentication, String, String, int, String, String, String, String, List, List, List, HttpServletRequest, HttpServletResponse)}.
      * Verify the output url is as per the logic.
      */
-    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @SuppressWarnings({"rawtypes", "unchecked"})
     @Test
     public void testGetVariantTicket() {
-        final String[] fields = { "fields" };
-        final String[] tagds = { "tagds" };
-        final String[] notags = { "notags" };
+        final String[] fields = {"fields"};
+        final String[] tagds = {"tagds"};
+        final String[] notags = {"notags"};
         final List<String> fieldsList = Arrays.asList(fields);
         final List<String> tagsList = Arrays.asList(tagds);
         final List<String> notagsList = Arrays.asList(notags);
@@ -133,20 +122,20 @@ public class RemoteTicketServiceImplTest {
                 "egaExternalUrlvariant/byid/file?accession=fileId&format=plain&start=start&end=end&chr=referenceName&fields=fields&tags=tagds&notags=notags"));
 
     }
-    
+
     /**
      * Test class for {@link RemoteTicketServiceImpl#resUrl()}. Verify the output
-     * resUrl.
+     * resURL.
      */
     @Test
     public void testResUrl() {
         final String resUrl = remoteTicketServiceImpl.resUrl();
-        assertThat(resUrl, equalTo(HOMEPAGE_URL));
+        assertThat(resUrl, equalTo(RES_SERVICE));
     }
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @SuppressWarnings({"rawtypes", "unchecked"})
     @Before
-    public void initMocks() throws Exception {
+    public void initMocks() {
         MockitoAnnotations.initMocks(this);
         authentication = mock(Authentication.class);
         httpServletRequest = mock(HttpServletRequest.class);
@@ -156,26 +145,23 @@ public class RemoteTicketServiceImplTest {
         authorities.add(new SimpleGrantedAuthority(DATASET2));
 
         final ResponseEntity<FileDataset[]> forEntityDataset = mock(ResponseEntity.class);
-        final FileDataset[] datasets = { new FileDataset(FILEID, DATASET1) };
+        final FileDataset[] datasets = {new FileDataset(FILEID, DATASET1)};
         when(forEntityDataset.getBody()).thenReturn(datasets);
 
         final ResponseEntity<File[]> forEntity = mock(ResponseEntity.class);
         final File file = new File();
         file.setFileId(FILEID);
         file.setFileName("fileName");
-        file.setFileSize(100l);
-        final File[] files = { file };
+        file.setFileSize(100L);
+        final File[] files = {file};
         when(forEntity.getBody()).thenReturn(files);
-        
-        final InstanceInfo instance = mock(InstanceInfo.class);
-        when(instance.getHomePageUrl()).thenReturn(HOMEPAGE_URL);
-        when(discoveryClient.getNextServerFromEureka("RES", false)).thenReturn(instance);
+
         when(externalConfig.getEgaExternalUrl()).thenReturn("egaExternalUrl");
         when(authentication.getAuthorities()).thenReturn(authorities);
         when(httpServletRequest.getHeader(any())).thenReturn("token");
-        when(restTemplate.getForEntity(SERVICE_URL + "/file/{fileId}/datasets", FileDataset[].class, FILEID))
+        when(restTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}/datasets", FileDataset[].class, FILEID))
                 .thenReturn(forEntityDataset);
-        when(restTemplate.getForEntity(SERVICE_URL + "/file/{fileId}", File[].class, FILEID)).thenReturn(forEntity);
-
+        when(restTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}", File[].class, FILEID)).thenReturn(forEntity);
     }
+
 }

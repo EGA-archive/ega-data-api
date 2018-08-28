@@ -23,6 +23,7 @@ import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cache.guava.GuavaCache;
 import org.springframework.cache.support.SimpleCacheManager;
 import org.springframework.cloud.client.loadbalancer.LoadBalanced;
+import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.retry.annotation.EnableRetry;
@@ -45,26 +46,27 @@ import java.util.concurrent.TimeUnit;
 @Configuration
 @EnableCaching
 @EnableRetry
+@EnableEurekaClient
 public class MyConfiguration {
 
     @Value("${ega.ega.external.url}")
-    String externalUrl;
+    private String externalUrl;
     @Value("${ega.ega.cram.fasta.a}")
-    String cramFastaReferenceA;
+    private String cramFastaReferenceA;
     @Value("${ega.ega.cram.fasta.b}")
-    String cramFastaReferenceB;
+    private String cramFastaReferenceB;
 
     // Ribbon Load Balanced Rest Template for communication with other Microservices
 
     @Bean
     @LoadBalanced
-    RestTemplate restTemplate() {
+    public RestTemplate restTemplate() {
         return new RestTemplate();
     }
 
     @Bean
     @LoadBalanced
-    AsyncRestTemplate asyncRestTemplate() {
+    public AsyncRestTemplate asyncRestTemplate() {
         return new AsyncRestTemplate();
     }
 
@@ -74,7 +76,7 @@ public class MyConfiguration {
         RetryTemplate retryTemplate = new RetryTemplate();
 
         FixedBackOffPolicy fixedBackOffPolicy = new FixedBackOffPolicy();
-        fixedBackOffPolicy.setBackOffPeriod(2000l);
+        fixedBackOffPolicy.setBackOffPeriod(2000L);
         retryTemplate.setBackOffPolicy(fixedBackOffPolicy);
 
         SimpleRetryPolicy retryPolicy = new SimpleRetryPolicy();

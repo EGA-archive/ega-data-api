@@ -47,7 +47,7 @@ public class MyConfiguration {
     }
 
     @Bean
-    RestTemplate restTemplate() {
+    public RestTemplate restTemplate() {
         return new RestTemplate();
     }
 

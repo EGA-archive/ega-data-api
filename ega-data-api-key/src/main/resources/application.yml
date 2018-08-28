@@ -1,0 +1,3 @@
+spring.profiles: no-oss
+
+eureka.client.enabled: false

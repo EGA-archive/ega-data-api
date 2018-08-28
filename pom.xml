@@ -43,7 +43,7 @@
 		<module>ega-data-api-res</module>
 		<module>ega-data-api-dataedge</module>
 		<module>ega-data-api-netflix</module>
-	</modules>
+    </modules>
 
 	<build>
 		<pluginManagement>

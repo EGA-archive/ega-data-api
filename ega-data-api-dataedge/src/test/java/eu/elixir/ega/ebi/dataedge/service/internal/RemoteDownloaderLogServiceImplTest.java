@@ -15,14 +15,9 @@
  */
 package eu.elixir.ega.ebi.dataedge.service.internal;
 
-import static org.junit.Assert.fail;
-import static org.mockito.Matchers.any;
-import static org.powermock.api.mockito.PowerMockito.mock;
-import static org.powermock.api.mockito.PowerMockito.when;
-import static org.powermock.api.mockito.PowerMockito.whenNew;
-
-import java.net.URI;
-
+import com.netflix.appinfo.InstanceInfo;
+import eu.elixir.ega.ebi.dataedge.dto.DownloadEntry;
+import eu.elixir.ega.ebi.dataedge.dto.EventEntry;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -37,15 +32,17 @@ import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.web.client.AsyncRestTemplate;
 import org.springframework.web.client.RestTemplate;
 
-import com.netflix.appinfo.InstanceInfo;
-import com.netflix.discovery.EurekaClient;
+import java.net.URI;
 
-import eu.elixir.ega.ebi.dataedge.dto.DownloadEntry;
-import eu.elixir.ega.ebi.dataedge.dto.EventEntry;
+import static eu.elixir.ega.ebi.shared.Constants.FILEDATABASE_SERVICE;
+import static org.junit.Assert.fail;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.powermock.api.mockito.PowerMockito.*;
 
 /**
  * Test class for {@link RemoteDownloaderLogServiceImpl}.
- * 
+ *
  * @author amohan
  */
 @RunWith(PowerMockRunner.class)
@@ -57,13 +54,10 @@ public class RemoteDownloaderLogServiceImplTest {
     private RemoteDownloaderLogServiceImpl remoteDownloaderLogServiceImpl;
 
     @Mock
-    AsyncRestTemplate restTemplate;
+    private AsyncRestTemplate restTemplate;
 
     @Mock
-    RestTemplate syncRestTemplate;
-
-    @Mock
-    private EurekaClient discoveryClient;
+    private RestTemplate syncRestTemplate;
 
     @Before
     public void initMocks() throws Exception {
@@ -71,12 +65,11 @@ public class RemoteDownloaderLogServiceImplTest {
 
         final InstanceInfo instance = mock(InstanceInfo.class);
         final URI uriMock = mock(URI.class);
-        @SuppressWarnings("unchecked")
-        final ListenableFuture<ResponseEntity<Object>> futureEntityMock = mock(ListenableFuture.class);
+        @SuppressWarnings("unchecked") final ListenableFuture<ResponseEntity<String>> futureEntityMock = mock(ListenableFuture.class);
 
         whenNew(URI.class).withAnyArguments().thenReturn(uriMock);
-        when(discoveryClient.getNextServerFromEureka("FILEDATABASE", false)).thenReturn(instance);
-        when(restTemplate.postForEntity(any(), any(), any())).thenReturn(futureEntityMock);
+        when(restTemplate.postForEntity(eq(FILEDATABASE_SERVICE + "/log/download/"), any(), eq(String.class))).thenReturn(futureEntityMock);
+        when(restTemplate.postForEntity(eq(FILEDATABASE_SERVICE + "/log/event/"), any(), eq(String.class))).thenReturn(futureEntityMock);
     }
 
     /**
@@ -89,7 +82,6 @@ public class RemoteDownloaderLogServiceImplTest {
         try {
             final DownloadEntry downloadEntry = new DownloadEntry();
             downloadEntry.setFileId("fileId");
-
             remoteDownloaderLogServiceImpl.logDownload(downloadEntry);
         } catch (Exception e) {
             fail("Should not have thrown an exception");
@@ -110,6 +102,7 @@ public class RemoteDownloaderLogServiceImplTest {
 
             remoteDownloaderLogServiceImpl.logEvent(eventEntry);
         } catch (Exception e) {
+            e.printStackTrace(System.out);
             fail("Should not have thrown an exception");
         }
 

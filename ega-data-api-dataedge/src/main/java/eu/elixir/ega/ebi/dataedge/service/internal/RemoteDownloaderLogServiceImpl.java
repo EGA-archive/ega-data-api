@@ -17,8 +17,6 @@ package eu.elixir.ega.ebi.dataedge.service.internal;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.netflix.appinfo.InstanceInfo;
-import com.netflix.discovery.EurekaClient;
 import eu.elixir.ega.ebi.dataedge.dto.DownloadEntry;
 import eu.elixir.ega.ebi.dataedge.dto.EventEntry;
 import eu.elixir.ega.ebi.dataedge.service.DownloaderLogService;
@@ -35,8 +33,7 @@ import org.springframework.util.concurrent.ListenableFutureCallback;
 import org.springframework.web.client.AsyncRestTemplate;
 import org.springframework.web.client.RestTemplate;
 
-import java.net.URI;
-import java.net.URISyntaxException;
+import static eu.elixir.ega.ebi.shared.Constants.FILEDATABASE_SERVICE;
 
 //import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 
@@ -48,16 +45,11 @@ import java.net.URISyntaxException;
 @EnableDiscoveryClient
 public class RemoteDownloaderLogServiceImpl implements DownloaderLogService {
 
-    private static final String SERVICE_URL = "http://FILEDATABASE";
+    @Autowired
+    private AsyncRestTemplate restTemplate;
 
     @Autowired
-    AsyncRestTemplate restTemplate;
-
-    @Autowired
-    RestTemplate syncRestTemplate;
-
-    @Autowired
-    private EurekaClient discoveryClient;
+    private RestTemplate syncRestTemplate;
 
     @Override
     //@HystrixCommand
@@ -66,24 +58,18 @@ public class RemoteDownloaderLogServiceImpl implements DownloaderLogService {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
 
-        InstanceInfo instance = discoveryClient.getNextServerFromEureka("FILEDATABASE", false);
-        String logUrl = instance.getHomePageUrl();
-
         // Jackson ObjectMapper to convert requestBody to JSON
         String json = null;
-        URI url = null;
         try {
             json = new ObjectMapper().writeValueAsString(downloadEntry);
-            //url = new URI(SERVICE_URL + "/log/download/");
-            url = new URI(logUrl + "/log/download/");
-        } catch (JsonProcessingException | URISyntaxException ignored) {
+        } catch (JsonProcessingException ignored) {
         }
 
         HttpEntity<String> entity = new HttpEntity<>(json, headers);
         //HttpEntity entity = new HttpEntity("parameters", headers);
 
         ListenableFuture<ResponseEntity<String>> futureEntity;
-        futureEntity = restTemplate.postForEntity(url, entity, String.class);
+        futureEntity = restTemplate.postForEntity(FILEDATABASE_SERVICE + "/log/download/", entity, String.class);
 
         futureEntity
                 .addCallback(new ListenableFutureCallback<ResponseEntity>() {
@@ -111,23 +97,18 @@ public class RemoteDownloaderLogServiceImpl implements DownloaderLogService {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
 
-        InstanceInfo instance = discoveryClient.getNextServerFromEureka("FILEDATABASE", false);
-        String logUrl = instance.getHomePageUrl();
-
         // Jackson ObjectMapper to convert requestBody to JSON
         String json = null;
-        URI url = null;
         try {
             json = new ObjectMapper().writeValueAsString(eventEntry);
-            url = new URI(logUrl + "/log/event/");
-        } catch (JsonProcessingException | URISyntaxException ignored) {
+        } catch (JsonProcessingException ignored) {
         }
 
         HttpEntity<String> entity = new HttpEntity<>(json, headers);
         //HttpEntity entity = new HttpEntity("parameters", headers);
 
         ListenableFuture<ResponseEntity<String>> futureEntity;
-        futureEntity = restTemplate.postForEntity(url, entity, String.class);
+        futureEntity = restTemplate.postForEntity(FILEDATABASE_SERVICE + "/log/event/", entity, String.class);
 
         futureEntity
                 .addCallback(new ListenableFutureCallback<ResponseEntity>() {
