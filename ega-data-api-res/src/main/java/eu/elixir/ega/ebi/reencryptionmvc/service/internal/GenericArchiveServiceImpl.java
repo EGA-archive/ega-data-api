@@ -44,7 +44,7 @@ import static eu.elixir.ega.ebi.shared.Constants.FILEDATABASE_SERVICE;
 public class GenericArchiveServiceImpl implements ArchiveService {
 
     @Autowired
-    RestTemplate restTemplate;
+    private RestTemplate restTemplate;
 
     @Autowired
     private KeyService keyService;
@@ -52,7 +52,6 @@ public class GenericArchiveServiceImpl implements ArchiveService {
     @Override
     @Retryable(maxAttempts = 8, backoff = @Backoff(delay = 2000, multiplier = 2))
     public ArchiveSource getArchiveFile(String id, HttpServletResponse response) {
-
         // Get Filename from EgaFile ID - via DATA service (potentially multiple files)
         ResponseEntity<EgaFile[]> forEntity = restTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}", EgaFile[].class, id);
         int statusCodeValue = forEntity.getStatusCodeValue();
@@ -73,7 +72,7 @@ public class GenericArchiveServiceImpl implements ArchiveService {
         String encryptionKey = keyService.getFileKey(keyKey);
 
         // Build result object and return it
-        return new ArchiveSource(fileUrlString, size, "", encryptionFormat, encryptionKey);
+        return new ArchiveSource(fileUrlString, size, "", encryptionFormat, encryptionKey, null);
     }
 
 }

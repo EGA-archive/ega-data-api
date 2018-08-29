@@ -150,7 +150,7 @@ public class FileControllerTest {
      * Common mock method.
      */
     private void commonMockMethod() {
-        doNothing().when(resService).transfer(any(String.class), any(String.class), any(String.class),
+        doNothing().when(resService).transfer(any(String.class), any(String.class), any(String.class), any(String.class),
                 any(String.class), any(String.class), any(String.class), any(Long.class), any(Long.class), any(Long.class),
                 any(String.class), any(String.class), any(HttpServletRequest.class), any(HttpServletResponse.class));
     }

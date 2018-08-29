@@ -201,6 +201,7 @@ public class CacheResServiceImpl implements ResService {
     @Override
     public void transfer(String sourceFormat,
                          String sourceKey,
+                         String sourceIV,
                          String destintionFormat,
                          String destinationKey,
                          String destinationIV,  // Base64 encoded

@@ -60,6 +60,7 @@ public class FileController {
     @ResponseBody
     public void getFile(@RequestParam(value = "sourceFormat", required = false, defaultValue = "plain") String sourceFormat,
                         @RequestParam(value = "sourceKey", required = false) String sourceKey,
+                        @RequestParam(value = "sourceIV", required = false) String sourceIV,
                         @RequestParam(value = "destinationFormat", required = false, defaultValue = "plain") String destinationFormat,
                         @RequestParam(value = "destinationKey", required = false) String destinationKey,
                         @RequestParam(value = "destinationIV", required = false) String destinationIV,
@@ -73,6 +74,7 @@ public class FileController {
                         HttpServletResponse response) {
         resService.transfer(sourceFormat,
                 sourceKey,
+                sourceIV,
                 destinationFormat,
                 destinationKey,
                 destinationIV,
@@ -104,6 +106,7 @@ public class FileController {
         // Merge execution with fully specified function
         getFile(source.getEncryptionFormat(),
                 source.getEncryptionKey(),
+                source.getEncryptionIV(),
                 destinationFormat,
                 destinationKey,
                 destinationIV,

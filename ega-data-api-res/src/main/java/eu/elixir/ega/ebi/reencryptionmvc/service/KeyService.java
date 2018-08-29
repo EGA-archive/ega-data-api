@@ -33,8 +33,8 @@ public interface KeyService {
 
     KeyPath getKeyPath(String key);
 
-    byte[] getRSAKeyById(String keyId) throws IOException, DecoderException;
+    String getPublicKey(String id);
 
-    PGPPublicKey getPGPPublicKeyById(String keyId) throws IOException, PGPException;
+    String getPrivateKey(String id);
 
 }

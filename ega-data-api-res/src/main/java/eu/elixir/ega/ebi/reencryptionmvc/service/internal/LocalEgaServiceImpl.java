@@ -18,36 +18,39 @@ package eu.elixir.ega.ebi.reencryptionmvc.service.internal;
 import eu.elixir.ega.ebi.reencryptionmvc.domain.Format;
 import eu.elixir.ega.ebi.reencryptionmvc.service.KeyService;
 import eu.elixir.ega.ebi.reencryptionmvc.service.ResService;
-import htsjdk.samtools.seekablestream.ISeekableStreamFactory;
+import htsjdk.samtools.seekablestream.SeekableBasicAuthHTTPStream;
+import htsjdk.samtools.seekablestream.SeekableFileStream;
 import htsjdk.samtools.seekablestream.SeekableStream;
-import htsjdk.samtools.seekablestream.cipher.GPGAsymmetricCipherOutputStream;
-import htsjdk.samtools.seekablestream.cipher.GPGSymmetricCipherOutputStream;
-import htsjdk.samtools.seekablestream.cipher.SeekableAESCipherStream;
-import org.apache.commons.codec.DecoderException;
+import no.ifi.uio.crypt4gh.stream.Crypt4GHOutputStream;
+import no.ifi.uio.crypt4gh.stream.SeekableStreamInput;
+import org.apache.commons.crypto.stream.PositionedCryptoInputStream;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.BoundedInputStream;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.openpgp.PGPException;
+import org.bouncycastle.util.encoders.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 
 import javax.annotation.PostConstruct;
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.*;
-import java.security.*;
-import java.security.spec.InvalidKeySpecException;
-import java.util.Objects;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.security.Security;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import static no.ifi.uio.crypt4gh.stream.Crypt4GHInputStream.MINIMUM_BUFFER_SIZE;
 
 /**
  * @author asenf
@@ -56,9 +59,6 @@ import java.util.logging.Logger;
 @Profile("LocalEGA")
 @EnableDiscoveryClient
 public class LocalEgaServiceImpl implements ResService {
-
-    @Autowired
-    private ISeekableStreamFactory seekableStreamFactory;
 
     @Autowired
     private KeyService keyService;
@@ -71,6 +71,7 @@ public class LocalEgaServiceImpl implements ResService {
     @Override
     public void transfer(String sourceFormat,
                          String sourceKey,
+                         String sourceIV,
                          String destinationFormat,
                          String destinationKey,
                          String destinationIV,
@@ -82,21 +83,21 @@ public class LocalEgaServiceImpl implements ResService {
                          String id,
                          HttpServletRequest request,
                          HttpServletResponse response) {
-
-        InputStream inputStream = null;
-        OutputStream outputStream = null;
+        InputStream inputStream;
+        OutputStream outputStream;
         try {
-            inputStream = getInputStream(Format.valueOf(sourceFormat.toUpperCase()),
-                    sourceKey,
+            inputStream = getInputStream(Base64.decode(sourceKey),
+                    Base64.decode(sourceIV),
                     fileLocation,
                     startCoordinate,
-                    endCoordinate);
+                    endCoordinate,
+                    httpAuth);
             outputStream = getOutputStream(response.getOutputStream(),
-                    fileLocation,
                     Format.valueOf(destinationFormat.toUpperCase()),
                     destinationKey);
         } catch (Exception e) {
             Logger.getLogger(LocalEgaServiceImpl.class.getName()).log(Level.SEVERE, null, e);
+            throw new RuntimeException(e);
         }
 
         response.setStatus(200);
@@ -107,52 +108,34 @@ public class LocalEgaServiceImpl implements ResService {
             outputStream.close();
         } catch (IOException e) {
             Logger.getLogger(LocalEgaServiceImpl.class.getName()).log(Level.SEVERE, null, e);
+            throw new RuntimeException(e);
         }
     }
 
-    /*
-     * Recommendation: Split decrypting and encrypting into separate input and output streams
-     */
-    public InputStream getInputStream(Format sourceFormat,
-                                      String sourceKeyId,
-                                      String fileLocation,
-                                      long startCoordinate,
-                                      long endCoordinate) throws IOException,
-            NoSuchPaddingException,
-            InvalidAlgorithmParameterException,
-            NoSuchAlgorithmException,
-            IllegalBlockSizeException,
-            BadPaddingException,
-            NoSuchProviderException,
-            InvalidKeyException,
-            InvalidKeySpecException,
-            DecoderException {
-        SeekableStream seekableStream = seekableStreamFactory.getStreamFor(fileLocation);
-        // TODO: WA for DataEdge that is not capable of passing source format here...
-//        if (Format.AES.equals(sourceFormat)) {
-        if (StringUtils.isEmpty(sourceKeyId)) {
-            seekableStream.seek(0);
-            InputStreamReader inputStreamReader = new InputStreamReader(seekableStream);
-            BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-            String header = bufferedReader.readLine();
-            sourceKeyId = header.split("\\|")[0];
-        }
-        seekableStream = new SeekableAESCipherStream(seekableStream, Objects.requireNonNull(keyService.getRSAKeyById(sourceKeyId)));
-//        }
-        seekableStream.seek(startCoordinate);
-        return endCoordinate != 0 && endCoordinate > startCoordinate ?
-                new BoundedInputStream(seekableStream, endCoordinate - startCoordinate) :
-                seekableStream;
-    }
-
-    private OutputStream getOutputStream(OutputStream outputStream,
+    protected InputStream getInputStream(byte[] key,
+                                         byte[] iv,
                                          String fileLocation,
-                                         Format targetFormat,
-                                         String targetKeyId) throws IOException, PGPException {
-        if (Format.GPG_SYMMETRIC.equals(targetFormat)) {
-            return new GPGSymmetricCipherOutputStream(outputStream, Objects.requireNonNull(targetKeyId), StringUtils.getFilename(fileLocation));
-        } else if (Format.GPG_ASYMMETRIC.equals(targetFormat)) {
-            return new GPGAsymmetricCipherOutputStream(outputStream, Objects.requireNonNull(keyService.getPGPPublicKeyById(targetKeyId)), StringUtils.getFilename(fileLocation));
+                                         long startCoordinate,
+                                         long endCoordinate,
+                                         String httpAuth) throws IOException {
+        SeekableStream seekableStream;
+        try {
+            seekableStream = new SeekableBasicAuthHTTPStream(new URL(fileLocation), httpAuth);
+        } catch (MalformedURLException e) {
+            seekableStream = new SeekableFileStream(new File(fileLocation));
+        }
+        SeekableStreamInput seekableStreamInput = new SeekableStreamInput(seekableStream, MINIMUM_BUFFER_SIZE, 0);
+        PositionedCryptoInputStream positionedStream = new PositionedCryptoInputStream(new Properties(), seekableStreamInput, key, iv, 0);
+        positionedStream.seek(startCoordinate);
+        return endCoordinate != 0 && endCoordinate > startCoordinate ?
+                new BoundedInputStream(positionedStream, endCoordinate - startCoordinate) :
+                positionedStream;
+    }
+
+    protected OutputStream getOutputStream(OutputStream outputStream, Format targetFormat, String targetKeyId) throws IOException,
+            PGPException {
+        if (Format.CRYPT4GH.equals(targetFormat)) {
+            return new Crypt4GHOutputStream(outputStream, keyService.getPublicKey(targetKeyId));
         } else {
             return outputStream;
         }

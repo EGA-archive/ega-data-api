@@ -17,27 +17,12 @@ package eu.elixir.ega.ebi.reencryptionmvc.service.internal;
 
 import eu.elixir.ega.ebi.reencryptionmvc.dto.KeyPath;
 import eu.elixir.ega.ebi.reencryptionmvc.service.KeyService;
-import org.apache.commons.codec.DecoderException;
-import org.apache.commons.codec.binary.Hex;
-import org.apache.commons.io.IOUtils;
-import org.bouncycastle.openpgp.*;
-import org.bouncycastle.openpgp.operator.bc.BcKeyFingerprintCalculator;
-import org.bouncycastle.util.io.pem.PemReader;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.URL;
-import java.nio.charset.Charset;
-import java.util.Iterator;
 
 import static eu.elixir.ega.ebi.shared.Constants.KEYS_SERVICE;
 
@@ -51,17 +36,12 @@ public class KeyServiceImpl implements KeyService {
     @Autowired
     private RestTemplate restTemplate;
 
-    private String keyServiceURL;
-    private String cegaURL;
-
     @Override
 //    @HystrixCommand
     //@Retryable(maxAttempts = 4, backoff = @Backoff(delay = 5000))
     @Cacheable(cacheNames = "key")
     public String getFileKey(String fileId) {
-
         ResponseEntity<String> forEntity = restTemplate.getForEntity(KEYS_SERVICE + "/keys/filekeys/{fileId}", String.class, fileId);
-
         return forEntity.getBody();
     }
 
@@ -69,66 +49,30 @@ public class KeyServiceImpl implements KeyService {
 //    @HystrixCommand
     //@Retryable(maxAttempts = 4, backoff = @Backoff(delay = 5000))
     public KeyPath getKeyPath(String key) {
-
         ResponseEntity<KeyPath> forEntity = restTemplate.getForEntity(KEYS_SERVICE + "/keys/retrieve/{keyId}/private/path", KeyPath.class, key);
-
         return forEntity.getBody();
     }
 
-    // Local EGA Functionality - Not Required for Central EGA / EBI
-    // Imported from LocalEgaKeyServiceImpl
-
+    /**
+     * Gets user's public key by email.
+     *
+     * @param id User's email.
+     * @return ASCII-armored public key.
+     */
     @Override
-    public byte[] getRSAKeyById(String id) throws IOException, DecoderException {
-        // TODO: bring that back after LocalEGA key server becomes able to register itself against Eureka
-        // ResponseEntity<Resource> responseEntity =
-        //        restTemplate.getForEntity(keyServiceURL + "/temp/rsa/" + id, Resource.class);
-
-        String rawKey = IOUtils.toString(new URL(keyServiceURL + "/temp/rsa/" + id).openStream(), Charset.defaultCharset());
-        System.out.println("DEBUG getRSAKey: rawKey=" + rawKey);
-        String privateKey = String.valueOf(rawKey);
-        byte[] privateKeyBytes = Hex.decodeHex(privateKey.toCharArray());
-        try (PemReader pemReader = new PemReader(new InputStreamReader(new ByteArrayInputStream(privateKeyBytes)))) {
-            return pemReader.readPemObject().getContent();
-        }
+    public String getPublicKey(String id) {
+        return restTemplate.getForEntity(KEYS_SERVICE + "/retrieve/{keyId}/public/{keyType}", String.class, id, "email").getBody();
     }
 
-    // ID = username, e.g. "john" or "jane" (LocalEGA test users available out of the box in bootstrap-installation)
+    /**
+     * Gets our private key by ID.
+     *
+     * @param id Key ID.
+     * @return ASCII-armored private key.
+     */
     @Override
-    public PGPPublicKey getPGPPublicKeyById(String id) throws IOException, PGPException {
-        // TODO: bring that back after LocalEGA key server becomes able to register itself against Eureka
-        // ResponseEntity<Resource> responseEntity =
-        //        restTemplate.getForEntity(keyServiceURL + "/pgp/" + id, Resource.class);
-
-        InputStream in = PGPUtil.getDecoderStream(new URL(cegaURL + "/pgp/" + id).openStream());
-        PGPPublicKeyRingCollection pgpPublicKeyRings = new PGPPublicKeyRingCollection(in, new BcKeyFingerprintCalculator());
-        PGPPublicKey pgpPublicKey = null;
-        Iterator keyRings = pgpPublicKeyRings.getKeyRings();
-        while (pgpPublicKey == null && keyRings.hasNext()) {
-            PGPPublicKeyRing kRing = (PGPPublicKeyRing) keyRings.next();
-            Iterator publicKeys = kRing.getPublicKeys();
-            while (publicKeys.hasNext()) {
-                PGPPublicKey key = (PGPPublicKey) publicKeys.next();
-                if (key.isEncryptionKey()) {
-                    pgpPublicKey = key;
-                    break;
-                }
-            }
-        }
-        if (pgpPublicKey == null) {
-            throw new IllegalArgumentException("Can't find encryption key in key ring.");
-        }
-        return pgpPublicKey;
-    }
-
-    @Value("${localega.keyserver.url:http://localhost:8443}")
-    public void setKeyServiceURL(String keyServiceURL) {
-        this.keyServiceURL = keyServiceURL;
-    }
-
-    @Value("${localega.cega.url:http://localhost:9100}")
-    public void setCegaURL(String cegaURL) {
-        this.cegaURL = cegaURL;
+    public String getPrivateKey(String id) {
+        return restTemplate.getForEntity(KEYS_SERVICE + "/retrieve/{keyId}/private/key", String.class, id).getBody();
     }
 
 }

@@ -232,7 +232,7 @@ public class My2KCachePageFactory implements FactoryBean<Cache<String, CachePage
                 throw new ServerErrorException("Error Loading Cache Header", key);
             }
 
-            source = new ArchiveSource(files[0].getFileName(), files[0].getFileSize(), "", "aes256", encryptionKey);
+            source = new ArchiveSource(files[0].getFileName(), files[0].getFileSize(), "", "aes256", encryptionKey, null);
             sourceKey = source.getEncryptionKey();
 
             String fileLocation = source.getFileUrl();
