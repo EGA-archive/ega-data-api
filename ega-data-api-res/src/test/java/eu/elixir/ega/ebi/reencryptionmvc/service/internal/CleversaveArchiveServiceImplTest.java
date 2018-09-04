@@ -77,7 +77,7 @@ public class CleversaveArchiveServiceImplTest {
     public void testGetArchiveFile() {
         final ResponseEntity<EgaFile[]> mockResponseEntity = mock(ResponseEntity.class);
         final EgaFile[] body = new EgaFile[1];
-        body[0] = new EgaFile("fileId0", "/fire/0000TR.CEL.gpg", 100, "fileStatus0");
+        body[0] = new EgaFile("fileId0", "/fire/0000TR.CEL.gpg", null, 100, "fileStatus0", null);
 
         final String pathInput = "/EGAZ00001257562/analysis/ALL.chr22.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.vcf.gz.cip";
         final String object_get = "http://egaread:8oAgZc0DH6dR@10.32.25.44/ega/06ca84a54eeadf8acd3cf05691652d5e0014";

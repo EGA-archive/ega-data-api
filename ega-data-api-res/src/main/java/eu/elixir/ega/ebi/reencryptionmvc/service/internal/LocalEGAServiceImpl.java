@@ -58,7 +58,7 @@ import static no.ifi.uio.crypt4gh.stream.Crypt4GHInputStream.MINIMUM_BUFFER_SIZE
 @Service
 @Profile("LocalEGA")
 @EnableDiscoveryClient
-public class LocalEgaServiceImpl implements ResService {
+public class LocalEGAServiceImpl implements ResService {
 
     @Autowired
     private KeyService keyService;
@@ -96,7 +96,7 @@ public class LocalEgaServiceImpl implements ResService {
                     Format.valueOf(destinationFormat.toUpperCase()),
                     destinationKey);
         } catch (Exception e) {
-            Logger.getLogger(LocalEgaServiceImpl.class.getName()).log(Level.SEVERE, null, e);
+            Logger.getLogger(LocalEGAServiceImpl.class.getName()).log(Level.SEVERE, null, e);
             throw new RuntimeException(e);
         }
 
@@ -107,7 +107,7 @@ public class LocalEgaServiceImpl implements ResService {
             outputStream.flush();
             outputStream.close();
         } catch (IOException e) {
-            Logger.getLogger(LocalEgaServiceImpl.class.getName()).log(Level.SEVERE, null, e);
+            Logger.getLogger(LocalEGAServiceImpl.class.getName()).log(Level.SEVERE, null, e);
             throw new RuntimeException(e);
         }
     }

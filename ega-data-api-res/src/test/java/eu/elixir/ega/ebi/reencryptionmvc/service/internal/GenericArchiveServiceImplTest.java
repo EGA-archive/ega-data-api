@@ -15,15 +15,9 @@
  */
 package eu.elixir.ega.ebi.reencryptionmvc.service.internal;
 
-import static eu.elixir.ega.ebi.shared.Constants.FILEDATABASE_SERVICE;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.mockito.Matchers.anyString;
-import static org.powermock.api.mockito.PowerMockito.mock;
-import static org.powermock.api.mockito.PowerMockito.when;
-
-import javax.servlet.http.HttpServletResponse;
-
+import eu.elixir.ega.ebi.reencryptionmvc.dto.ArchiveSource;
+import eu.elixir.ega.ebi.reencryptionmvc.dto.EgaFile;
+import eu.elixir.ega.ebi.reencryptionmvc.service.KeyService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -37,13 +31,18 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.web.client.RestTemplate;
 
-import eu.elixir.ega.ebi.reencryptionmvc.dto.ArchiveSource;
-import eu.elixir.ega.ebi.reencryptionmvc.dto.EgaFile;
-import eu.elixir.ega.ebi.reencryptionmvc.service.KeyService;
+import javax.servlet.http.HttpServletResponse;
+
+import static eu.elixir.ega.ebi.shared.Constants.FILEDATABASE_SERVICE;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.mockito.Matchers.anyString;
+import static org.powermock.api.mockito.PowerMockito.mock;
+import static org.powermock.api.mockito.PowerMockito.when;
 
 /**
  * Test class for {@link GenericArchiveServiceImpl}.
- * 
+ *
  * @author amohan
  */
 @RunWith(PowerMockRunner.class)
@@ -54,7 +53,7 @@ public class GenericArchiveServiceImplTest {
     private GenericArchiveServiceImpl genericArchiveServiceImpl;
 
     @Mock
-    RestTemplate restTemplate;
+    private RestTemplate restTemplate;
 
     @Mock
     private KeyService keyService;
@@ -73,7 +72,7 @@ public class GenericArchiveServiceImplTest {
     public void testGetArchiveFile() {
         final ResponseEntity<EgaFile[]> mockResponseEntity = mock(ResponseEntity.class);
         final EgaFile[] body = new EgaFile[1];
-        body[0] = new EgaFile("fileId0", "/fire/0000TR.CEL.gpg", 100, "fileStatus0");
+        body[0] = new EgaFile("fileId0", "/fire/0000TR.CEL.gpg", null, 100, "fileStatus0", null);
         final String encryptionKey = "encryptionKey";
 
         when(restTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}", EgaFile[].class, "id"))
@@ -83,7 +82,7 @@ public class GenericArchiveServiceImplTest {
         when(keyService.getFileKey(anyString())).thenReturn(encryptionKey);
 
         final ArchiveSource archiveSource = genericArchiveServiceImpl.getArchiveFile("id", new MockHttpServletResponse());
-        
+
         assertThat(archiveSource.getFileUrl(), equalTo(body[0].getFileName()));
         assertThat(archiveSource.getSize(), equalTo(body[0].getFileSize()));
         assertThat(archiveSource.getEncryptionFormat(), equalTo("symmetricgpg"));

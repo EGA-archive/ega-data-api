@@ -31,15 +31,15 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 /**
- * Test class for {@link LocalEgaServiceImpl}.
+ * Test class for {@link LocalEGAServiceImpl}.
  *
  * @author amohan
  */
 @RunWith(SpringRunner.class)
-public class LocalEgaServiceImplTest {
+public class LocalEGAServiceImplTest {
 
     @InjectMocks
-    private LocalEgaServiceImpl localEgaServiceImpl;
+    private LocalEGAServiceImpl localEgaServiceImpl;
 
     @Before
     public void initMocks() {
@@ -48,7 +48,7 @@ public class LocalEgaServiceImplTest {
 
     /**
      * Test method for
-     * {@link LocalEgaServiceImpl#transfer(String, String, String, String, String, String, String, long, long, long, String, String, HttpServletRequest, HttpServletResponse)}.
+     * {@link LocalEGAServiceImpl#transfer(String, String, String, String, String, String, String, long, long, long, String, String, HttpServletRequest, HttpServletResponse)}.
      */
     @Test
     public void testTransfer() {
