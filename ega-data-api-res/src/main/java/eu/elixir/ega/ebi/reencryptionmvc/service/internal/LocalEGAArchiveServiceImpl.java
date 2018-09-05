@@ -73,7 +73,7 @@ public class LocalEGAArchiveServiceImpl implements ArchiveService {
         long size = egaFile.getFileSize();
         String header = egaFile.getHeader();
         try {
-            String privateKey = keyService.getPrivateKey(headerFactory.getKeyId(header.getBytes()));
+            String privateKey = keyService.getPrivateKey(headerFactory.getKeyIds(header.getBytes()).iterator().next()); // select first subkey
             Map.Entry<String, String> parsedHeader = parseHeader(header, privateKey);
             return new ArchiveSource(url, size, awsKey + ":" + awsSecretKey, "aes256", parsedHeader.getKey(), parsedHeader.getValue());
         } catch (IOException | PGPException | BadBlockException e) {
