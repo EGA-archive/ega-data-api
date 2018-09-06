@@ -54,7 +54,10 @@ import java.util.*;
 import static eu.elixir.ega.ebi.shared.Constants.FILEDATABASE_SERVICE;
 import static eu.elixir.ega.ebi.shared.Constants.RES_SERVICE;
 
-@Profile("LocalEGA")
+// Most likely we don't need any custom implementation for LocalEGA
+// Default implementation should work "as is"
+// TODO: Remove this file after successful testing
+//@Profile("LocalEGA")
 @Service
 @Transactional
 @EnableDiscoveryClient
