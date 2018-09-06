@@ -1,6 +1,8 @@
 language: java
+services:
+- docker
 jdk: oraclejdk8
-script: mvn test
+script: mvn clean install
 cache:
   directories:
   - $HOME/.m2
