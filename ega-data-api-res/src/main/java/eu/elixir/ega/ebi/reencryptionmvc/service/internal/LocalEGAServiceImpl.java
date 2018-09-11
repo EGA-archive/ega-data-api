@@ -23,6 +23,7 @@ import htsjdk.samtools.seekablestream.SeekableFileStream;
 import htsjdk.samtools.seekablestream.SeekableStream;
 import no.ifi.uio.crypt4gh.stream.Crypt4GHOutputStream;
 import no.ifi.uio.crypt4gh.stream.SeekableStreamInput;
+import org.apache.commons.crypto.stream.CtrCryptoOutputStream;
 import org.apache.commons.crypto.stream.PositionedCryptoInputStream;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.BoundedInputStream;
@@ -94,7 +95,8 @@ public class LocalEGAServiceImpl implements ResService {
                     httpAuth);
             outputStream = getOutputStream(response.getOutputStream(),
                     Format.valueOf(destinationFormat.toUpperCase()),
-                    destinationKey);
+                    destinationKey,
+                    destinationIV);
         } catch (Exception e) {
             Logger.getLogger(LocalEGAServiceImpl.class.getName()).log(Level.SEVERE, null, e);
             throw new RuntimeException(e);
@@ -132,12 +134,15 @@ public class LocalEGAServiceImpl implements ResService {
                 positionedStream;
     }
 
-    protected OutputStream getOutputStream(OutputStream outputStream, Format targetFormat, String targetKeyId) throws IOException,
+    protected OutputStream getOutputStream(OutputStream outputStream, Format targetFormat, String targetKey, String targetIV) throws IOException,
             PGPException {
-        if (Format.CRYPT4GH.equals(targetFormat)) {
-            return new Crypt4GHOutputStream(outputStream, keyService.getPublicKey(targetKeyId));
-        } else {
-            return outputStream;
+        switch (targetFormat) {
+            case CRYPT4GH:
+                return new Crypt4GHOutputStream(outputStream, keyService.getPublicKey(targetKey));
+            case AES:
+                return new CtrCryptoOutputStream(new Properties(), outputStream, targetKey.getBytes(), targetIV.getBytes());
+            default:
+                return outputStream;
         }
     }
 
