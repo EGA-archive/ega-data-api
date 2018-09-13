@@ -34,5 +34,6 @@ public class ArchiveSource {
     private String auth;
     private String encryptionFormat;
     private String encryptionKey;
+    private String encryptionIV;
 
 }

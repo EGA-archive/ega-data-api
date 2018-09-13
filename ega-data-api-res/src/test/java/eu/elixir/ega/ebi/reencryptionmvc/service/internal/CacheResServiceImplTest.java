@@ -15,19 +15,10 @@
  */
 package eu.elixir.ega.ebi.reencryptionmvc.service.internal;
 
-import static org.junit.Assert.fail;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.powermock.api.mockito.PowerMockito.mock;
-import static org.powermock.api.mockito.PowerMockito.mockStatic;
-import static org.powermock.api.mockito.PowerMockito.when;
-
-import java.io.ByteArrayInputStream;
-
-import javax.servlet.http.HttpServletResponse;
-
+import eu.elixir.ega.ebi.reencryptionmvc.dto.CachePage;
+import eu.elixir.ega.ebi.reencryptionmvc.dto.EgaAESFileHeader;
+import eu.elixir.ega.ebi.reencryptionmvc.dto.MyAwsConfig;
+import eu.elixir.ega.ebi.reencryptionmvc.service.KeyService;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -44,18 +35,24 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 
-import eu.elixir.ega.ebi.reencryptionmvc.dto.CachePage;
-import eu.elixir.ega.ebi.reencryptionmvc.dto.EgaAESFileHeader;
-import eu.elixir.ega.ebi.reencryptionmvc.dto.MyAwsConfig;
-import eu.elixir.ega.ebi.reencryptionmvc.service.KeyService;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.ByteArrayInputStream;
+
+import static org.junit.Assert.fail;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.powermock.api.mockito.PowerMockito.*;
 
 /**
  * Test class for {@link CacheResServiceImpl}.
- * 
+ *
  * @author amohan
  */
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({ CacheResServiceImpl.class, HttpClientBuilder.class })
+@PrepareForTest({CacheResServiceImpl.class, HttpClientBuilder.class})
 public class CacheResServiceImplTest {
 
     @InjectMocks
@@ -80,36 +77,31 @@ public class CacheResServiceImplTest {
 
     /**
      * Test class for
-     * {@link CacheResServiceImpl#transfer(String, String, String, String, String, String, long, long, long, String, String, HttpServletRequest, HttpServletResponse)}.
+     * {@link CacheResServiceImpl#transfer(String, String, String, String, String, String, String, long, long, long, String, String, HttpServletRequest, HttpServletResponse)}.
      * Verify code is executing without errors and also verifies only one call goes
      * to myPageCache.
      */
     @Test
     public void testTransfer() {
-
         try {
             setupMock();
-            cacheResServiceImpl.transfer("aes256", "sourceKey", "plain", "destinationKey", "destinationIV",
+            cacheResServiceImpl.transfer("aes256", "sourceKey", "sourceIV", "plain", "destinationKey", "destinationIV",
                     "/EGAZ00001257562/analysis/ALL.chr22.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.vcf.gz.cip",
                     0, 0, 37, "httpAuth", "id", new MockHttpServletRequest(), new MockHttpServletResponse());
-
             verify(myPageCache, times(1)).get(anyString());
-
         } catch (Exception e) {
             fail("Should not have thrown an exception");
         }
-
     }
 
     /**
      * Method to Setup mock.
-     * 
+     *
      * @throws Exception
      */
     @SuppressWarnings("unchecked")
     private void setupMock() throws Exception {
-        final String[] keyPaths = { "keyPath" };
-        final String inputData = "test output fourty one characters given.";
+        final String inputData = "test output forty one characters given.";
 
         final CachePage cachePage = mock(CachePage.class);
         final HttpClientBuilder mockHttpClientBuilder = mock(HttpClientBuilder.class);
@@ -130,7 +122,6 @@ public class CacheResServiceImplTest {
         when(myHeaderCache.containsKey(any())).thenReturn(Boolean.FALSE);
         when(cachePage.getPage()).thenReturn(inputData.getBytes());
         when(myPageCache.get(anyString())).thenReturn(cachePage);
-
     }
 
 }

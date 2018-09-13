@@ -37,10 +37,13 @@ import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.HashMap;
 
+// Most likely we don't need any custom implementation for LocalEGA
+// Default implementation should work "as is"
+// TODO: Remove this file after successful testing
+//@Profile("LocalEGA")
+//@Service
+//@Transactional
 @Slf4j
-@Profile("LocalEGA")
-@Service
-@Transactional
 public class LocalEGAFileServiceImpl implements FileService {
 
     private String fileServiceURL;
@@ -99,3 +102,7 @@ public class LocalEGAFileServiceImpl implements FileService {
     }
 
 }
+
+
+
+

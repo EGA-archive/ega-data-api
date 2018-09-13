@@ -25,6 +25,7 @@ public interface ResService {
 
     void transfer(String sourceFormat,
                   String sourceKey,
+                  String sourceIV,
                   String destinationFormat,
                   String destinationKey,
                   String destinationIV,

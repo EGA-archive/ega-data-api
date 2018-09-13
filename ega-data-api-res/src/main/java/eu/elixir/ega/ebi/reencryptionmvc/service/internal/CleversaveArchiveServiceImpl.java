@@ -46,7 +46,7 @@ import static eu.elixir.ega.ebi.shared.Constants.FILEDATABASE_SERVICE;
 public class CleversaveArchiveServiceImpl implements ArchiveService {
 
     @Autowired
-    RestTemplate restTemplate;
+    private RestTemplate restTemplate;
 
     @Autowired
     private KeyService keyService;
@@ -58,11 +58,12 @@ public class CleversaveArchiveServiceImpl implements ArchiveService {
 //    @Retryable(maxAttempts = 4, backoff = @Backoff(delay = 2000, multiplier = 2))
     @Cacheable(cacheNames = "archive")
     public ArchiveSource getArchiveFile(String id, HttpServletResponse response) {
-
         // Get Filename from EgaFile ID - via DATA service (potentially multiple files)
         ResponseEntity<EgaFile[]> forEntity = restTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}", EgaFile[].class, id);
         response.setStatus(forEntity.getStatusCodeValue());
-        if (forEntity.getStatusCode() != HttpStatus.OK) return null;
+        if (forEntity.getStatusCode() != HttpStatus.OK) {
+            return null;
+        }
 
         EgaFile[] body = forEntity.getBody();
         String fileName = (body != null && body.length > 0) ? forEntity.getBody()[0].getFileName() : "";
@@ -91,7 +92,7 @@ public class CleversaveArchiveServiceImpl implements ArchiveService {
         }
 
         // Build result object and return it (auth is 'null' --> it is part of the URL now)
-        return new ArchiveSource(fileUrlString, size, null, encryptionFormat, encryptionKey);
+        return new ArchiveSource(fileUrlString, size, null, encryptionFormat, encryptionKey, null);
     }
 
 }

@@ -17,7 +17,10 @@ package eu.elixir.ega.ebi.reencryptionmvc.config;
 
 import com.google.common.cache.CacheBuilder;
 import eu.elixir.ega.ebi.reencryptionmvc.dto.*;
+import no.ifi.uio.crypt4gh.factory.HeaderFactory;
+import org.apache.commons.io.IOUtils;
 import org.cache2k.Cache;
+import org.identityconnectors.common.security.GuardedString;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.CacheManager;
@@ -31,6 +34,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
@@ -60,6 +66,9 @@ public class MyConfiguration {
 
     @Value("${service.archive.class}")
     private String archiveImplBean;
+
+    @Value("${ega.sharedpass.path}")
+    private String sharedKeyPath;
 
     @Autowired
     private LoadBalancerClient loadBalancer;
@@ -118,6 +127,17 @@ public class MyConfiguration {
                 .build());
         simpleCacheManager.setCaches(Arrays.asList(key, archive, path));
         return simpleCacheManager;
+    }
+
+    @Bean
+    public HeaderFactory headerFactory() {
+        return HeaderFactory.getInstance();
+    }
+
+    @Bean
+    public GuardedString sharedKey() throws IOException {
+        String passphrase = IOUtils.readLines(new FileInputStream(sharedKeyPath), Charset.defaultCharset()).iterator().next();
+        return new GuardedString(passphrase.toCharArray());
     }
 
 }

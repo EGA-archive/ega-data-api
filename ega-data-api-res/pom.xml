@@ -124,6 +124,26 @@
             <version>2.8.0</version>
             <type>jar</type>
         </dependency>
+        <dependency>
+            <groupId>org.connid</groupId>
+            <artifactId>connid-framework-internal</artifactId>
+            <version>1.3.3</version>
+        </dependency>
+        <dependency>
+            <groupId>org.syncope.identityconnectors</groupId>
+            <artifactId>framework</artifactId>
+            <version>0.4.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-crypto</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>no.uio.ifi</groupId>
+            <artifactId>crypt4gh</artifactId>
+            <version>1.0.0</version>
+        </dependency>
 
         <!-- Test -->
         <dependency>
@@ -241,8 +261,7 @@
                         <configuration>
                             <imageName>${dockerRegistry}/res:${image.version}</imageName>
                             <baseImage>java:8</baseImage>
-                            <entryPoint>["java", "${debug.config}${debug.res.port}", "-jar", "/${project.build.finalName}.jar"]
-                            </entryPoint>
+                            <entryPoint>["java", "${debug.config}${debug.res.port}", "-jar", "/${project.build.finalName}.jar"]</entryPoint>
                             <resources>
                                 <resource>
                                     <targetPath>/</targetPath>
@@ -266,5 +285,11 @@
         </profile>
     </profiles>
 
+    <repositories>
+        <repository>
+            <id>nexus.norgene.no</id>
+            <url>https://nexus.norgene.no/repository/maven-releases/</url>
+        </repository>
+    </repositories>
 
 </project>
