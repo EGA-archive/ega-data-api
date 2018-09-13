@@ -41,9 +41,9 @@ import java.util.HashMap;
 // Default implementation should work "as is"
 // TODO: Remove this file after successful testing
 //@Profile("LocalEGA")
+//@Service
+//@Transactional
 @Slf4j
-@Service
-@Transactional
 public class LocalEGAFileServiceImpl implements FileService {
 
     private String fileServiceURL;

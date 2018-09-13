@@ -58,9 +58,9 @@ import static eu.elixir.ega.ebi.shared.Constants.RES_SERVICE;
 // Default implementation should work "as is"
 // TODO: Remove this file after successful testing
 //@Profile("LocalEGA")
-@Service
-@Transactional
-@EnableDiscoveryClient
+//@Service
+//@Transactional
+//@EnableDiscoveryClient
 public class LocalEGARemoteFileServiceImpl implements FileService {
 
     @Autowired
