@@ -35,6 +35,8 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import eu.elixir.ega.ebi.keyproviderservice.service.KeyService;
 
+import java.util.Collections;
+
 /**
  * Test class for {@link KeyController}.
  * 
@@ -67,7 +69,7 @@ public final class KeyControllerTest {
     }
 
     /**
-     * Test {@link KeyController#getPublicKeyFromPrivate(String)}. Verify the api
+     * Test {@link KeyController#getPublicKeyFromPrivate(String, String)}. Verify the api
      * call returns status is OK.
      * 
      * @throws Exception
@@ -95,7 +97,7 @@ public final class KeyControllerTest {
     }
 
     /**
-     * Test {@link KeyController#getPrivateKey(String)}. Verify the api call returns
+     * Test {@link KeyController#getPrivateKey(String, String)}. Verify the api call returns
      * status is OK.
      * 
      * @throws Exception
@@ -109,7 +111,7 @@ public final class KeyControllerTest {
     }
 
     /**
-     * Test {@link KeyController#getPrivateKeyPath(String)}. Verify the api call
+     * Test {@link KeyController#getPrivateKeyPath(String, String)}. Verify the api call
      * returns status is OK.
      * 
      * @throws Exception
@@ -123,7 +125,7 @@ public final class KeyControllerTest {
     }
 
     /**
-     * Test {@link KeyController#getPrivateKeyString(String)}. Verify the api call
+     * Test {@link KeyController#getPrivateKeyString(String, String)}. Verify the api call
      * returns status is OK.
      * 
      * @throws Exception
@@ -137,14 +139,14 @@ public final class KeyControllerTest {
     }
 
     /**
-     * Test {@link KeyController#getPublicKey(String)}. Verify the api call returns
+     * Test {@link KeyController#getPublicKey(String, String)}. Verify the api call returns
      * status is OK.
      * 
      * @throws Exception
      */
     @Test
     public void testGetSetPublicKey() throws Exception {
-        when(keyService.getKeyIDs("keyType")).thenReturn(null);
+        when(keyService.getKeyIDs("keyType")).thenReturn(Collections.singleton(1L));
         final MockHttpServletResponse response = mockMvc
                 .perform(get("/keys/retrieve/keyType/ids").accept(APPLICATION_JSON)).andReturn().getResponse();
         assertThat(response.getStatus(), equalTo(OK.value()));

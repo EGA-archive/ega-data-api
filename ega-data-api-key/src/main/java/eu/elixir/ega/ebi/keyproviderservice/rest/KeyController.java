@@ -15,6 +15,7 @@
  */
 package eu.elixir.ega.ebi.keyproviderservice.rest;
 
+import eu.elixir.ega.ebi.keyproviderservice.dto.IdFormat;
 import eu.elixir.ega.ebi.keyproviderservice.dto.KeyPath;
 import eu.elixir.ega.ebi.keyproviderservice.service.KeyService;
 import org.bouncycastle.openpgp.PGPPrivateKey;
@@ -22,7 +23,9 @@ import org.bouncycastle.openpgp.PGPPublicKey;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigInteger;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author asenf
@@ -50,14 +53,17 @@ public class KeyController {
      */
     @GetMapping(value = "/retrieve/{keyId}/public")
     @ResponseBody
-    public PGPPublicKey getPublicKeyFromPrivate(@PathVariable String keyId) {
-        return keyService.getPublicKeyFromPrivate(keyId);
+    public PGPPublicKey getPublicKeyFromPrivate(@PathVariable String keyId,
+                                                @RequestParam(required = false, defaultValue = "num") String idFormat) {
+        return keyService.getPublicKeyFromPrivate(convertToNumeric(keyId, idFormat));
     }
 
     @GetMapping(value = "/retrieve/{keyId}/public/{keyType}")
     @ResponseBody
-    public String getPublicKey(@PathVariable String keyId, @PathVariable String keyType) {
-        return keyService.getPublicKey(keyType, keyId);
+    public String getPublicKey(@PathVariable String keyId,
+                               @PathVariable String keyType,
+                               @RequestParam(required = false, defaultValue = "num") String idFormat) {
+        return keyService.getPublicKey(keyType, convertToNumeric(keyId, idFormat));
     }
 
     /*
@@ -68,20 +74,23 @@ public class KeyController {
      */
     @GetMapping(value = "/retrieve/{keyId}/private/object")
     @ResponseBody
-    public PGPPrivateKey getPrivateKey(@PathVariable String keyId) {
-        return keyService.getPrivateKey(keyId);
+    public PGPPrivateKey getPrivateKey(@PathVariable String keyId,
+                                       @RequestParam(required = false, defaultValue = "num") String idFormat) {
+        return keyService.getPrivateKey(convertToNumeric(keyId, idFormat));
     }
 
     @GetMapping(value = "/retrieve/{keyId}/private/path")
     @ResponseBody
-    public KeyPath getPrivateKeyPath(@PathVariable String keyId) {
-        return keyService.getPrivateKeyPath(keyId);
+    public KeyPath getPrivateKeyPath(@PathVariable String keyId,
+                                     @RequestParam(required = false, defaultValue = "num") String idFormat) {
+        return keyService.getPrivateKeyPath(convertToNumeric(keyId, idFormat));
     }
 
     @GetMapping(value = "/retrieve/{keyId}/private/key")
     @ResponseBody
-    public String getPrivateKeyString(@PathVariable String keyId) {
-        return keyService.getPrivateKeyString(keyId);
+    public String getPrivateKeyString(@PathVariable String keyId,
+                                      @RequestParam(required = false, defaultValue = "num") String idFormat) {
+        return keyService.getPrivateKeyString(convertToNumeric(keyId, idFormat));
     }
 
     /*
@@ -89,8 +98,19 @@ public class KeyController {
      */
     @GetMapping(value = "/retrieve/{keyType}/ids")
     @ResponseBody
-    public Set<Long> getPublicKey(@PathVariable String keyType) {
-        return keyService.getKeyIDs(keyType);
+    public Set<String> getPublicKey(@PathVariable String keyType,
+                                    @RequestParam(required = false, defaultValue = "num") String idFormat) {
+        if (IdFormat.NUM == IdFormat.valueOf(idFormat.toUpperCase())) {
+            return keyService.getKeyIDs(keyType).stream().map(String::valueOf).collect(Collectors.toSet());
+        }
+        return keyService.getKeyIDs(keyType).stream().map(Long::toHexString).collect(Collectors.toSet());
+    }
+
+    private String convertToNumeric(String keyId, String idFormat) {
+        if (IdFormat.NUM == IdFormat.valueOf(idFormat.toUpperCase())) {
+            return keyId;
+        }
+        return String.valueOf(new BigInteger(keyId, 16).longValue());
     }
 
 }
