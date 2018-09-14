@@ -86,6 +86,13 @@ public class KeyController {
         return keyService.getPrivateKeyPath(convertToNumeric(keyId, idFormat));
     }
 
+    @GetMapping(value = "/retrieve/{keyId}/private/bin")
+    @ResponseBody
+    public byte[] getPrivateKeyByte(@PathVariable String keyId,
+                                    @RequestParam(required = false, defaultValue = "num") String idFormat) {
+        return keyService.getPrivateKeyByte(convertToNumeric(keyId, idFormat));
+    }
+
     @GetMapping(value = "/retrieve/{keyId}/private/key")
     @ResponseBody
     public String getPrivateKeyString(@PathVariable String keyId,
