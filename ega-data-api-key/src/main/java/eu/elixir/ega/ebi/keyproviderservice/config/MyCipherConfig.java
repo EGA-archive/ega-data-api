@@ -52,6 +52,9 @@ public class MyCipherConfig {
     // Paths
     private HashMap<Long, KeyPath> keyPaths = new HashMap<>();
 
+    // Re-Encrypted Key Binary
+    private HashMap<Long, byte[]> binaryKey = new HashMap<>();
+
     // Re-Armoured Key String
     private HashMap<Long, String> armouredKey = new HashMap<>();
 
@@ -99,8 +102,7 @@ public class MyCipherConfig {
                 // Store the set of Paths to Key and Passphrase
                 keyPaths.put(keyId, new KeyPath(keyPath[i], keyPassPath[i].trim()));
                 // Store Re-Armoured Key String
-                String reArmouredKey = reArmourKey(pgpPublicKey, pgpPrivateKey);
-                armouredKey.put(keyId, reArmouredKey);
+                reArmourKey(keyId, pgpPublicKey, pgpPrivateKey);
             } catch (IOException ex) {
                 Logger.getLogger(MyCipherConfig.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -140,6 +142,10 @@ public class MyCipherConfig {
 
     public KeyPath getKeyPaths(Long keyId) {
         return this.keyPaths.get(keyId);
+    }
+
+    public byte[] getBinaryKey(long keyId) {
+        return this.binaryKey.get(keyId);
     }
 
     public String getAsciiArmouredKey(long keyId) {
@@ -244,12 +250,11 @@ public class MyCipherConfig {
         return count;
     }
 
-    private String reArmourKey(PGPPublicKey pgpPub, PGPPrivateKey pgpPriv) {
-        String key = null;
-
+    private void reArmourKey(long keyId, PGPPublicKey pgpPub, PGPPrivateKey pgpPriv) {
         try {
             PGPSecretKeyRing secRing = newSecKey(pgpPub, pgpPriv);
-            byte[] encoded = secRing.getEncoded();
+            byte[] encoded = secRing.getSecretKey(keyId).getEncoded();
+            binaryKey.put(keyId, encoded);
 
             ByteArrayInputStream bais = new ByteArrayInputStream(encoded);
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -259,12 +264,10 @@ public class MyCipherConfig {
             armoredOutputStream.flush();
             armoredOutputStream.close();
 
-            key = baos.toString();
+            armouredKey.put(keyId, baos.toString());
         } catch (Exception ex) {
             Logger.getLogger(MyCipherConfig.class.getName()).log(Level.SEVERE, null, ex);
         }
-
-        return key;
     }
 
     private PGPSecretKeyRing newSecKey(PGPPublicKey pgpPub, PGPPrivateKey pgpPriv) throws Exception {

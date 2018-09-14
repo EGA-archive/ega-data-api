@@ -32,6 +32,8 @@ public interface KeyService {
 
     KeyPath getPrivateKeyPath(String keyId);
 
+    byte[] getPrivateKeyByte(String keyId);
+
     String getPrivateKeyString(String keyId);
 
     PGPPublicKey getPublicKeyFromPrivate(String keyId);

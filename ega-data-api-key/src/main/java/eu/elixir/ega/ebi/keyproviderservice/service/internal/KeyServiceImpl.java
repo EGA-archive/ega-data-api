@@ -72,6 +72,14 @@ public class KeyServiceImpl implements KeyService {
     @Override
     @HystrixCommand
     @ResponseBody
+    public byte[] getPrivateKeyByte(String keyId) {
+        long lKeyId = Long.parseLong(keyId);
+        return myCipherConfig.getBinaryKey(lKeyId);
+    }
+
+    @Override
+    @HystrixCommand
+    @ResponseBody
     public String getPrivateKeyString(String keyId) {
         long lKeyId = Long.parseLong(keyId);
         return myCipherConfig.getAsciiArmouredKey(lKeyId);
