@@ -3,16 +3,30 @@
 [![Build Status](https://travis-ci.org/EGA-archive/ega-data-api.svg?branch=master)](https://travis-ci.org/EGA-archive/ega-data-api)
 
 
-The EGA Data API is a REST API providing secure and controlled access to the archive. Access is secured by OAuth2 Bearer tokens issued from the the EGA OpenID Connect AAI. In the future (or upon request) EGA users may link their ELIXIR and EGA identities, to also allow access with OAuth2 tokens issued by the ELIXIR AAI.
-
-The EGA Data API implements the GA4GH Streaming/htsget API as it is specified here http://samtools.github.io/hts-specs/htsget.html. The API supports BAM, CRAM, VCF, BCF files.
+The EGA Data API is a REST API providing secure and controlled access to the archive. Access is secured by OAuth2 Bearer tokens issued from the the EGA OpenID Connect AAI. The EGA Data API implements the GA4GH Streaming/htsget API as it is specified here http://samtools.github.io/hts-specs/htsget.html. The API supports BAM, CRAM, VCF, BCF files.
 
 
-NOTE: The URL in the property source name is the git repository, not the config server URL.
+# Architecture
 
-| First Header  | Second Header |
+Ega Data API is divided into several microservices:
+
+| Services | Role |
 | ------------- | ------------- |
-| Content Cell  | Content Cell  |
-| Content Cell  | Content Cell  |
+| Dataedge  | It enforces user authentication for some endpoints by requiring an EGA Bearer Token for API access. |
+| Filedatabase  | This service is an abstraction layer to the local database, which keeps information about files and datasets, as well as some basic logging tables. |
+| Key  | Handles encryption keys |
+| Netflix config  | Stores the configuration files(`application.properties`) for other services. |
+| Netflix hystrix  | This is a dashboard for monitoring services using [Hystrix](https://github.com/Netflix/Hystrix). |
+| Netflix eureka  | Netflix's service discovery system |
+| Res(Re-encryption)  | Reads archived data and produce output stream |
+
+# Dependencies
+* Maven
+* Java8
+
+# Build
+```
+$ mvn install "-DdockerRegistry=pg-ega-pro.ebi.ac.uk" "-Dimage.version=1.0"
+```
 
 
