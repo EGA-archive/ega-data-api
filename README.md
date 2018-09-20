@@ -29,4 +29,6 @@ Ega Data API is divided into several microservices:
 $ mvn install "-DdockerRegistry=pg-ega-pro.ebi.ac.uk" "-Dimage.version=1.0"
 ```
 
+## License
 
+This project is licensed under the Apache 2.0 License - see the [LICENSE.md](LICENSE.md) file for details
