@@ -84,9 +84,14 @@ public class LocalEGAServiceImpl implements ResService {
     @Autowired
     private KeyService keyService;
 
+    private MinioClient s3Client;
+
     @PostConstruct
-    private void init() {
+    private void init() throws InvalidPortException, InvalidEndpointException {
         Security.addProvider(new BouncyCastleProvider());
+        if (s3URL != null && s3Key != null && s3Secret != null) {
+            s3Client = new MinioClient(s3URL, s3Key, s3Secret);
+        }
     }
 
     @Override
@@ -137,14 +142,13 @@ public class LocalEGAServiceImpl implements ResService {
                                          byte[] iv,
                                          String fileLocation,
                                          long startCoordinate,
-                                         long endCoordinate) throws IOException, InvalidPortException, InvalidKeyException, NoSuchAlgorithmException, InsufficientDataException, InvalidExpiresRangeException, InternalException, NoResponseException, InvalidBucketNameException, XmlPullParserException, ErrorResponseException {
+                                         long endCoordinate) throws IOException, InvalidKeyException, NoSuchAlgorithmException, InsufficientDataException, InvalidExpiresRangeException, InternalException, NoResponseException, InvalidBucketNameException, XmlPullParserException, ErrorResponseException {
         SeekableStream seekableStream;
-        try {
-            MinioClient minioClient = new MinioClient(s3URL, s3Key, s3Secret);
-            String presignedObjectUrl = minioClient.getPresignedObjectUrl(Method.GET, s3Bucket, fileLocation, MAX_EXPIRATION_TIME, null);
-            seekableStream = new SeekableHTTPStream(new URL(presignedObjectUrl));
-        } catch (InvalidEndpointException e) {
+        if (fileLocation.startsWith("/")) { // absolute file path
             seekableStream = new SeekableFileStream(new File(fileLocation));
+        } else { // S3 object
+            String presignedObjectUrl = s3Client.getPresignedObjectUrl(Method.GET, s3Bucket, fileLocation, MAX_EXPIRATION_TIME, null);
+            seekableStream = new SeekableHTTPStream(new URL(presignedObjectUrl));
         }
         SeekableStreamInput seekableStreamInput = new SeekableStreamInput(seekableStream, MINIMUM_BUFFER_SIZE, 0);
         PositionedCryptoInputStream positionedStream = new PositionedCryptoInputStream(new Properties(), seekableStreamInput, key, iv, 0);
