@@ -18,9 +18,12 @@ package eu.elixir.ega.ebi.reencryptionmvc.service.internal;
 import eu.elixir.ega.ebi.reencryptionmvc.domain.Format;
 import eu.elixir.ega.ebi.reencryptionmvc.service.KeyService;
 import eu.elixir.ega.ebi.reencryptionmvc.service.ResService;
-import htsjdk.samtools.seekablestream.SeekableBasicAuthHTTPStream;
 import htsjdk.samtools.seekablestream.SeekableFileStream;
+import htsjdk.samtools.seekablestream.SeekableHTTPStream;
 import htsjdk.samtools.seekablestream.SeekableStream;
+import io.minio.MinioClient;
+import io.minio.errors.*;
+import io.minio.http.Method;
 import no.ifi.uio.crypt4gh.stream.Crypt4GHOutputStream;
 import no.ifi.uio.crypt4gh.stream.SeekableStreamInput;
 import org.apache.commons.crypto.stream.CtrCryptoOutputStream;
@@ -31,11 +34,13 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.openpgp.PGPException;
 import org.bouncycastle.util.encoders.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.xmlpull.v1.XmlPullParserException;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
@@ -44,8 +49,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.MalformedURLException;
 import java.net.URL;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.security.Security;
 import java.util.Properties;
 import java.util.logging.Level;
@@ -60,6 +66,18 @@ import static no.ifi.uio.crypt4gh.stream.Crypt4GHInputStream.MINIMUM_BUFFER_SIZE
 @Profile("LocalEGA")
 @EnableDiscoveryClient
 public class LocalEGAServiceImpl implements ResService {
+
+    @Value("${ega.ebi.aws.endpoint.url}")
+    private String s3URL;
+
+    @Value("${ega.ebi.aws.bucket:lega}")
+    private String s3KBucket;
+
+    @Value("${ega.ebi.aws.access.key}")
+    private String s3Key;
+
+    @Value("${ega.ebi.aws.access.secret}")
+    private String s3Secret;
 
     @Autowired
     private KeyService keyService;
@@ -91,8 +109,7 @@ public class LocalEGAServiceImpl implements ResService {
                     Base64.decode(sourceIV),
                     fileLocation,
                     startCoordinate,
-                    endCoordinate,
-                    httpAuth);
+                    endCoordinate);
             outputStream = getOutputStream(response.getOutputStream(),
                     Format.valueOf(destinationFormat.toUpperCase()),
                     destinationKey,
@@ -118,12 +135,13 @@ public class LocalEGAServiceImpl implements ResService {
                                          byte[] iv,
                                          String fileLocation,
                                          long startCoordinate,
-                                         long endCoordinate,
-                                         String httpAuth) throws IOException {
+                                         long endCoordinate) throws IOException, InvalidPortException, InvalidKeyException, NoSuchAlgorithmException, InsufficientDataException, InvalidExpiresRangeException, InternalException, NoResponseException, InvalidBucketNameException, XmlPullParserException, ErrorResponseException {
         SeekableStream seekableStream;
         try {
-            seekableStream = new SeekableBasicAuthHTTPStream(new URL(fileLocation), httpAuth);
-        } catch (MalformedURLException e) {
+            MinioClient minioClient = new MinioClient(s3URL, s3Key, s3Secret);
+            String presignedObjectUrl = minioClient.getPresignedObjectUrl(Method.GET, s3KBucket, fileLocation, Integer.MAX_VALUE, null);
+            seekableStream = new SeekableHTTPStream(new URL(presignedObjectUrl));
+        } catch (InvalidEndpointException e) {
             seekableStream = new SeekableFileStream(new File(fileLocation));
         }
         SeekableStreamInput seekableStreamInput = new SeekableStreamInput(seekableStream, MINIMUM_BUFFER_SIZE, 0);

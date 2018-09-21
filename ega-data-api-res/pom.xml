@@ -144,6 +144,11 @@
             <artifactId>crypt4gh</artifactId>
             <version>1.0.0</version>
         </dependency>
+        <dependency>
+            <groupId>io.minio</groupId>
+            <artifactId>minio</artifactId>
+            <version>5.0.1</version>
+        </dependency>
 
         <!-- Test -->
         <dependency>

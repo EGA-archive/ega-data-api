@@ -26,7 +26,6 @@ import org.bouncycastle.jcajce.provider.util.BadBlockException;
 import org.bouncycastle.openpgp.PGPException;
 import org.identityconnectors.common.security.GuardedString;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
@@ -58,12 +57,6 @@ public class LocalEGAArchiveServiceImpl implements ArchiveService {
     private HeaderFactory headerFactory;
     private GuardedString sharedKey;
 
-    @Value("${ega.ebi.aws.access.key}")
-    private String awsKey;
-
-    @Value("${ega.ebi.aws.access.secret}")
-    private String awsSecretKey;
-
     @Override
     @Retryable(maxAttempts = 8, backoff = @Backoff(delay = 2000, multiplier = 2))
     public ArchiveSource getArchiveFile(String id, HttpServletResponse response) {
@@ -75,7 +68,7 @@ public class LocalEGAArchiveServiceImpl implements ArchiveService {
         try {
             String privateKey = keyService.getPrivateKey(headerFactory.getKeyIds(header.getBytes()).iterator().next()); // select first subkey
             Map.Entry<String, String> parsedHeader = parseHeader(header, privateKey);
-            return new ArchiveSource(url, size, awsKey + ":" + awsSecretKey, "aes256", parsedHeader.getKey(), parsedHeader.getValue());
+            return new ArchiveSource(url, size, null, "aes256", parsedHeader.getKey(), parsedHeader.getValue());
         } catch (IOException | PGPException | BadBlockException e) {
             throw new RuntimeException(e.getMessage(), e);
         }
