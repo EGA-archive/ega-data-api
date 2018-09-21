@@ -57,8 +57,6 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static no.ifi.uio.crypt4gh.stream.Crypt4GHInputStream.MINIMUM_BUFFER_SIZE;
-
 /**
  * @author asenf
  */
@@ -67,6 +65,7 @@ import static no.ifi.uio.crypt4gh.stream.Crypt4GHInputStream.MINIMUM_BUFFER_SIZE
 @EnableDiscoveryClient
 public class LocalEGAServiceImpl implements ResService {
 
+    private static final int DEFAULT_BUFFER_SIZE = 1024 * 4;
     private static final int MAX_EXPIRATION_TIME = 7 * 24 * 3600;
 
     @Value("${ega.ebi.aws.endpoint.url}")
@@ -130,8 +129,8 @@ public class LocalEGAServiceImpl implements ResService {
         response.addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_OCTET_STREAM_VALUE);
         try {
             IOUtils.copyLarge(inputStream, outputStream);
+            inputStream.close();
             outputStream.flush();
-            outputStream.close();
         } catch (IOException e) {
             Logger.getLogger(LocalEGAServiceImpl.class.getName()).log(Level.SEVERE, null, e);
             throw new RuntimeException(e);
@@ -150,7 +149,7 @@ public class LocalEGAServiceImpl implements ResService {
             String presignedObjectUrl = s3Client.getPresignedObjectUrl(Method.GET, s3Bucket, fileLocation, MAX_EXPIRATION_TIME, null);
             seekableStream = new SeekableHTTPStream(new URL(presignedObjectUrl));
         }
-        SeekableStreamInput seekableStreamInput = new SeekableStreamInput(seekableStream, MINIMUM_BUFFER_SIZE, 0);
+        SeekableStreamInput seekableStreamInput = new SeekableStreamInput(seekableStream, DEFAULT_BUFFER_SIZE, 0);
         PositionedCryptoInputStream positionedStream = new PositionedCryptoInputStream(new Properties(), seekableStreamInput, key, iv, 0);
         positionedStream.seek(startCoordinate);
         return endCoordinate != 0 && endCoordinate > startCoordinate ?
