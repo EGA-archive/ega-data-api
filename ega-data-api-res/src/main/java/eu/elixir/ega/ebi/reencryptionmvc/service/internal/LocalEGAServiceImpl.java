@@ -67,6 +67,8 @@ import static no.ifi.uio.crypt4gh.stream.Crypt4GHInputStream.MINIMUM_BUFFER_SIZE
 @EnableDiscoveryClient
 public class LocalEGAServiceImpl implements ResService {
 
+    private static final int MAX_EXPIRATION_TIME = 7 * 24 * 3600;
+
     @Value("${ega.ebi.aws.endpoint.url}")
     private String s3URL;
 
@@ -139,7 +141,7 @@ public class LocalEGAServiceImpl implements ResService {
         SeekableStream seekableStream;
         try {
             MinioClient minioClient = new MinioClient(s3URL, s3Key, s3Secret);
-            String presignedObjectUrl = minioClient.getPresignedObjectUrl(Method.GET, s3Bucket, fileLocation, Integer.MAX_VALUE, null);
+            String presignedObjectUrl = minioClient.getPresignedObjectUrl(Method.GET, s3Bucket, fileLocation, MAX_EXPIRATION_TIME, null);
             seekableStream = new SeekableHTTPStream(new URL(presignedObjectUrl));
         } catch (InvalidEndpointException e) {
             seekableStream = new SeekableFileStream(new File(fileLocation));
