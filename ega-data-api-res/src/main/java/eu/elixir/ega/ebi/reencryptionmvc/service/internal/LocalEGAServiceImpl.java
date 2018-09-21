@@ -71,7 +71,7 @@ public class LocalEGAServiceImpl implements ResService {
     private String s3URL;
 
     @Value("${ega.ebi.aws.bucket:lega}")
-    private String s3KBucket;
+    private String s3Bucket;
 
     @Value("${ega.ebi.aws.access.key}")
     private String s3Key;
@@ -139,7 +139,7 @@ public class LocalEGAServiceImpl implements ResService {
         SeekableStream seekableStream;
         try {
             MinioClient minioClient = new MinioClient(s3URL, s3Key, s3Secret);
-            String presignedObjectUrl = minioClient.getPresignedObjectUrl(Method.GET, s3KBucket, fileLocation, Integer.MAX_VALUE, null);
+            String presignedObjectUrl = minioClient.getPresignedObjectUrl(Method.GET, s3Bucket, fileLocation, Integer.MAX_VALUE, null);
             seekableStream = new SeekableHTTPStream(new URL(presignedObjectUrl));
         } catch (InvalidEndpointException e) {
             seekableStream = new SeekableFileStream(new File(fileLocation));
