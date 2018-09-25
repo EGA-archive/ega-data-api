@@ -2,7 +2,12 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-replicaCount: 1
+replicaCount:
+  one: 1
+  two: 2
+  three: 3
+  four: 4
+  five: 5
 
 image:
   metadata: 
@@ -13,7 +18,8 @@ image:
   repository: 
       config:
         value: anandmohan777/config
-        tag: v2
+        tagMajor: 1
+        tagMinor: 0
         port: 8888
       postgres:
         value: anandmohan777/postgres
@@ -24,3 +30,12 @@ image:
 group:
   one: group1
   two: group2
+  three: group3
+  four: group4
+  five: group5
+  six: group6
+  seven: group7
+  eight: group8  
+
+logdirectory:
+  path: /tmp/logs
