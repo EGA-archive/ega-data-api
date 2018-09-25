@@ -69,6 +69,11 @@
 									<directory>${project.build.directory}</directory>
 									<include>${project.build.finalName}.jar</include>
 								</resource>
+								<resource>
+									<targetPath>/</targetPath>
+									<directory>${project.basedir}</directory>
+									<include>config-files/</include>
+								</resource>
 							</resources>
 						</configuration>
 						<executions>
@@ -108,6 +113,11 @@
 									<targetPath>/</targetPath>
 									<directory>${project.build.directory}</directory>
 									<include>${project.build.finalName}.jar</include>
+								</resource>
+								<resource>
+									<targetPath>/</targetPath>
+									<directory>${project.basedir}</directory>
+									<include>config-files/</include>
 								</resource>
 							</resources>
 						</configuration>
