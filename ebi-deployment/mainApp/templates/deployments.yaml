@@ -4,12 +4,11 @@ kind: Deployment
 metadata:
   name: eureka-deploy
 spec:
-  replicas: {{ .Values.replicaCount }}
+  replicas: {{ .Values.replicaCount.one }}
   strategy:
         type: RollingUpdate
         rollingUpdate:
-          maxUnavailable: {{ .Values.replicaCount }}
-          maxSurge: {{ .Values.replicaCount }}
+          maxUnavailable: {{ .Values.replicaCount.one }}
   selector:
         matchLabels:
           app: {{ .Values.image.metadata.eureka }}
@@ -20,7 +19,7 @@ spec:
         spec:
           containers:
           - name: eureka
-            image: "{{ .Values.image.repository.eureka.value }}:{{ .Values.image.repository.eureka.tag }}"
+            image: "{{ .Values.image.repository.eureka.value }}:{{ .Values.image.repository.eureka.tagMajor }}.{{ .Values.image.repository.eureka.tagMinor }}"
             imagePullPolicy: {{ .Values.image.pullPolicy }}
             env:
             - name: CONFIG_SERVICE
@@ -32,20 +31,26 @@ spec:
                 port: {{ .Values.image.repository.eureka.port }}
               initialDelaySeconds: 60
               periodSeconds: 60
+            volumeMounts:
+              - mountPath: "/log"
+                name: log-directory 
           nodeSelector:
             group: {{ .Values.group.one }}
+          volumes:
+            - name: log-directory
+              hostPath:
+                path: {{ .Values.logdirectory.path }}            
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: key-deploy
 spec:
-  replicas: {{ .Values.replicaCount }}
+  replicas: {{ .Values.replicaCount.one }}
   strategy:
         type: RollingUpdate
         rollingUpdate:
-          maxUnavailable: {{ .Values.replicaCount }}
-          maxSurge: {{ .Values.replicaCount }}
+          maxUnavailable: {{ .Values.replicaCount.one }}
   selector:
         matchLabels:
           app: {{ .Values.image.metadata.key }}
@@ -56,7 +61,7 @@ spec:
         spec:
           containers:
           - name: key
-            image: "{{ .Values.image.repository.key.value }}:{{ .Values.image.repository.key.tag }}"
+            image: "{{ .Values.image.repository.key.value }}:{{ .Values.image.repository.key.tagMajor }}.{{ .Values.image.repository.key.tagMinor }}"
             imagePullPolicy: {{ .Values.image.pullPolicy }}
             env:
             - name: CONFIG_SERVICE
@@ -68,20 +73,26 @@ spec:
                 port: {{ .Values.image.repository.key.port }}
               initialDelaySeconds: 60
               periodSeconds: 60
+            volumeMounts:
+              - mountPath: "/log"
+                name: log-directory
           nodeSelector:
             group: {{ .Values.group.one }}
+          volumes:
+            - name: log-directory
+              hostPath:
+                path: {{ .Values.logdirectory.path }}
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: filedatabase-deploy
 spec:
-  replicas: {{ .Values.replicaCount }}
+  replicas: {{ .Values.replicaCount.one }}
   strategy:
         type: RollingUpdate
         rollingUpdate:
-          maxUnavailable: {{ .Values.replicaCount }}
-          maxSurge: {{ .Values.replicaCount }}
+          maxUnavailable: {{ .Values.replicaCount.one }}
   selector:
         matchLabels:
           app: {{ .Values.image.metadata.filedatabase }}          
@@ -92,7 +103,7 @@ spec:
         spec:
           containers:
           - name: filedatabase
-            image: "{{ .Values.image.repository.filedatabase.value }}:{{ .Values.image.repository.filedatabase.tag }}"
+            image: "{{ .Values.image.repository.filedatabase.value }}:{{ .Values.image.repository.filedatabase.tagMajor }}.{{ .Values.image.repository.filedatabase.tagMinor }}"
             imagePullPolicy: {{ .Values.image.pullPolicy }}
             env:
             - name: CONFIG_SERVICE
@@ -104,20 +115,26 @@ spec:
                 port: {{ .Values.image.repository.filedatabase.port }}
               initialDelaySeconds: 60
               periodSeconds: 60
+            volumeMounts:
+              - mountPath: "/log"
+                name: log-directory              
           nodeSelector:
             group: {{ .Values.group.one }}
+          volumes:
+            - name: log-directory
+              hostPath:
+                path: {{ .Values.logdirectory.path }}            
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: res-deploy
 spec:
-  replicas: {{ .Values.replicaCount }}
+  replicas: {{ .Values.replicaCount.one }}
   strategy:
         type: RollingUpdate
         rollingUpdate:
-          maxUnavailable: {{ .Values.replicaCount }}
-          maxSurge: {{ .Values.replicaCount }}
+          maxUnavailable: {{ .Values.replicaCount.one }}
   selector:
         matchLabels:
           app: {{ .Values.image.metadata.res }} 
@@ -128,10 +145,10 @@ spec:
         spec:
           containers:
           - name: res
-            image: "{{ .Values.image.repository.res.value }}:{{ .Values.image.repository.res.tag }}"
+            image: "{{ .Values.image.repository.res.value }}:{{ .Values.image.repository.res.tagMajor }}.{{ .Values.image.repository.res.tagMinor }}"
             imagePullPolicy: {{ .Values.image.pullPolicy }}
             env:
-            - name: SPRING_CONFIG_URI
+            - name: CONFIG_SERVICE
               value: {{ .Values.configService }}
             ports:
             - containerPort: {{ .Values.image.repository.res.port }}
@@ -140,5 +157,54 @@ spec:
                 port: {{ .Values.image.repository.res.port }}
               initialDelaySeconds: 60
               periodSeconds: 60
+            volumeMounts:
+              - mountPath: "/log"
+                name: log-directory
           nodeSelector:
-            group: {{ .Values.group.two }}
+            group: {{ .Values.group.one }}
+          volumes:
+            - name: log-directory
+              hostPath:
+                path: {{ .Values.logdirectory.path }}           
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dataedge-deploy
+spec:
+  replicas: {{ .Values.replicaCount.one }}
+  strategy:
+        type: RollingUpdate
+        rollingUpdate:
+          maxUnavailable: {{ .Values.replicaCount.one }}
+  selector:
+        matchLabels:
+          app: {{ .Values.image.metadata.dataedge }} 
+  template:
+        metadata:
+          labels:
+            app: {{ .Values.image.metadata.dataedge }} 
+        spec:
+          containers:
+          - name: dataedge
+            image: "{{ .Values.image.repository.dataedge.value }}:{{ .Values.image.repository.dataedge.tagMajor }}.{{ .Values.image.repository.dataedge.tagMinor }}"
+            imagePullPolicy: {{ .Values.image.pullPolicy }}
+            env:
+            - name: CONFIG_SERVICE
+              value: {{ .Values.configService }}
+            ports:
+            - containerPort: {{ .Values.image.repository.dataedge.port }}
+            livenessProbe:
+              tcpSocket:
+                port: {{ .Values.image.repository.dataedge.port }}
+              initialDelaySeconds: 60
+              periodSeconds: 60
+            volumeMounts:
+              - mountPath: "/log"
+                name: log-directory
+          nodeSelector:
+            group: {{ .Values.group.one }}
+          volumes:
+            - name: log-directory
+              hostPath:
+                path: {{ .Values.logdirectory.path }}            

@@ -4,12 +4,11 @@ kind: Deployment
 metadata:
   name: config-deploy
 spec:
-  replicas: {{ .Values.replicaCount }}
+  replicas: {{ .Values.replicaCount.one }}
   strategy:
         type: RollingUpdate
         rollingUpdate:
-          maxUnavailable: {{ .Values.replicaCount }}
-          maxSurge: {{ .Values.replicaCount }}
+          maxUnavailable: {{ .Values.replicaCount.one }}
   selector:
         matchLabels:
           app: {{ .Values.image.metadata.config }}
@@ -20,7 +19,7 @@ spec:
         spec:
           containers:
           - name: config
-            image: "{{ .Values.image.repository.config.value }}:{{ .Values.image.repository.config.tag }}"
+            image: "{{ .Values.image.repository.config.value }}:{{ .Values.image.repository.config.tagMajor }}.{{ .Values.image.repository.config.tagMinor }}"
             imagePullPolicy: {{ .Values.image.pullPolicy }}
             ports:
             - containerPort: {{ .Values.image.repository.config.port }}
@@ -28,21 +27,30 @@ spec:
               tcpSocket:
                 port: {{ .Values.image.repository.config.port }}
               initialDelaySeconds: 60
-              periodSeconds: 60			  
+              periodSeconds: 60 
+            volumeMounts:
+              - mountPath: "/log"
+                name: log-directory
+          imagePullSecrets:
+            - name: {{ .Values.image.imageSecrets }}      
           nodeSelector:
-            group: {{ .Values.group.one }}			
+            group: {{ .Values.group.one }}  
+          volumes:
+            - name: log-directory
+              hostPath:
+                path: {{ .Values.logdirectory.path }}	
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: postgres-deploy
 spec:
-  replicas: {{ .Values.replicaCount }}
+  replicas: {{ .Values.replicaCount.one }}
   strategy:
         type: RollingUpdate
         rollingUpdate:
-          maxUnavailable: {{ .Values.replicaCount }}
-          maxSurge: {{ .Values.replicaCount }}
+          maxUnavailable: {{ .Values.replicaCount.one }}
+          maxSurge: {{ .Values.replicaCount.one }}
   selector:
         matchLabels:
           app: {{ .Values.image.metadata.postgres }}
