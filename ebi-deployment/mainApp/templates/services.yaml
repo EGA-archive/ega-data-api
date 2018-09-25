@@ -78,3 +78,23 @@ spec:
         name: res-debug-port          
     selector:
         app: {{ .Values.image.metadata.res }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+    name: dataedge
+    labels:
+        app: {{ .Values.image.metadata.dataedge }}
+spec:
+    type: NodePort
+    ports:
+    -   port: {{ .Values.image.repository.dataedge.port }}
+        nodePort: {{ .Values.image.repository.dataedge.nodeport }} 
+        protocol: TCP
+        name: dataedge-app-port
+    -   port: {{ .Values.image.repository.dataedge.debug }} 
+        nodePort: {{ .Values.image.repository.dataedge.debugNodePort }}
+        protocol: TCP 
+        name: dataedge-debug-port          
+    selector:
+        app: {{ .Values.image.metadata.dataedge }}  
