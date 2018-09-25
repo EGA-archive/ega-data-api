@@ -15,6 +15,7 @@ image:
       key: key-app
       filedatabase: filedatabase-app
       res: res-app
+      dataedge: dataedge-app      
   tag: stable
   pullPolicy: Always
   imageSecrets: regcredc 
