@@ -1,10 +1,18 @@
 language: java
-services:
-- docker
+
+services: docker
+
 jdk: oraclejdk8
+install:
+  # installing dependencies and skipping docker push
+  - mvn install -DskipTests=true -Dmaven.javadoc.skip=true -B -V -DskipDockerPush
+
+# We are skipping push here until after success
 script: mvn clean install -DskipDockerPush
+
 after_success:
   - ./extras/travis_push_docker_hub.sh
+
 cache:
   directories:
   - $HOME/.m2
