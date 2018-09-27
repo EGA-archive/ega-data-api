@@ -18,6 +18,7 @@ package eu.elixir.ega.ebi.reencryptionmvc.service.internal;
 import eu.elixir.ega.ebi.reencryptionmvc.domain.Format;
 import eu.elixir.ega.ebi.reencryptionmvc.service.KeyService;
 import eu.elixir.ega.ebi.reencryptionmvc.service.ResService;
+import htsjdk.samtools.seekablestream.SeekableBasicAuthHTTPStream;
 import htsjdk.samtools.seekablestream.SeekableFileStream;
 import htsjdk.samtools.seekablestream.SeekableHTTPStream;
 import htsjdk.samtools.seekablestream.SeekableStream;
@@ -30,6 +31,7 @@ import org.apache.commons.crypto.stream.CtrCryptoOutputStream;
 import org.apache.commons.crypto.stream.PositionedCryptoInputStream;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.BoundedInputStream;
+import org.apache.commons.lang.StringUtils;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.openpgp.PGPException;
 import org.bouncycastle.util.encoders.Base64;
@@ -114,6 +116,7 @@ public class LocalEGAServiceImpl implements ResService {
             inputStream = getInputStream(Base64.decode(sourceKey),
                     Base64.decode(sourceIV),
                     fileLocation,
+                    httpAuth,
                     startCoordinate,
                     endCoordinate);
             outputStream = getOutputStream(response.getOutputStream(),
@@ -140,10 +143,17 @@ public class LocalEGAServiceImpl implements ResService {
     protected InputStream getInputStream(byte[] key,
                                          byte[] iv,
                                          String fileLocation,
+                                         String httpAuth,
                                          long startCoordinate,
                                          long endCoordinate) throws IOException, InvalidKeyException, NoSuchAlgorithmException, InsufficientDataException, InvalidExpiresRangeException, InternalException, NoResponseException, InvalidBucketNameException, XmlPullParserException, ErrorResponseException {
         SeekableStream seekableStream;
-        if (fileLocation.startsWith("/")) { // absolute file path
+        if (fileLocation.startsWith("http")) { // some external URL
+            if (StringUtils.isNotEmpty(httpAuth)) {
+                seekableStream = new SeekableBasicAuthHTTPStream(new URL(fileLocation), httpAuth);
+            } else {
+                seekableStream = new SeekableHTTPStream(new URL(fileLocation));
+            }
+        } else if (fileLocation.startsWith("/")) { // absolute file path
             seekableStream = new SeekableFileStream(new File(fileLocation));
         } else { // S3 object
             String presignedObjectUrl = s3Client.getPresignedObjectUrl(Method.GET, s3Bucket, fileLocation, MAX_EXPIRATION_TIME, null);
