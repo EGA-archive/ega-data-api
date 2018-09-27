@@ -230,6 +230,7 @@
 							<baseImage>java:8</baseImage>
 							<imageTags>
 								<imageTag>${image.version}</imageTag>
+								<imageTag>latest</imageTag>
 							</imageTags>
 							<entryPoint>["java", "${debug.config}${debug.filedatabase.port}", "-jar", "/${project.build.finalName}.jar"]</entryPoint>
 							<resources>
@@ -246,6 +247,13 @@
 								<phase>package</phase>
 								<goals>
 									<goal>build</goal>
+								</goals>
+							</execution>
+							<execution>
+								<id>push-image</id>
+								<phase>package</phase>
+								<goals>
+									<goal>push</goal>
 								</goals>
 							</execution>
 						</executions>
