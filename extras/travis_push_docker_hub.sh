@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-DOCKER_REGISTRY=nbisweden
-
 OSS_MODULES=( ega-data-api-netflix/ega-data-api-config
               ega-data-api-netflix/ega-data-api-eureka
               ega-data-api-netflix/ega-data-api-hystrix )
