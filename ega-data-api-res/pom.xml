@@ -218,8 +218,12 @@
                         <artifactId>docker-maven-plugin</artifactId>
                         <version>${docker.maven.version}</version>
                         <configuration>
-                            <imageName>${dockerRegistry}/res:${image.version}</imageName>
+                            <imageName>${dockerRegistry}/res</imageName>
                             <baseImage>java:8</baseImage>
+                            <imageTags>
+                                <imageTag>${image.version}</imageTag>
+                                <imageTag>latest</imageTag>
+                            </imageTags>
                             <entryPoint>["java", "-jar", "/${project.build.finalName}.jar"]</entryPoint>
                             <resources>
                                 <resource>
@@ -235,6 +239,13 @@
                                 <phase>package</phase>
                                 <goals>
                                     <goal>build</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>push-image</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>push</goal>
                                 </goals>
                             </execution>
                         </executions>
@@ -259,8 +270,12 @@
                         <artifactId>docker-maven-plugin</artifactId>
                         <version>${docker.maven.version}</version>
                         <configuration>
-                            <imageName>${dockerRegistry}/res:${image.version}</imageName>
+                            <imageName>${dockerRegistry}/res</imageName>
                             <baseImage>java:8</baseImage>
+                            <imageTags>
+                                <imageTag>${image.version}</imageTag>
+                                <imageTag>latest</imageTag>
+                            </imageTags>
                             <entryPoint>["java", "${debug.config}${debug.res.port}", "-jar", "/${project.build.finalName}.jar"]</entryPoint>
                             <resources>
                                 <resource>
@@ -276,6 +291,13 @@
                                 <phase>package</phase>
                                 <goals>
                                     <goal>build</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>push-image</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>push</goal>
                                 </goals>
                             </execution>
                         </executions>
