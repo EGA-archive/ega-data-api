@@ -175,7 +175,7 @@
 						<artifactId>docker-maven-plugin</artifactId>
 						<version>${docker.maven.version}</version>
 						<configuration>
-                            <imageName>${dockerRegistry}/filedatabase</imageName>
+                            <imageName>${dockerRegistry}/ega-filedatabase</imageName>
                             <baseImage>java:8</baseImage>
                             <imageTags>
                                 <imageTag>${image.version}</imageTag>
@@ -226,7 +226,7 @@
 						<artifactId>docker-maven-plugin</artifactId>
 						<version>${docker.maven.version}</version>
 						<configuration>
-							<imageName>${dockerRegistry}/filedatabase</imageName>
+							<imageName>${dockerRegistry}/ega-filedatabase</imageName>
 							<baseImage>java:8</baseImage>
 							<imageTags>
 								<imageTag>${image.version}</imageTag>
