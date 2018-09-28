@@ -21,7 +21,6 @@ import eu.elixir.ega.ebi.reencryptionmvc.service.ResService;
 import htsjdk.samtools.seekablestream.SeekableBasicAuthHTTPStream;
 import htsjdk.samtools.seekablestream.SeekableFileStream;
 import htsjdk.samtools.seekablestream.SeekableHTTPStream;
-import htsjdk.samtools.seekablestream.SeekableStream;
 import io.minio.MinioClient;
 import io.minio.errors.*;
 import io.minio.http.Method;
@@ -34,13 +33,13 @@ import org.apache.commons.io.input.BoundedInputStream;
 import org.apache.commons.lang.StringUtils;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.openpgp.PGPException;
-import org.bouncycastle.util.encoders.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.security.crypto.codec.Hex;
 import org.springframework.stereotype.Service;
 import org.xmlpull.v1.XmlPullParserException;
 
@@ -113,8 +112,8 @@ public class LocalEGAServiceImpl implements ResService {
         InputStream inputStream;
         OutputStream outputStream;
         try {
-            inputStream = getInputStream(Base64.decode(sourceKey),
-                    Base64.decode(sourceIV),
+            inputStream = getInputStream(Hex.decode(sourceKey),
+                    Hex.decode(sourceIV),
                     fileLocation,
                     httpAuth,
                     startCoordinate,
@@ -145,22 +144,23 @@ public class LocalEGAServiceImpl implements ResService {
                                          String fileLocation,
                                          String httpAuth,
                                          long startCoordinate,
-                                         long endCoordinate) throws IOException, InvalidKeyException, NoSuchAlgorithmException, InsufficientDataException, InvalidExpiresRangeException, InternalException, NoResponseException, InvalidBucketNameException, XmlPullParserException, ErrorResponseException {
-        SeekableStream seekableStream;
+                                         long endCoordinate) throws IOException, InvalidKeyException, NoSuchAlgorithmException, InsufficientDataException, InvalidExpiresRangeException, InternalException, NoResponseException, InvalidBucketNameException, XmlPullParserException, ErrorResponseException, InvalidArgumentException {
+        InputStream inputStream;
         if (fileLocation.startsWith("http")) { // some external URL
             if (StringUtils.isNotEmpty(httpAuth)) {
-                seekableStream = new SeekableBasicAuthHTTPStream(new URL(fileLocation), httpAuth);
+                inputStream = new SeekableBasicAuthHTTPStream(new URL(fileLocation), httpAuth);
             } else {
-                seekableStream = new SeekableHTTPStream(new URL(fileLocation));
+                inputStream = new SeekableHTTPStream(new URL(fileLocation));
             }
         } else if (fileLocation.startsWith("/")) { // absolute file path
-            seekableStream = new SeekableFileStream(new File(fileLocation));
+            inputStream = new SeekableFileStream(new File(fileLocation));
         } else { // S3 object
             String presignedObjectUrl = s3Client.getPresignedObjectUrl(Method.GET, s3Bucket, fileLocation, MAX_EXPIRATION_TIME, null);
-            seekableStream = new SeekableHTTPStream(new URL(presignedObjectUrl));
+            inputStream = new SeekableHTTPStream(new URL(presignedObjectUrl));
         }
-        SeekableStreamInput seekableStreamInput = new SeekableStreamInput(seekableStream, DEFAULT_BUFFER_SIZE, 0);
-        PositionedCryptoInputStream positionedStream = new PositionedCryptoInputStream(new Properties(), seekableStreamInput, key, iv, 0);
+        // 32 bytes for SHA256 checksum - it's prepended to the file by lega-cryptor (LocalEGA python encryption tool)
+        SeekableStreamInput seekableStreamInput = new SeekableStreamInput(inputStream, DEFAULT_BUFFER_SIZE, 32);
+        PositionedCryptoInputStream positionedStream = new PositionedCryptoInputStream(new Properties(), seekableStreamInput, key, iv, 32);
         positionedStream.seek(startCoordinate);
         return endCoordinate != 0 && endCoordinate > startCoordinate ?
                 new BoundedInputStream(positionedStream, endCoordinate - startCoordinate) :

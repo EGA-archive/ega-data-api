@@ -15,6 +15,7 @@
  */
 package eu.elixir.ega.ebi.reencryptionmvc.service.internal;
 
+import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -26,6 +27,9 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -55,10 +59,10 @@ public class LocalEGAServiceImplTest {
         try {
             MockHttpServletRequest request = new MockHttpServletRequest();
             MockHttpServletResponse response = new MockHttpServletResponse();
-            localEgaServiceImpl.transfer("aes256", "VTiGzT1YupWn993fvzBHWFJVaH6niANmBUyD+4r01ho=", "An3Ltvagx9nbK5lZi8XD9w==", "plain", null, null, getClass().getResource("/data.enc").getFile(), 42, 78, 0, null, "id", request, response);
+            localEgaServiceImpl.transfer("aes256", "ef8485457cd460eeb49f70783fb768199bd71679c600e898b010be30665f45a2", "980f5689552c96b3c81d775d0bd9a817", "plain", null, null, getClass().getResource("/data.enc").getFile(), 6, 11, 0, null, "id", request, response);
             int status = response.getStatus();
             assertEquals(200, status);
-            assertEquals("| Unencrypted | Uncompressed | MD5 |", response.getContentAsString());
+            assertEquals("test2", response.getContentAsString());
         } catch (Exception e) {
             e.printStackTrace(System.out);
             fail("Should not have thrown an exception");
