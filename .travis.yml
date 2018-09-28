@@ -7,12 +7,13 @@ install:
   # installing dependencies and skipping docker push
   - mvn install -DskipTests=true -Dmaven.javadoc.skip=true -B -V -DskipDockerPush
 
-# We are skipping push here until after success
-script: mvn clean install -DskipDockerPush
-
-after_success:
-  - ./extras/travis_push_docker_hub.sh
-
 cache:
   directories:
   - $HOME/.m2
+
+script:
+  # install and testing, withouth push
+  - mvn clean install -DskipDockerPush
+after_success:
+  # Push images, will be done only after push to master branch
+  - ./extras/travis_push_docker_hub.sh

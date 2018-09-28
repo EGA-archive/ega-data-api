@@ -27,7 +27,7 @@ maven_push () {
   modules=( "$@" )
   for module in "${modules[@]}"; do
     printf 'Pushing EGA-DATA-API image for module: %s\n' "$module with tag $tag"
-    mvn docker:push -pl "$module" -DdockerRegistry="${DOCKER_REGISTRY}" -DpushImageTag -DdokcerImageTags="$tag"
+    mvn docker:build -pl "$module" -DdockerRegistry="${DOCKER_REGISTRY}" -DpushImageTag -DdokcerImageTags="$tag"
   done
 }
 
