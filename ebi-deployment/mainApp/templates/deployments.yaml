@@ -34,6 +34,8 @@ spec:
             volumeMounts:
               - mountPath: "/log"
                 name: log-directory 
+          imagePullSecrets:
+            - name: {{ .Values.image.imageSecrets }}                
           nodeSelector:
             group: {{ .Values.group.one }}
           volumes:
@@ -76,6 +78,8 @@ spec:
             volumeMounts:
               - mountPath: "/log"
                 name: log-directory
+          imagePullSecrets:
+            - name: {{ .Values.image.imageSecrets }}                 
           nodeSelector:
             group: {{ .Values.group.one }}
           volumes:
@@ -118,6 +122,8 @@ spec:
             volumeMounts:
               - mountPath: "/log"
                 name: log-directory              
+          imagePullSecrets:
+            - name: {{ .Values.image.imageSecrets }}                
           nodeSelector:
             group: {{ .Values.group.one }}
           volumes:
@@ -160,6 +166,8 @@ spec:
             volumeMounts:
               - mountPath: "/log"
                 name: log-directory
+          imagePullSecrets:
+            - name: {{ .Values.image.imageSecrets }}                
           nodeSelector:
             group: {{ .Values.group.one }}
           volumes:
@@ -202,6 +210,8 @@ spec:
             volumeMounts:
               - mountPath: "/log"
                 name: log-directory
+          imagePullSecrets:
+            - name: {{ .Values.image.imageSecrets }}                
           nodeSelector:
             group: {{ .Values.group.one }}
           volumes:

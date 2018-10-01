@@ -15,6 +15,7 @@
  */
 package eu.elixir.ega.ebi.reencryptionmvc.service.internal;
 
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import eu.elixir.ega.ebi.reencryptionmvc.dto.ArchiveSource;
 import eu.elixir.ega.ebi.reencryptionmvc.dto.EgaFile;
 import eu.elixir.ega.ebi.reencryptionmvc.service.ArchiveService;
@@ -60,6 +61,7 @@ public class LocalEGAArchiveServiceImpl implements ArchiveService {
 
     @Override
     @Retryable(maxAttempts = 8, backoff = @Backoff(delay = 2000, multiplier = 2))
+    @HystrixCommand
     public ArchiveSource getArchiveFile(String id, HttpServletResponse response) {
         ResponseEntity<EgaFile[]> responseEntity = restTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}", EgaFile[].class, id);
         EgaFile egaFile = responseEntity.getBody()[0];
@@ -75,6 +77,7 @@ public class LocalEGAArchiveServiceImpl implements ArchiveService {
         }
     }
 
+    @HystrixCommand
     protected Map.Entry<String, String> parseHeader(String headerString, String key) throws IOException, PGPException, BadBlockException {
         final char[][] passphrase = new char[1][1];
         sharedKey.access(chars -> passphrase[0] = Arrays.copyOf(chars, chars.length));
