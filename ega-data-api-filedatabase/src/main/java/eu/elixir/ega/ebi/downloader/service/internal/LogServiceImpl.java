@@ -15,6 +15,7 @@
  */
 package eu.elixir.ega.ebi.downloader.service.internal;
 
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import eu.elixir.ega.ebi.downloader.domain.entity.DownloadLog;
 import eu.elixir.ega.ebi.downloader.domain.entity.Event;
 import eu.elixir.ega.ebi.downloader.domain.repository.DownloadLogRepository;
@@ -39,11 +40,13 @@ public class LogServiceImpl implements LogService {
     private EventRepository eventRepository;
 
     @Override
+    @HystrixCommand
     public Event logEvent(Event event) {
         return eventRepository.save(event);
     }
 
     @Override
+    @HystrixCommand
     public DownloadLog logDownload(DownloadLog downloadLog) {
         return logRepository.save(downloadLog);
     }

@@ -15,6 +15,7 @@
  */
 package eu.elixir.ega.ebi.keyproviderservice.config;
 
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import eu.elixir.ega.ebi.keyproviderservice.dto.KeyPath;
 import eu.elixir.ega.ebi.keyproviderservice.dto.PublicKey;
 import org.apache.tomcat.util.http.fileupload.util.Streams;
@@ -157,17 +158,20 @@ public class MyCipherConfig {
     }
 
     // https://github.com/mailvelope/keyserver/blob/master/README.md
+    @HystrixCommand
     public String getPublicKeyById(String id) {
         ResponseEntity<PublicKey> publicKey = restTemplate.getForEntity(this.publicKeyUrl + "?id=" + id, PublicKey.class);
         return publicKey.getBody().getPublicKeyArmored();
     }
 
     // https://github.com/mailvelope/keyserver/blob/master/README.md
+    @HystrixCommand
     public String getPublicKeyByEmail(String email) {
         ResponseEntity<PublicKey> publicKey = restTemplate.getForEntity(this.publicKeyUrl + "?email=" + email, PublicKey.class);
         return publicKey.getBody().getPublicKeyArmored();
     }
 
+	@HystrixCommand
     public String getFileKey(String fileId) {
         final StringBuilder clearKey = new StringBuilder();
         egaLegacy.access(clearKey::append);

@@ -15,6 +15,7 @@
  */
 package eu.elixir.ega.ebi.reencryptionmvc.service.internal;
 
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import eu.elixir.ega.ebi.reencryptionmvc.config.NotFoundException;
 import eu.elixir.ega.ebi.reencryptionmvc.config.ServerErrorException;
 import eu.elixir.ega.ebi.reencryptionmvc.dto.ArchiveSource;
@@ -57,6 +58,7 @@ public class CleversaveArchiveServiceImpl implements ArchiveService {
     @Override
 //    @Retryable(maxAttempts = 4, backoff = @Backoff(delay = 2000, multiplier = 2))
     @Cacheable(cacheNames = "archive")
+    @HystrixCommand
     public ArchiveSource getArchiveFile(String id, HttpServletResponse response) {
         // Get Filename from EgaFile ID - via DATA service (potentially multiple files)
         ResponseEntity<EgaFile[]> forEntity = restTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}", EgaFile[].class, id);
