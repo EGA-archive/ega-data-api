@@ -34,6 +34,8 @@ spec:
             volumeMounts:
               - mountPath: "/log"
                 name: log-directory 
+          imagePullSecrets:
+            - name: {{ .Values.image.imageSecrets }}                
           nodeSelector:
             group: {{ .Values.group.one }}
           volumes:
@@ -76,6 +78,8 @@ spec:
             volumeMounts:
               - mountPath: "/log"
                 name: log-directory
+          imagePullSecrets:
+            - name: {{ .Values.image.imageSecrets }}                 
           nodeSelector:
             group: {{ .Values.group.one }}
           volumes:
@@ -118,6 +122,8 @@ spec:
             volumeMounts:
               - mountPath: "/log"
                 name: log-directory              
+          imagePullSecrets:
+            - name: {{ .Values.image.imageSecrets }}                
           nodeSelector:
             group: {{ .Values.group.one }}
           volumes:
@@ -160,6 +166,8 @@ spec:
             volumeMounts:
               - mountPath: "/log"
                 name: log-directory
+          imagePullSecrets:
+            - name: {{ .Values.image.imageSecrets }}                
           nodeSelector:
             group: {{ .Values.group.one }}
           volumes:
@@ -202,9 +210,52 @@ spec:
             volumeMounts:
               - mountPath: "/log"
                 name: log-directory
+          imagePullSecrets:
+            - name: {{ .Values.image.imageSecrets }}                
           nodeSelector:
             group: {{ .Values.group.one }}
           volumes:
             - name: log-directory
               hostPath:
-                path: {{ .Values.logdirectory.path }}            
+                path: {{ .Values.logdirectory.path }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hystrix-deploy
+spec:
+  replicas: {{ .Values.replicaCount.one }}
+  strategy:
+        type: RollingUpdate
+        rollingUpdate:
+          maxUnavailable: {{ .Values.replicaCount.one }}
+  selector:
+        matchLabels:
+          app: {{ .Values.image.metadata.hystrix }} 
+  template:
+        metadata:
+          labels:
+            app: {{ .Values.image.metadata.hystrix }} 
+        spec:
+          containers:
+          - name: hystrix
+            image: "{{ .Values.image.repository.hystrix.value }}:{{ .Values.image.repository.hystrix.tagMajor }}.{{ .Values.image.repository.hystrix.tagMinor }}"
+            imagePullPolicy: {{ .Values.image.pullPolicy }}
+            ports:
+            - containerPort: {{ .Values.image.repository.hystrix.port }}
+            livenessProbe:
+              tcpSocket:
+                port: {{ .Values.image.repository.hystrix.port }}
+              initialDelaySeconds: 60
+              periodSeconds: 60
+            volumeMounts:
+              - mountPath: "/log"
+                name: log-directory
+          imagePullSecrets:
+            - name: {{ .Values.image.imageSecrets }}                
+          nodeSelector:
+            group: {{ .Values.group.one }}
+          volumes:
+            - name: log-directory
+              hostPath:
+                path: {{ .Values.logdirectory.path }}                       

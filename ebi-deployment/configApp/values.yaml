@@ -15,6 +15,7 @@ image:
       postgres: postgres-app
   tag: stable
   pullPolicy: Always
+  imageSecrets: regcredc 
   repository: 
       config:
         value: anandmohan777/config
