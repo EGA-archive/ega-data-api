@@ -38,6 +38,7 @@ import org.springframework.web.client.RestTemplate;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.AbstractMap;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.Map;
 
@@ -75,9 +76,9 @@ public class LocalEGAArchiveServiceImpl implements ArchiveService {
     }
 
     protected Map.Entry<String, String> parseHeader(String headerString, String key) throws IOException, PGPException, BadBlockException {
-        StringBuilder accessor = new StringBuilder();
-        sharedKey.access(accessor::append);
-        Header header = headerFactory.getHeader(headerString.getBytes(), key, accessor.toString());
+        final char[][] passphrase = new char[1][1];
+        sharedKey.access(chars -> passphrase[0] = Arrays.copyOf(chars, chars.length));
+        Header header = headerFactory.getHeader(headerString.getBytes(), key, passphrase[0]);
         Record record = header.getEncryptedHeader().getRecords().iterator().next();
         Base64.Encoder encoder = Base64.getEncoder();
         return new AbstractMap.SimpleEntry<>(encoder.encodeToString(record.getKey()), encoder.encodeToString(record.getIv()));
