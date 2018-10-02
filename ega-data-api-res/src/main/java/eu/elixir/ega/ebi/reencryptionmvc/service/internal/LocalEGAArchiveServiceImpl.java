@@ -27,7 +27,6 @@ import org.bouncycastle.jcajce.provider.util.BadBlockException;
 import org.bouncycastle.openpgp.PGPException;
 import org.identityconnectors.common.security.GuardedString;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
@@ -40,6 +39,7 @@ import org.springframework.web.client.RestTemplate;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.AbstractMap;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.Map;
 
@@ -59,12 +59,6 @@ public class LocalEGAArchiveServiceImpl implements ArchiveService {
     private HeaderFactory headerFactory;
     private GuardedString sharedKey;
 
-    @Value("${ega.ebi.aws.access.key}")
-    private String awsKey;
-
-    @Value("${ega.ebi.aws.access.secret}")
-    private String awsSecretKey;
-
     @Override
     @Retryable(maxAttempts = 8, backoff = @Backoff(delay = 2000, multiplier = 2))
     @HystrixCommand
@@ -77,7 +71,7 @@ public class LocalEGAArchiveServiceImpl implements ArchiveService {
         try {
             String privateKey = keyService.getPrivateKey(headerFactory.getKeyIds(header.getBytes()).iterator().next()); // select first subkey
             Map.Entry<String, String> parsedHeader = parseHeader(header, privateKey);
-            return new ArchiveSource(url, size, awsKey + ":" + awsSecretKey, "aes256", parsedHeader.getKey(), parsedHeader.getValue());
+            return new ArchiveSource(url, size, null, "aes256", parsedHeader.getKey(), parsedHeader.getValue());
         } catch (IOException | PGPException | BadBlockException e) {
             throw new RuntimeException(e.getMessage(), e);
         }
@@ -85,9 +79,9 @@ public class LocalEGAArchiveServiceImpl implements ArchiveService {
 
     @HystrixCommand
     protected Map.Entry<String, String> parseHeader(String headerString, String key) throws IOException, PGPException, BadBlockException {
-        StringBuilder accessor = new StringBuilder();
-        sharedKey.access(accessor::append);
-        Header header = headerFactory.getHeader(headerString.getBytes(), key, accessor.toString());
+        final char[][] passphrase = new char[1][1];
+        sharedKey.access(chars -> passphrase[0] = Arrays.copyOf(chars, chars.length));
+        Header header = headerFactory.getHeader(headerString.getBytes(), key, passphrase[0]);
         Record record = header.getEncryptedHeader().getRecords().iterator().next();
         Base64.Encoder encoder = Base64.getEncoder();
         return new AbstractMap.SimpleEntry<>(encoder.encodeToString(record.getKey()), encoder.encodeToString(record.getIv()));

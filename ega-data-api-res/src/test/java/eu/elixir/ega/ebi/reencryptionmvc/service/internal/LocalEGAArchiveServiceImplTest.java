@@ -76,7 +76,7 @@ public class LocalEGAArchiveServiceImplTest {
         final UnencryptedHeader unencryptedHeader = new UnencryptedHeader(null, 0, 0);
         final EncryptedHeader encryptedHeader = new EncryptedHeader(1, Collections.singletonList(new Record(0, 0, 0, 0, EncryptionAlgorithm.AES_256_CTR, "key".getBytes(), "iv".getBytes())));
         when(headerFactory.getKeyIds(Matchers.any())).thenReturn(Collections.singleton("keyId"));
-        when(headerFactory.getHeader(Matchers.<byte[]>any(), anyString(), anyString())).thenReturn(new Header(unencryptedHeader, encryptedHeader));
+        when(headerFactory.getHeader(Matchers.<byte[]>any(), anyString(), Matchers.any())).thenReturn(new Header(unencryptedHeader, encryptedHeader));
 
         final ResponseEntity<EgaFile[]> mockResponseEntity = mock(ResponseEntity.class);
         final EgaFile[] body = new EgaFile[]{new EgaFile("id", "name", "/path/test.enc", 100, "ready", "header")};

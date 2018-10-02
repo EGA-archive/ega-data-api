@@ -21,22 +21,28 @@ import eu.elixir.ega.ebi.reencryptionmvc.service.KeyService;
 import eu.elixir.ega.ebi.reencryptionmvc.service.ResService;
 import htsjdk.samtools.seekablestream.SeekableBasicAuthHTTPStream;
 import htsjdk.samtools.seekablestream.SeekableFileStream;
-import htsjdk.samtools.seekablestream.SeekableStream;
+import htsjdk.samtools.seekablestream.SeekableHTTPStream;
+import io.minio.MinioClient;
+import io.minio.errors.*;
+import io.minio.http.Method;
 import no.ifi.uio.crypt4gh.stream.Crypt4GHOutputStream;
 import no.ifi.uio.crypt4gh.stream.SeekableStreamInput;
 import org.apache.commons.crypto.stream.CtrCryptoOutputStream;
 import org.apache.commons.crypto.stream.PositionedCryptoInputStream;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.BoundedInputStream;
+import org.apache.commons.lang.StringUtils;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.openpgp.PGPException;
-import org.bouncycastle.util.encoders.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.security.crypto.codec.Hex;
 import org.springframework.stereotype.Service;
+import org.xmlpull.v1.XmlPullParserException;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
@@ -45,14 +51,13 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.MalformedURLException;
 import java.net.URL;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.security.Security;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import static no.ifi.uio.crypt4gh.stream.Crypt4GHInputStream.MINIMUM_BUFFER_SIZE;
 
 /**
  * @author asenf
@@ -62,12 +67,32 @@ import static no.ifi.uio.crypt4gh.stream.Crypt4GHInputStream.MINIMUM_BUFFER_SIZE
 @EnableDiscoveryClient
 public class LocalEGAServiceImpl implements ResService {
 
+    private static final int DEFAULT_BUFFER_SIZE = 1024 * 4;
+    private static final int MAX_EXPIRATION_TIME = 7 * 24 * 3600;
+
+    @Value("${ega.ebi.aws.endpoint.url}")
+    private String s3URL;
+
+    @Value("${ega.ebi.aws.bucket:lega}")
+    private String s3Bucket;
+
+    @Value("${ega.ebi.aws.access.key}")
+    private String s3Key;
+
+    @Value("${ega.ebi.aws.access.secret}")
+    private String s3Secret;
+
     @Autowired
     private KeyService keyService;
 
+    private MinioClient s3Client;
+
     @PostConstruct
-    private void init() {
+    private void init() throws InvalidPortException, InvalidEndpointException {
         Security.addProvider(new BouncyCastleProvider());
+        if (s3URL != null && s3Key != null && s3Secret != null) {
+            s3Client = new MinioClient(s3URL, s3Key, s3Secret);
+        }
     }
 
     @Override
@@ -89,12 +114,12 @@ public class LocalEGAServiceImpl implements ResService {
         InputStream inputStream;
         OutputStream outputStream;
         try {
-            inputStream = getInputStream(Base64.decode(sourceKey),
-                    Base64.decode(sourceIV),
+            inputStream = getInputStream(Hex.decode(sourceKey),
+                    Hex.decode(sourceIV),
                     fileLocation,
+                    httpAuth,
                     startCoordinate,
-                    endCoordinate,
-                    httpAuth);
+                    endCoordinate);
             outputStream = getOutputStream(response.getOutputStream(),
                     Format.valueOf(destinationFormat.toUpperCase()),
                     destinationKey,
@@ -108,8 +133,8 @@ public class LocalEGAServiceImpl implements ResService {
         response.addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_OCTET_STREAM_VALUE);
         try {
             IOUtils.copyLarge(inputStream, outputStream);
+            inputStream.close();
             outputStream.flush();
-            outputStream.close();
         } catch (IOException e) {
             Logger.getLogger(LocalEGAServiceImpl.class.getName()).log(Level.SEVERE, null, e);
             throw new RuntimeException(e);
@@ -120,17 +145,25 @@ public class LocalEGAServiceImpl implements ResService {
     protected InputStream getInputStream(byte[] key,
                                          byte[] iv,
                                          String fileLocation,
+                                         String httpAuth,
                                          long startCoordinate,
-                                         long endCoordinate,
-                                         String httpAuth) throws IOException {
-        SeekableStream seekableStream;
-        try {
-            seekableStream = new SeekableBasicAuthHTTPStream(new URL(fileLocation), httpAuth);
-        } catch (MalformedURLException e) {
-            seekableStream = new SeekableFileStream(new File(fileLocation));
+                                         long endCoordinate) throws IOException, InvalidKeyException, NoSuchAlgorithmException, InsufficientDataException, InvalidExpiresRangeException, InternalException, NoResponseException, InvalidBucketNameException, XmlPullParserException, ErrorResponseException, InvalidArgumentException {
+        InputStream inputStream;
+        if (fileLocation.startsWith("http")) { // some external URL
+            if (StringUtils.isNotEmpty(httpAuth)) {
+                inputStream = new SeekableBasicAuthHTTPStream(new URL(fileLocation), httpAuth);
+            } else {
+                inputStream = new SeekableHTTPStream(new URL(fileLocation));
+            }
+        } else if (fileLocation.startsWith("/")) { // absolute file path
+            inputStream = new SeekableFileStream(new File(fileLocation));
+        } else { // S3 object
+            String presignedObjectUrl = s3Client.getPresignedObjectUrl(Method.GET, s3Bucket, fileLocation, MAX_EXPIRATION_TIME, null);
+            inputStream = new SeekableHTTPStream(new URL(presignedObjectUrl));
         }
-        SeekableStreamInput seekableStreamInput = new SeekableStreamInput(seekableStream, MINIMUM_BUFFER_SIZE, 0);
-        PositionedCryptoInputStream positionedStream = new PositionedCryptoInputStream(new Properties(), seekableStreamInput, key, iv, 0);
+        // 32 bytes for SHA256 checksum - it's prepended to the file by lega-cryptor (LocalEGA python encryption tool)
+        SeekableStreamInput seekableStreamInput = new SeekableStreamInput(inputStream, DEFAULT_BUFFER_SIZE, 32);
+        PositionedCryptoInputStream positionedStream = new PositionedCryptoInputStream(new Properties(), seekableStreamInput, key, iv, 32);
         positionedStream.seek(startCoordinate);
         return endCoordinate != 0 && endCoordinate > startCoordinate ?
                 new BoundedInputStream(positionedStream, endCoordinate - startCoordinate) :
