@@ -59,7 +59,15 @@ image:
         port: 9059
         nodeport: 30059
         debug: 5058
-        debugNodePort: 30058         
+        debugNodePort: 30058
+      hystrix:
+        value: anandmohan777/hystrix
+        tagMajor: 1
+        tagMinor: 0
+        port: 8088
+        nodeport: 30088
+        debug: 5087
+        debugNodePort: 30087
 
 configService: "http://config.default.svc.cluster.local"
   
