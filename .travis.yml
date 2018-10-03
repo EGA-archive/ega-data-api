@@ -12,11 +12,10 @@ cache:
   - $HOME/.m2
 
 script:
-  # install and testing, withouth push
-  # Do not build again on master
-  - if [[ "$TRAVIS_BRANCH" != "master" ]]; then
+  ## Travis run on master branch and not a PR
+  - if [[ "$TRAVIS_BRANCH" == "master" && $TRAVIS_PULL_REQUEST == "false" ]]; then
+      # this is after a PR has been approved
+      ./extras/travis_push_docker_hub.sh
+    else
       mvn clean install -DskipDockerPush ;
     fi
-after_success:
-  # Push images, will be done only after push to master branch
-  - ./extras/travis_push_docker_hub.sh

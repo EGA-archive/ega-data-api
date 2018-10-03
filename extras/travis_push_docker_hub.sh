@@ -26,10 +26,8 @@ maven_push () {
   shift
   modules=( "$@" )
   for module in "${modules[@]}"; do
-    printf 'Packaging EGA-Data-API'
-    mvn package -DskipTests -DskipDockerPush
     printf 'Pushing EGA-DATA-API image for module: %s\n' "$module with tag $tag"
-    mvn docker:build -pl "$module" -DdockerRegistry="${DOCKER_REGISTRY}" -DpushImageTag -DdockerImageTags="$tag"
+    mvn package -DskipTests docker:build -pl "$module" -DdockerRegistry="${DOCKER_REGISTRY}" -DpushImageTag -DdockerImageTags="$tag"
   done
 }
 
@@ -38,9 +36,5 @@ printf '%s\n' "$DOCKER_PASSWORD" |
 docker login -u "$DOCKER_USER" --password-stdin
 
 ## Travis run on master branch and not a PR (this is after a PR has been approved)
-if  [ "$TRAVIS_BRANCH" = "master" ] &&
-    [ "$TRAVIS_PULL_REQUEST" = "false" ]
-then
-    push_images latest api
-    push_images latest oss
-fi
+push_images latest api
+push_images latest oss
