@@ -1,3 +1,5 @@
 spring.profiles: no-oss
 
 eureka.client.enabled: false
+
+hystrix.command.default.execution.isolation.thread.timeoutInMilliseconds: 30000
