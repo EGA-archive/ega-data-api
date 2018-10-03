@@ -12,10 +12,4 @@ cache:
   - $HOME/.m2
 
 script:
-  ## Travis run on master branch and not a PR
-  - if [[ "$TRAVIS_BRANCH" == "master" && $TRAVIS_PULL_REQUEST == "false" ]]; then
-      # this is after a PR has been approved
-      ./extras/travis_push_docker_hub.sh
-    else
-      mvn clean install -DskipDockerPush ;
-    fi
+  - ./extras/travis_push_docker_hub.sh

@@ -36,5 +36,11 @@ printf '%s\n' "$DOCKER_PASSWORD" |
 docker login -u "$DOCKER_USER" --password-stdin
 
 ## Travis run on master branch and not a PR (this is after a PR has been approved)
-push_images latest api
-push_images latest oss
+if  [ "$TRAVIS_BRANCH" = "master" ] &&
+    [ "$TRAVIS_PULL_REQUEST" = "false" ]
+then
+    push_images latest api
+    push_images latest oss
+else
+    mvn clean install -DskipDockerPush
+fi
