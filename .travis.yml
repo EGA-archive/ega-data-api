@@ -13,7 +13,10 @@ cache:
 
 script:
   # install and testing, withouth push
-  - mvn clean install -DskipDockerPush
+  # Do not build again on master
+  - if [[ "$TRAVIS_BRANCH" != "master" ]]; then
+      mvn clean install -DskipDockerPush ;
+    fi
 after_success:
   # Push images, will be done only after push to master branch
   - ./extras/travis_push_docker_hub.sh
