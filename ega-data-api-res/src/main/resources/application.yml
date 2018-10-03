@@ -10,3 +10,5 @@ RES2:
 
 KEYSERVER:
   listOfServers: ${KEYS_SERVERS:keys}
+
+hystrix.command.default.execution.isolation.thread.timeoutInMilliseconds: 30000
