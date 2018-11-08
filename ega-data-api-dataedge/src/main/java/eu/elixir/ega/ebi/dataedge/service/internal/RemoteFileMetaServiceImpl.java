@@ -17,8 +17,8 @@ package eu.elixir.ega.ebi.dataedge.service.internal;
 
 //import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 
-import eu.elixir.ega.ebi.dataedge.dto.File;
-import eu.elixir.ega.ebi.dataedge.dto.FileDataset;
+import eu.elixir.ega.ebi.shared.dto.File;
+import eu.elixir.ega.ebi.shared.dto.FileDataset;
 import eu.elixir.ega.ebi.dataedge.service.FileMetaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;

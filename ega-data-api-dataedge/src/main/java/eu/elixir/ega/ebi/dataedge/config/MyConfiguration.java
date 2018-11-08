@@ -16,7 +16,7 @@
 package eu.elixir.ega.ebi.dataedge.config;
 
 import com.google.common.cache.CacheBuilder;
-import eu.elixir.ega.ebi.dataedge.dto.MyExternalConfig;
+import eu.elixir.ega.ebi.shared.dto.MyExternalConfig;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;

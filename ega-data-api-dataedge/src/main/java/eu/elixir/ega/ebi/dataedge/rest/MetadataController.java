@@ -18,7 +18,7 @@ package eu.elixir.ega.ebi.dataedge.rest;
 
 import eu.elixir.ega.ebi.dataedge.config.VerifyMessage;
 import eu.elixir.ega.ebi.dataedge.config.VerifyMessageNew;
-import eu.elixir.ega.ebi.dataedge.dto.File;
+import eu.elixir.ega.ebi.shared.dto.File;
 import eu.elixir.ega.ebi.dataedge.service.FileMetaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
