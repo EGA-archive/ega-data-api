@@ -27,4 +27,15 @@ public interface DownloaderLogService {
 
     void logEvent(EventEntry eventEntry);
 
+    EventEntry getEventEntry(String t, String clientIp, String ticket, String email);
+
+    DownloadEntry getDownloadEntry(boolean success, double speed, String fileId,
+        String clientIp,
+        String server,
+        String email,
+        String encryptionType,
+        long startCoordinate,
+        long endCoordinate,
+        long bytes);
+
 }

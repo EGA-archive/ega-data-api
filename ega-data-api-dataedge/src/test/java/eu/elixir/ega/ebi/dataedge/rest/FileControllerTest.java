@@ -97,7 +97,7 @@ public final class FileControllerTest {
      */
     @Test
     public void testGetFileHeader() throws Exception {
-        when(fileService.getFileHeader(any(Authentication.class), any(String.class), any(String.class),
+        when(fileService.getFileHeader(any(String.class), any(String.class),
                 any(String.class), any(CRAMReferenceSource.class))).thenReturn(null);
 
         final MockHttpServletResponse response = mockMvc.perform(get("/files/1/header").session(new MockHttpSession()))
@@ -178,10 +178,10 @@ public final class FileControllerTest {
      */
     @Before
     public void commonMockMethod() {
-        doNothing().when(fileService).getFile(any(Authentication.class), any(String.class), any(String.class),
+        doNothing().when(fileService).getFile(any(String.class), any(String.class),
                 any(String.class), any(String.class), any(Long.class), any(Long.class), any(HttpServletRequest.class),
                 any(HttpServletResponse.class));
-        doNothing().when(fileService).getFileHead(any(Authentication.class), any(String.class), any(String.class),
+        doNothing().when(fileService).getFileHead(any(String.class), any(String.class),
                 any(HttpServletRequest.class), any(HttpServletResponse.class));
 
     }

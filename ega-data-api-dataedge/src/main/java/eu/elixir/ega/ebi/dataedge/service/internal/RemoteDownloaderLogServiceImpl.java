@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.elixir.ega.ebi.dataedge.dto.DownloadEntry;
 import eu.elixir.ega.ebi.dataedge.dto.EventEntry;
 import eu.elixir.ega.ebi.dataedge.service.DownloaderLogService;
+import java.util.Calendar;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.http.HttpEntity;
@@ -125,5 +126,47 @@ public class RemoteDownloaderLogServiceImpl implements DownloaderLogService {
         // Old Synchronous Call
         //restTemplate.postForObject(SERVICE_URL + "/log/event/", eventEntry, Void.class);
     }
+
+  //@HystrixCommand
+  public EventEntry getEventEntry(String t, String clientIp,
+      String ticket,
+      String email) {
+    EventEntry eev = new EventEntry();
+    eev.setEventId("0");
+    eev.setClientIp(clientIp);
+    eev.setEvent(t);
+    eev.setEventType("Error");
+    eev.setEmail(email);
+    eev.setCreated(new java.sql.Timestamp(Calendar.getInstance().getTime().getTime()));
+
+    return eev;
+  }
+
+  //@HystrixCommand
+  public DownloadEntry getDownloadEntry(boolean success, double speed, String fileId,
+      String clientIp,
+      String server,
+      String email,
+      String encryptionType,
+      long startCoordinate,
+      long endCoordinate,
+      long bytes) {
+    DownloadEntry dle = new DownloadEntry();
+    dle.setDownloadLogId(0L);
+    dle.setDownloadSpeed(speed);
+    dle.setDownloadStatus(success ? "success" : "failed");
+    dle.setFileId(fileId);
+    dle.setClientIp(clientIp);
+    dle.setEmail(email);
+    dle.setApi(server);
+    dle.setEncryptionType(encryptionType);
+    dle.setStartCoordinate(startCoordinate);
+    dle.setEndCoordinate(endCoordinate);
+    dle.setBytes(bytes);
+    dle.setCreated(new java.sql.Timestamp(Calendar.getInstance().getTime().getTime()));
+    dle.setTokenSource("EGA");
+
+    return dle;
+  }
 
 }

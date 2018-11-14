@@ -110,7 +110,7 @@ public class RemoteFileServiceImplTest {
     @Test
     public void testGetFile() {
         try {
-            remoteFileServiceImpl.getFile(authentication, FILEID, "plain", "destinationKey", "destinationIV", 0, 0,
+            remoteFileServiceImpl.getFile(FILEID, "plain", "destinationKey", "destinationIV", 0, 0,
                     new MockHttpServletRequest(), new MockHttpServletResponse());
         } catch (Exception e) {
             fail("Should not have thrown an exception");
@@ -126,7 +126,7 @@ public class RemoteFileServiceImplTest {
     @Test
     public void testGetFileHead() {
         try {
-            remoteFileServiceImpl.getFileHead(authentication, FILEID, "plain", new MockHttpServletRequest(),
+            remoteFileServiceImpl.getFileHead(FILEID, "plain", new MockHttpServletRequest(),
                     new MockHttpServletResponse());
         } catch (Exception e) {
             fail("Should not have thrown an exception");
@@ -143,7 +143,7 @@ public class RemoteFileServiceImplTest {
     public void testGetFileHeader() {
         try {
             final CRAMReferenceSource cramReferenceSource = mock(CRAMReferenceSource.class);
-            final Object samFileHeaderOutput = remoteFileServiceImpl.getFileHeader(authentication, FILEID, "plain",
+            final Object samFileHeaderOutput = remoteFileServiceImpl.getFileHeader(FILEID, "plain",
                     "destinationKey", cramReferenceSource);
             assertThat(samFileHeaderOutput, equalTo(samFileHeader));
         } catch (Exception e) {
@@ -159,7 +159,7 @@ public class RemoteFileServiceImplTest {
     @Test
     public void testGetById() {
         try {
-            remoteFileServiceImpl.getById(authentication, "file", FILEID, "plain", "reference", 0, 0, null, null, null,
+            remoteFileServiceImpl.getById("file", FILEID, "plain", "reference", 0, 0, null, null, null,
                     true, "destinationFormat", "destinationKey", new MockHttpServletRequest(),
                     new MockHttpServletResponse());
         } catch (Exception e) {
@@ -175,7 +175,7 @@ public class RemoteFileServiceImplTest {
     @Test
     public void testGetVCFById() {
         try {
-            remoteFileServiceImpl.getVCFById(authentication, "file", FILEID, "plain", "reference", 0, 0, null, null,
+            remoteFileServiceImpl.getVCFById("file", FILEID, "plain", "reference", 0, 0, null, null,
                     null, true, "destinationFormat", "destinationKey", new MockHttpServletRequest(),
                     new MockHttpServletResponse());
         } catch (Exception e) {
@@ -211,7 +211,7 @@ public class RemoteFileServiceImplTest {
     @SuppressWarnings("rawtypes")
     @Test
     public void testGetHeadById() {
-        final ResponseEntity response = remoteFileServiceImpl.getHeadById(authentication, "file", FILEID,
+        final ResponseEntity response = remoteFileServiceImpl.getHeadById( "file", FILEID,
                 new MockHttpServletRequest(), new MockHttpServletResponse());
         assertThat(response.getStatusCode(), equalTo(HttpStatus.OK));
     }

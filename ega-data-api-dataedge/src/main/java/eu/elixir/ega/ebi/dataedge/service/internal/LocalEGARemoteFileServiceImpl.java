@@ -21,8 +21,10 @@ import eu.elixir.ega.ebi.dataedge.config.NotFoundException;
 import eu.elixir.ega.ebi.dataedge.config.PermissionDeniedException;
 import eu.elixir.ega.ebi.dataedge.config.VerifyMessageNew;
 import eu.elixir.ega.ebi.dataedge.dto.*;
+import eu.elixir.ega.ebi.dataedge.service.AuthenticationService;
 import eu.elixir.ega.ebi.dataedge.service.DownloaderLogService;
 import eu.elixir.ega.ebi.dataedge.service.FileService;
+import eu.elixir.ega.ebi.dataedge.service.PermissionsService;
 import eu.elixir.ega.ebi.shared.dto.File;
 import eu.elixir.ega.ebi.shared.dto.FileDataset;
 import htsjdk.samtools.cram.ref.CRAMReferenceSource;
@@ -67,9 +69,14 @@ public class LocalEGARemoteFileServiceImpl implements FileService {
     @Autowired
     private DownloaderLogService downloaderLogService;
 
+    @Autowired
+    AuthenticationService authenticationService;
+
+    @Autowired
+    private PermissionsService permissionService;
+
     @Override
-    public void getFile(Authentication auth,
-                        String fileId,
+    public void getFile(String fileId,
                         String destinationFormat,
                         String destinationKey,
                         String destinationIV,
@@ -79,13 +86,13 @@ public class LocalEGARemoteFileServiceImpl implements FileService {
                         HttpServletResponse response) {
 
         // Ascertain Access Permissions for specified File ID
-        File reqFile = getReqFile(fileId, auth, request); // request added for ELIXIR
+        File reqFile = permissionService.getReqFile(fileId, request); // request added for ELIXIR
         if (reqFile == null) {
             try {
                 Thread.sleep(2500);
             } catch (InterruptedException ignored) {
             }
-            reqFile = getReqFile(fileId, auth, request);
+            reqFile = permissionService.getReqFile(fileId, request);
         }
         if (reqFile.getFileSize() > 0 && endCoordinate > reqFile.getFileSize())
             endCoordinate = reqFile.getFileSize();
@@ -96,7 +103,7 @@ public class LocalEGARemoteFileServiceImpl implements FileService {
             ipAddress = request.getRemoteAddr();
         }
 
-        String user_email = auth.getName(); // For Logging
+        String user_email = authenticationService.getName(); // For Logging
 
         // Variables needed for responses at the end of the function
         long timeDelta = 0;
@@ -181,7 +188,7 @@ public class LocalEGARemoteFileServiceImpl implements FileService {
         } catch (Throwable t) { // Log Error!
             System.out.println("LocalEGARemoteFileServiceImpl Error 2: " + t.toString());
             String errorMessage = fileId + ":" + destinationFormat + ":" + startCoordinate + ":" + endCoordinate + ":" + t.toString();
-            EventEntry eev = getEventEntry(errorMessage, ipAddress, "file", user_email);
+            EventEntry eev = downloaderLogService.getEventEntry(errorMessage, ipAddress, "file", user_email);
             downloaderLogService.logEvent(eev);
 
             throw new GeneralStreamingException(t.toString(), 4);
@@ -196,7 +203,7 @@ public class LocalEGARemoteFileServiceImpl implements FileService {
                 double speed = (xferResult.getBytes() / 1024.0 / 1024.0) / (timeDelta / 1000.0);
                 long bytes = xferResult.getBytes();
                 System.out.println("Success? " + success + ", Speed: " + speed + " MB/s");
-                DownloadEntry dle = getDownloadEntry(success, speed, fileId,
+                DownloadEntry dle = downloaderLogService.getDownloadEntry(success, speed, fileId,
                         ipAddress, "file", user_email, destinationFormat,
                         startCoordinate, endCoordinate, bytes);
                 downloaderLogService.logDownload(dle);
@@ -206,8 +213,7 @@ public class LocalEGARemoteFileServiceImpl implements FileService {
 
     @Override
     @Cacheable(cacheNames = "fileHead")
-    public void getFileHead(Authentication auth,
-                            String fileId,
+    public void getFileHead(String fileId,
                             String destinationFormat,
                             HttpServletRequest request,
                             HttpServletResponse response) {
@@ -221,8 +227,7 @@ public class LocalEGARemoteFileServiceImpl implements FileService {
 
     @Override
     @Cacheable(cacheNames = "headerFile")
-    public Object getFileHeader(Authentication auth,
-                                String fileId,
+    public Object getFileHeader(String fileId,
                                 String destinationFormat,
                                 String destinationKey,
                                 CRAMReferenceSource x) {
@@ -230,8 +235,7 @@ public class LocalEGARemoteFileServiceImpl implements FileService {
     }
 
     @Override
-    public void getById(Authentication auth,
-                        String fileId,
+    public void getById(String fileId,
                         String accession,
                         String format,
                         String reference,
@@ -249,8 +253,7 @@ public class LocalEGARemoteFileServiceImpl implements FileService {
     }
 
     @Override
-    public void getVCFById(Authentication auth,
-                           String fileId,
+    public void getVCFById(String fileId,
                            String accession,
                            String format,
                            String reference,
@@ -334,127 +337,9 @@ public class LocalEGARemoteFileServiceImpl implements FileService {
         return builder.build().encode().toUri();
     }
 
-    private DownloadEntry getDownloadEntry(boolean success, double speed, String fileId,
-                                           String clientIp,
-                                           String server,
-                                           String email,
-                                           String encryptionType,
-                                           long startCoordinate,
-                                           long endCoordinate,
-                                           long bytes) {
-        DownloadEntry dle = new DownloadEntry();
-        dle.setDownloadLogId(0L);
-        dle.setDownloadSpeed(speed);
-        dle.setDownloadStatus(success ? "success" : "failed");
-        dle.setFileId(fileId);
-        dle.setClientIp(clientIp);
-        dle.setEmail(email);
-        dle.setApi(server);
-        dle.setEncryptionType(encryptionType);
-        dle.setStartCoordinate(startCoordinate);
-        dle.setEndCoordinate(endCoordinate);
-        dle.setBytes(bytes);
-        dle.setCreated(new java.sql.Timestamp(Calendar.getInstance().getTime().getTime()));
-        dle.setTokenSource("EGA");
-
-        return dle;
-    }
-
-    private EventEntry getEventEntry(String t, String clientIp,
-                                     String ticket,
-                                     String email) {
-        EventEntry eev = new EventEntry();
-        eev.setEventId("0");
-        eev.setClientIp(clientIp);
-        eev.setEvent(t);
-        eev.setEventType("Error");
-        eev.setEmail(email);
-        eev.setCreated(new java.sql.Timestamp(Calendar.getInstance().getTime().getTime()));
-
-        return eev;
-    }
-
-    @Cacheable(cacheNames = "reqFile")
-    private File getReqFile(String fileId, Authentication auth, HttpServletRequest request) {
-
-        // Obtain all Authorised Datasets (Provided by EGA AAI)
-        HashSet<String> permissions = new HashSet<>();
-        Collection<? extends GrantedAuthority> authorities = auth.getAuthorities();
-        if (authorities != null && authorities.size() > 0) {
-            for (GrantedAuthority next : authorities) {
-                permissions.add(next.getAuthority());
-            }
-        } else if (request != null) { // ELIXIR User Case: Obtain Permmissions from X-Permissions Header
-            try {
-                List<String> permissions_ = (new VerifyMessageNew(request.getHeader("X-Permissions"))).getPermissions();
-                if (permissions_ != null && permissions_.size() > 0) {
-                    //StringTokenizer t = new StringTokenizer(permissions, ",");
-                    //while (t!=null && t.hasMoreTokens()) {
-                    for (String ds : permissions_) {
-                        //String ds = t.nextToken();
-                        if (ds != null && ds.length() > 0) permissions.add(ds);
-                    }
-                }
-            } catch (Exception ex) {
-                //try {
-                //    List<String> permissions_ = (new VerifyMessage(request.getHeader("X-Permissions"))).getPermissions();
-                //    if (permissions_ != null && permissions_.size() > 0) {
-                //        for (String ds : permissions_) {
-                //            if (ds != null) {
-                //                permissions.add(ds);
-                //            }
-                //        }
-                //    }
-                //} catch (Exception ex) {
-                String ipAddress = request.getHeader("X-FORWARDED-FOR");
-                if (ipAddress == null) {
-                    ipAddress = request.getRemoteAddr();
-                }
-                String user_email = auth.getName(); // For Logging
-
-                System.out.println("getReqFile Error 0: " + ex.toString());
-                EventEntry eev = getEventEntry(ex.toString(), ipAddress, "file", user_email);
-                downloaderLogService.logEvent(eev);
-
-                throw new GeneralStreamingException(ex.toString(), 0);
-            }
-        }
-
-        ResponseEntity<FileDataset[]> forEntityDataset = restTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}/datasets", FileDataset[].class, fileId);
-        FileDataset[] bodyDataset = forEntityDataset.getBody();
-
-        File reqFile = null;
-        ResponseEntity<File[]> forEntity = restTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}", File[].class, fileId);
-        File[] body = forEntity.getBody();
-        if (body != null && bodyDataset != null) {
-            for (FileDataset f : bodyDataset) {
-                String datasetId = f.getDatasetId();
-                if (permissions.contains(datasetId) && body.length >= 1) {
-                    reqFile = body[0];
-                    reqFile.setDatasetId(datasetId);
-                    break;
-                }
-            }
-
-            if (reqFile != null) {
-                // If there's no file size in the database, obtain it from RES
-                if (reqFile.getFileSize() == 0) {
-                    ResponseEntity<Long> forSize = restTemplate.getForEntity(RES_SERVICE + "/file/archive/{fileId}/size", Long.class, fileId);
-                    reqFile.setFileSize(forSize.getBody());
-                }
-            } else { // 403 Unauthorized
-                throw new PermissionDeniedException(HttpStatus.UNAUTHORIZED.toString());
-            }
-        } else { // 404 File Not Found
-            throw new NotFoundException(fileId, "4");
-        }
-        return reqFile;
-    }
-
     @Override
     @Cacheable(cacheNames = "fileSize")
-    public ResponseEntity getHeadById(Authentication auth,
-                                      String fileId,
+    public ResponseEntity getHeadById(String fileId,
                                       String accession,
                                       HttpServletRequest request,
                                       HttpServletResponse response) {
