@@ -84,11 +84,6 @@ public class PermissionsServiceImpl implements PermissionsService {
         //        }
         //    }
         //} catch (Exception ex) {
-        String ipAddress = request.getHeader("X-FORWARDED-FOR");
-        if (ipAddress == null) {
-          ipAddress = request.getRemoteAddr();
-        }
-        String user_email = authenticationService.getName(); // For Logging
 
         System.out.println("getReqFile Error 0: " + ex.toString());
         EventEntry eev = downloaderLogService
@@ -103,7 +98,6 @@ public class PermissionsServiceImpl implements PermissionsService {
         .getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}/datasets", FileDataset[].class,
             stableId);
     FileDataset[] bodyDataset = forEntityDataset.getBody();
-    boolean userHasPermissions = false;
     if (bodyDataset != null) {
       for (FileDataset f : bodyDataset) {
         String datasetId = f.getDatasetId();
@@ -115,10 +109,5 @@ public class PermissionsServiceImpl implements PermissionsService {
       throw new NotFoundException(stableId, "4");
     }
     throw new PermissionDeniedException(HttpStatus.UNAUTHORIZED.toString());
-  }
-
-  @Override
-  public void checkFilePermissions(String stableId) {
-    checkFilePermissions(stableId);
   }
 }
