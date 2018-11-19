@@ -17,26 +17,19 @@ package eu.elixir.ega.ebi.dataedge.service.internal;
 
 import com.google.common.io.ByteStreams;
 import eu.elixir.ega.ebi.dataedge.config.GeneralStreamingException;
-import eu.elixir.ega.ebi.dataedge.config.NotFoundException;
-import eu.elixir.ega.ebi.dataedge.config.PermissionDeniedException;
-import eu.elixir.ega.ebi.dataedge.config.VerifyMessageNew;
 import eu.elixir.ega.ebi.dataedge.dto.*;
 import eu.elixir.ega.ebi.dataedge.service.AuthenticationService;
 import eu.elixir.ega.ebi.dataedge.service.DownloaderLogService;
+import eu.elixir.ega.ebi.dataedge.service.FileInfoService;
 import eu.elixir.ega.ebi.dataedge.service.FileService;
-import eu.elixir.ega.ebi.dataedge.service.PermissionsService;
 import eu.elixir.ega.ebi.shared.dto.File;
-import eu.elixir.ega.ebi.shared.dto.FileDataset;
 import htsjdk.samtools.cram.ref.CRAMReferenceSource;
 import org.apache.commons.lang.NotImplementedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.web.client.RequestCallback;
 import org.springframework.web.client.ResponseExtractor;
 import org.springframework.web.client.RestTemplate;
@@ -51,7 +44,6 @@ import java.security.DigestOutputStream;
 import java.security.MessageDigest;
 import java.util.*;
 
-import static eu.elixir.ega.ebi.shared.Constants.FILEDATABASE_SERVICE;
 import static eu.elixir.ega.ebi.shared.Constants.RES_SERVICE;
 
 // Most likely we don't need any custom implementation for LocalEGA
@@ -73,7 +65,7 @@ public class LocalEGARemoteFileServiceImpl implements FileService {
     AuthenticationService authenticationService;
 
     @Autowired
-    private PermissionsService permissionService;
+    FileInfoService fileInfoService;
 
     @Override
     public void getFile(String fileId,
@@ -86,24 +78,16 @@ public class LocalEGARemoteFileServiceImpl implements FileService {
                         HttpServletResponse response) {
 
         // Ascertain Access Permissions for specified File ID
-        File reqFile = permissionService.getReqFile(fileId, request); // request added for ELIXIR
+        File reqFile = fileInfoService.getFileInfo(fileId); // request added for ELIXIR
         if (reqFile == null) {
             try {
                 Thread.sleep(2500);
             } catch (InterruptedException ignored) {
             }
-            reqFile = permissionService.getReqFile(fileId, request);
+            reqFile = fileInfoService.getFileInfo(fileId);
         }
         if (reqFile.getFileSize() > 0 && endCoordinate > reqFile.getFileSize())
             endCoordinate = reqFile.getFileSize();
-
-        // CLient IP
-        String ipAddress = request.getHeader("X-FORWARDED-FOR");
-        if (ipAddress == null) {
-            ipAddress = request.getRemoteAddr();
-        }
-
-        String user_email = authenticationService.getName(); // For Logging
 
         // Variables needed for responses at the end of the function
         long timeDelta = 0;
@@ -111,7 +95,7 @@ public class LocalEGARemoteFileServiceImpl implements FileService {
         MessageDigest outDigest = null;
 
         // Log request in Event
-        //    EventEntry eev_received = getEventEntry(file_id + ":" + destinationFormat + ":" + startCoordinate + ":" + endCoordinate,
+        //    EventEntry eev_received = createEventEntry(file_id + ":" + destinationFormat + ":" + startCoordinate + ":" + endCoordinate,
         //            ipAddress, "http_request", user_email);
         //    eev_received.setEventType("request_log");
         //    downloaderLogService.logEvent(eev_received);
@@ -188,7 +172,7 @@ public class LocalEGARemoteFileServiceImpl implements FileService {
         } catch (Throwable t) { // Log Error!
             System.out.println("LocalEGARemoteFileServiceImpl Error 2: " + t.toString());
             String errorMessage = fileId + ":" + destinationFormat + ":" + startCoordinate + ":" + endCoordinate + ":" + t.toString();
-            EventEntry eev = downloaderLogService.getEventEntry(errorMessage, ipAddress, "file", user_email);
+            EventEntry eev = downloaderLogService.createEventEntry(errorMessage,  "file");
             downloaderLogService.logEvent(eev);
 
             throw new GeneralStreamingException(t.toString(), 4);
@@ -203,8 +187,8 @@ public class LocalEGARemoteFileServiceImpl implements FileService {
                 double speed = (xferResult.getBytes() / 1024.0 / 1024.0) / (timeDelta / 1000.0);
                 long bytes = xferResult.getBytes();
                 System.out.println("Success? " + success + ", Speed: " + speed + " MB/s");
-                DownloadEntry dle = downloaderLogService.getDownloadEntry(success, speed, fileId,
-                        ipAddress, "file", user_email, destinationFormat,
+                DownloadEntry dle = downloaderLogService.createDownloadEntry(success, speed, fileId,
+                         "file", destinationFormat,
                         startCoordinate, endCoordinate, bytes);
                 downloaderLogService.logDownload(dle);
             }

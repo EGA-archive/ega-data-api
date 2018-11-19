@@ -17,7 +17,6 @@ package eu.elixir.ega.ebi.dataedge.service;
 
 import htsjdk.samtools.cram.ref.CRAMReferenceSource;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
