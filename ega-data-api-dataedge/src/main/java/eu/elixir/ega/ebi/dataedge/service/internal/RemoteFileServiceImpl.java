@@ -357,7 +357,7 @@ public class RemoteFileServiceImpl implements FileService {
         long timeDelta = System.currentTimeMillis();
 
         // Ascertain Access Permissions for specified File ID
-        File reqFile = fileInfoService.getFileInfo(fileId);
+        File reqFile = fileInfoService.getFileInfo(localFileId);
         if (reqFile != null) {
 
             // SeekableStream on top of RES (using Eureka to obtain RES Base URL)
