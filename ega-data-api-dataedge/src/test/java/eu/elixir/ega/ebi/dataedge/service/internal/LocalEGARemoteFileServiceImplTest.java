@@ -15,8 +15,8 @@
  */
 package eu.elixir.ega.ebi.dataedge.service.internal;
 
-import eu.elixir.ega.ebi.dataedge.dto.File;
-import eu.elixir.ega.ebi.dataedge.dto.FileDataset;
+import eu.elixir.ega.ebi.shared.dto.File;
+import eu.elixir.ega.ebi.shared.dto.FileDataset;
 import eu.elixir.ega.ebi.dataedge.service.DownloaderLogService;
 import htsjdk.samtools.cram.ref.CRAMReferenceSource;
 import org.apache.commons.lang.NotImplementedException;

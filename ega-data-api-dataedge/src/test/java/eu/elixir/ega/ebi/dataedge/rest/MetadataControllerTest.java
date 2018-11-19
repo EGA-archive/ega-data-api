@@ -48,7 +48,7 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
-import eu.elixir.ega.ebi.dataedge.dto.File;
+import eu.elixir.ega.ebi.shared.dto.File;
 import eu.elixir.ega.ebi.dataedge.service.FileMetaService;
 
 /**

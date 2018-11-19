@@ -17,6 +17,10 @@ package eu.elixir.ega.ebi.dataedge.service.internal;
 
 import eu.elixir.ega.ebi.dataedge.dto.*;
 import eu.elixir.ega.ebi.dataedge.service.DownloaderLogService;
+import eu.elixir.ega.ebi.shared.dto.File;
+import eu.elixir.ega.ebi.shared.dto.FileDataset;
+import eu.elixir.ega.ebi.shared.dto.FileIndexFile;
+import eu.elixir.ega.ebi.shared.dto.MyExternalConfig;
 import htsjdk.samtools.SAMFileHeader;
 import htsjdk.samtools.SamInputResource;
 import htsjdk.samtools.SamReader;
@@ -50,7 +54,6 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;

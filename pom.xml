@@ -28,6 +28,7 @@
 		<debug.config>-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=</debug.config>
 		<debug.filedatabase.port>5050</debug.filedatabase.port>
 		<debug.dataedge.port>5059</debug.dataedge.port>
+		<debug.dataedge.htsget.port>5060</debug.dataedge.htsget.port>
 		<debug.eureka.port>5061</debug.eureka.port>
 		<debug.config.port>5088</debug.config.port>
 		<debug.hystrix.port>5089</debug.hystrix.port>
@@ -42,6 +43,7 @@
 		<module>ega-data-api-key</module>
 		<module>ega-data-api-res</module>
 		<module>ega-data-api-dataedge</module>
+		<module>ega-data-api-htsget</module>
 		<module>ega-data-api-netflix</module>
     </modules>
 
