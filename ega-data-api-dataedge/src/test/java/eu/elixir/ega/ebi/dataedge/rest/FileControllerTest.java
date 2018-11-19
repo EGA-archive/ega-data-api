@@ -27,6 +27,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.head;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
 
+import eu.elixir.ega.ebi.dataedge.service.AuthenticationService;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -58,6 +59,9 @@ public final class FileControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @MockBean
+    private AuthenticationService authenticationService;
 
     @MockBean
     private FileService fileService;

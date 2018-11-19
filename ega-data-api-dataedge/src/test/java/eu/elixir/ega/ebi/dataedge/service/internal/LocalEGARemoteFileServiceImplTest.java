@@ -15,6 +15,7 @@
  */
 package eu.elixir.ega.ebi.dataedge.service.internal;
 
+import eu.elixir.ega.ebi.dataedge.service.FileInfoService;
 import eu.elixir.ega.ebi.shared.dto.File;
 import eu.elixir.ega.ebi.shared.dto.FileDataset;
 import eu.elixir.ega.ebi.dataedge.service.DownloaderLogService;
@@ -74,6 +75,9 @@ public class LocalEGARemoteFileServiceImplTest {
     @Mock
     private DownloaderLogService downloaderLogService;
 
+    @Mock
+    private FileInfoService fileInfoService;
+
     @Before
     public void initMocks() {
         MockitoAnnotations.initMocks(this);
@@ -107,6 +111,7 @@ public class LocalEGARemoteFileServiceImplTest {
             when(forEntityDataset.getBody()).thenReturn(datasets);
             when(forEntity.getBody()).thenReturn(file);
             when(forSize.getBody()).thenReturn(1000l);
+            when(fileInfoService.getFileInfo(FILEID)).thenReturn(f);
 
             when(restTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}/datasets", FileDataset[].class, FILEID))
                     .thenReturn(forEntityDataset);
