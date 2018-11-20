@@ -23,7 +23,7 @@ public class FileInfoServiceImpl implements FileInfoService{
   private RestTemplate restTemplate;
 
   @Override
-  @Cacheable(cacheNames = "reqFile")
+  @Cacheable(cacheNames = "reqFile", key="T(org.springframework.security.core.context.SecurityContextHolder).getContext().getAuthentication() + #p0")
   public File getFileInfo(String fileId) {
 
     //check User has permissions for this file
