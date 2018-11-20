@@ -43,7 +43,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
-import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -79,7 +78,6 @@ import static org.apache.catalina.connector.OutputBuffer.DEFAULT_BUFFER_SIZE;
 /**
  * @author asenf
  */
-@Profile("!LocalEGA")
 @Service
 @Transactional
 @EnableDiscoveryClient
@@ -260,7 +258,7 @@ public class RemoteFileServiceImpl implements FileService {
 
     @Override
     //@HystrixCommand
-    @Cacheable(cacheNames = "fileHead")
+    @Cacheable(cacheNames = "fileHead", key="T(org.springframework.security.core.context.SecurityContextHolder).getContext().getAuthentication() + #p0 + #p1 + #p2 + #p3")
     public void getFileHead(String fileId,
                             String destinationFormat,
                             HttpServletRequest request,
@@ -288,7 +286,7 @@ public class RemoteFileServiceImpl implements FileService {
 
     @Override
     //@HystrixCommand
-    @Cacheable(cacheNames = "headerFile")
+    @Cacheable(cacheNames = "headerFile", key="T(org.springframework.security.core.context.SecurityContextHolder).getContext().getAuthentication() + #p0 + #p1 + #p2 + #p3")
     public Object getFileHeader(String fileId,
                                 String destinationFormat,
                                 String destinationKey,
@@ -694,7 +692,7 @@ public class RemoteFileServiceImpl implements FileService {
     }
 
     //@HystrixCommand
-    @Cacheable(cacheNames = "indexFile")
+    @Cacheable(cacheNames = "indexFile", key="T(org.springframework.security.core.context.SecurityContextHolder).getContext().getAuthentication() + #p0")
     private FileIndexFile getFileIndexFile(String fileId) {
         FileIndexFile indexFile = null;
         ResponseEntity<FileIndexFile[]> forEntity = restTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}/index", FileIndexFile[].class, fileId);
@@ -707,7 +705,7 @@ public class RemoteFileServiceImpl implements FileService {
 
     @Override
     //@HystrixCommand
-    @Cacheable(cacheNames = "fileSize")
+    @Cacheable(cacheNames = "fileSize", key="T(org.springframework.security.core.context.SecurityContextHolder).getContext().getAuthentication() + #p0 + #p1 + #p2 +#p3")
     public ResponseEntity getHeadById(String fileId,
                                       String accession,
                                       HttpServletRequest request,
