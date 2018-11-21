@@ -173,7 +173,7 @@ spec:
           volumes:
             - name: log-directory
               hostPath:
-                path: {{ .Values.logdirectory.path }}           
+                path: {{ .Values.logdirectory.path }}
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -205,6 +205,50 @@ spec:
             livenessProbe:
               tcpSocket:
                 port: {{ .Values.image.repository.dataedge.port }}
+              initialDelaySeconds: 60
+              periodSeconds: 60
+            volumeMounts:
+              - mountPath: "/log"
+                name: log-directory
+          imagePullSecrets:
+            - name: {{ .Values.image.imageSecrets }}                
+          nodeSelector:
+            group: {{ .Values.group.one }}
+          volumes:
+            - name: log-directory
+              hostPath:
+                path: {{ .Values.logdirectory.path }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: htsget-deploy
+spec:
+  replicas: {{ .Values.replicaCount.one }}
+  strategy:
+        type: RollingUpdate
+        rollingUpdate:
+          maxUnavailable: {{ .Values.replicaCount.one }}
+  selector:
+        matchLabels:
+          app: {{ .Values.image.metadata.htsget }} 
+  template:
+        metadata:
+          labels:
+            app: {{ .Values.image.metadata.htsget }} 
+        spec:
+          containers:
+          - name: htsget
+            image: "{{ .Values.image.repository.htsget.value }}:{{ .Values.image.repository.htsget.tagMajor }}.{{ .Values.image.repository.htsget.tagMinor }}"
+            imagePullPolicy: {{ .Values.image.pullPolicy }}
+            env:
+            - name: CONFIG_SERVICE
+              value: {{ .Values.configService }}
+            ports:
+            - containerPort: {{ .Values.image.repository.htsget.port }}
+            livenessProbe:
+              tcpSocket:
+                port: {{ .Values.image.repository.htsget.port }}
               initialDelaySeconds: 60
               periodSeconds: 60
             volumeMounts:

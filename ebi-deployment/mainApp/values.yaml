@@ -21,53 +21,61 @@ image:
   imageSecrets: regcredc 
   repository: 
       eureka:
-        value: anandmohan777/eureka
+        value: anandmohan777/netflix-eureka
         tagMajor: 1
         tagMinor: 0
         port: 8761
         nodeport: 30761
-        debug: 5060
-        debugNodePort: 30060       
+        debug: 5061
+        debugNodePort: 30001    
       key:
-        value: anandmohan777/key
+        value: anandmohan777/ega-keyserver
         tagMajor: 1
         tagMinor: 0
         port: 9095
         nodeport: 30095
         debug: 5094
-        debugNodePort: 30094      
+        debugNodePort: 30002      
       filedatabase:
-        value: anandmohan777/filedatabase
+        value: anandmohan777/ega-filedatabase
         tagMajor: 1
         tagMinor: 0
         port: 9050
         nodeport: 30050
-        debug: 5049
-        debugNodePort: 30049   
+        debug: 5050
+        debugNodePort: 30003   
       res:
-        value: anandmohan777/res
+        value: anandmohan777/ega-res
         tagMajor: 1
         tagMinor: 0
         port: 9090
         nodeport: 30090
-        debug: 5089
-        debugNodePort: 30089  
+        debug: 5090
+        debugNodePort: 30004
       dataedge:
-        value: anandmohan777/dataedge
+        value: anandmohan777/ega-dataedge
         tagMajor: 1
         tagMinor: 0
         port: 9059
         nodeport: 30059
-        debug: 5058
-        debugNodePort: 30058
+        debug: 5059
+        debugNodePort: 30005
+      htsget:
+        value: anandmohan777/ega-dataedge-htsget
+        tagMajor: 1
+        tagMinor: 0
+        port: 9060
+        nodeport: 30060
+        debug: 5060
+        debugNodePort: 30006      
       hystrix:
-        value: anandmohan777/hystrix
+        value: anandmohan777/netflix-hystrix
         tagMajor: 1
         tagMinor: 0
         port: 8088
         nodeport: 30088
-        debug: 5087
-        debugNodePort: 30087
+        debug: 5089
+        debugNodePort: 30007
 
 configService: "http://config.default.svc.cluster.local"
   
@@ -83,3 +91,7 @@ group:
 
 logdirectory:
   path: /tmp/logs
+  
+keydirectory:
+  path: /ega-configurations/test
+  egalegacypath: /ega-configurations/keys   

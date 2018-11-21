@@ -102,6 +102,26 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
+    name: htsget
+    labels:
+        app: {{ .Values.image.metadata.htsget }}
+spec:
+    type: NodePort
+    ports:
+    -   port: {{ .Values.image.repository.htsget.port }}
+        nodePort: {{ .Values.image.repository.htsget.nodeport }} 
+        protocol: TCP
+        name: htsget-app-port
+    -   port: {{ .Values.image.repository.htsget.debug }} 
+        nodePort: {{ .Values.image.repository.htsget.debugNodePort }}
+        protocol: TCP 
+        name: htsget-debug-port          
+    selector:
+        app: {{ .Values.image.metadata.htsget }}
+---
+apiVersion: v1
+kind: Service
+metadata:
     name: hystrix
     labels:
         app: {{ .Values.image.metadata.hystrix }}

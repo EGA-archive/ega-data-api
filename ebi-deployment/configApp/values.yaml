@@ -18,7 +18,7 @@ image:
   imageSecrets: regcredc 
   repository: 
       config:
-        value: anandmohan777/config
+        value: anandmohan777/netflix-config
         tagMajor: 1
         tagMinor: 0
         port: 8888
