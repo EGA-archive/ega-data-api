@@ -18,7 +18,6 @@ package eu.elixir.ega.ebi.dataedge.service.internal;
 import com.google.common.io.ByteStreams;
 import eu.elixir.ega.ebi.dataedge.config.GeneralStreamingException;
 import eu.elixir.ega.ebi.dataedge.dto.*;
-import eu.elixir.ega.ebi.dataedge.service.AuthenticationService;
 import eu.elixir.ega.ebi.dataedge.service.DownloaderLogService;
 import eu.elixir.ega.ebi.dataedge.service.FileInfoService;
 import eu.elixir.ega.ebi.dataedge.service.FileService;
@@ -60,9 +59,6 @@ public class LocalEGARemoteFileServiceImpl implements FileService {
 
     @Autowired
     private DownloaderLogService downloaderLogService;
-
-    @Autowired
-    AuthenticationService authenticationService;
 
     @Autowired
     FileInfoService fileInfoService;
