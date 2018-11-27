@@ -17,7 +17,6 @@ package eu.elixir.ega.ebi.dataedge.service;
 
 import htsjdk.samtools.cram.ref.CRAMReferenceSource;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -28,8 +27,7 @@ import java.util.List;
  */
 public interface FileService {
 
-    void getFile(Authentication auth,
-                 String fileId,
+    void getFile(String fileId,
                  String destinationFormat,
                  String destinationKey,
                  String destinationIV,
@@ -38,20 +36,17 @@ public interface FileService {
                  HttpServletRequest request,
                  HttpServletResponse response);
 
-    void getFileHead(Authentication auth,
-                     String fileId,
+    void getFileHead(String fileId,
                      String destinationFormat,
                      HttpServletRequest request,
                      HttpServletResponse response);
 
-    Object getFileHeader(Authentication auth,
-                         String fileId,
+    Object getFileHeader(String fileId,
                          String destinationFormat,
                          String destinationKey,
                          CRAMReferenceSource x);
 
-    void getById(Authentication auth,
-                 String fileId,
+    void getById(String fileId,
                  String accession,
                  String format,
                  String reference,
@@ -66,8 +61,7 @@ public interface FileService {
                  HttpServletRequest request,
                  HttpServletResponse response);
 
-    void getVCFById(Authentication auth,
-                    String fileId,
+    void getVCFById(String fileId,
                     String accession,
                     String format,
                     String reference,
@@ -82,8 +76,7 @@ public interface FileService {
                     HttpServletRequest request,
                     HttpServletResponse response);
 
-    ResponseEntity getHeadById(Authentication auth,
-                               String fileId,
+    ResponseEntity getHeadById(String fileId,
                                String accession,
                                HttpServletRequest request,
                                HttpServletResponse response);

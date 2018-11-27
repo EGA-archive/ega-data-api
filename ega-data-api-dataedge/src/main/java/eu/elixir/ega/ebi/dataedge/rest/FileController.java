@@ -16,6 +16,7 @@
 package eu.elixir.ega.ebi.dataedge.rest;
 
 import eu.elixir.ega.ebi.dataedge.config.InvalidAuthenticationException;
+import eu.elixir.ega.ebi.dataedge.service.AuthenticationService;
 import eu.elixir.ega.ebi.dataedge.service.FileService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
@@ -45,6 +46,9 @@ public class FileController {
     @Autowired
     private FileService fileService;
 
+    @Autowired
+    private AuthenticationService authenticationService;
+
     @RequestMapping(value = "/{fileId}", method = GET)
     public void getFile(@PathVariable String fileId,
                         @RequestParam(value = "destinationFormat", required = false, defaultValue = "aes128") String destinationFormat,
@@ -55,7 +59,6 @@ public class FileController {
                         @RequestHeader(value = "Range", required = false, defaultValue = "") String range,
                         HttpServletRequest request,
                         HttpServletResponse response) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
         if (range.length() > 0 && range.startsWith("bytes=") && startCoordinate == 0 && endCoordinate == 0) {
             String[] ranges = range.substring("bytes=".length()).split("-");
@@ -63,8 +66,7 @@ public class FileController {
             endCoordinate = Long.valueOf(ranges[1]) + 1; // translate into exclusive end coordinate
         }
 
-        fileService.getFile(auth,
-                fileId,
+        fileService.getFile(fileId,
                 destinationFormat,
                 destinationKey,
                 destinationIV,
@@ -86,10 +88,7 @@ public class FileController {
                             HttpServletRequest request,
                             HttpServletResponse response) {
 
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-
-        fileService.getFileHead(auth,
-                fileId,
+        fileService.getFileHead(fileId,
                 destinationFormat,
                 request,
                 response);
@@ -100,10 +99,8 @@ public class FileController {
     public Object getFileHeader(@PathVariable String fileId,
                                 @RequestParam(value = "destinationFormat", required = false, defaultValue = "aes128") String destinationFormat,
                                 @RequestParam(value = "destinationKey", required = false, defaultValue = "") String destinationKey) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
-        return fileService.getFileHeader(auth,
-                fileId,
+        return fileService.getFileHeader(fileId,
                 destinationFormat,
                 destinationKey,
                 null);  // This by default makes it BAM
@@ -132,12 +129,11 @@ public class FileController {
                         @RequestParam(value = "destinationKey", required = false, defaultValue = "") String destinationKey,
                         HttpServletRequest request,
                         HttpServletResponse response) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Authentication auth = authenticationService.getAuthentication();
         if (auth == null) {
             throw new InvalidAuthenticationException(accession);
         }
-        fileService.getById(auth,
-                type,
+        fileService.getById(type,
                 accession,
                 format,
                 reference,
@@ -174,12 +170,11 @@ public class FileController {
                                @RequestParam(value = "destinationKey", required = false, defaultValue = "") String destinationKey,
                                HttpServletRequest request,
                                HttpServletResponse response) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Authentication auth = authenticationService.getAuthentication();
         if (auth == null) {
             throw new InvalidAuthenticationException(accession);
         }
-        fileService.getVCFById(auth,
-                type,
+        fileService.getVCFById(type,
                 accession,
                 format,
                 reference,
@@ -201,12 +196,12 @@ public class FileController {
                                       @RequestParam(value = "accession") String accession,
                                       HttpServletRequest request,
                                       HttpServletResponse response) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Authentication auth = authenticationService.getAuthentication();
         if (auth == null) {
             throw new InvalidAuthenticationException(accession);
         }
 
-        return fileService.getHeadById(auth, type, accession, request, response);
+        return fileService.getHeadById(type, accession, request, response);
     }
 
     @RequestMapping(value = "/**", method = RequestMethod.OPTIONS)

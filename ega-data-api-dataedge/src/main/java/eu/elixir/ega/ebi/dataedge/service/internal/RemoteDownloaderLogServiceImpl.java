@@ -19,7 +19,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.elixir.ega.ebi.dataedge.dto.DownloadEntry;
 import eu.elixir.ega.ebi.dataedge.dto.EventEntry;
+import eu.elixir.ega.ebi.dataedge.service.AuthenticationService;
 import eu.elixir.ega.ebi.dataedge.service.DownloaderLogService;
+import java.util.Calendar;
+import javax.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.http.HttpEntity;
@@ -50,6 +53,12 @@ public class RemoteDownloaderLogServiceImpl implements DownloaderLogService {
 
     @Autowired
     private RestTemplate syncRestTemplate;
+
+    @Autowired
+    private AuthenticationService authenticationService;
+
+    @Autowired
+    private HttpServletRequest request;
 
     @Override
     //@HystrixCommand
@@ -125,5 +134,52 @@ public class RemoteDownloaderLogServiceImpl implements DownloaderLogService {
         // Old Synchronous Call
         //restTemplate.postForObject(SERVICE_URL + "/log/event/", eventEntry, Void.class);
     }
+
+  //@HystrixCommand
+  public EventEntry createEventEntry(String t, String ticket) {
+    EventEntry eev = new EventEntry();
+    eev.setEventId("0");
+    // CLient IP
+    String ipAddress = request.getHeader("X-FORWARDED-FOR");
+    if (ipAddress == null) {
+      ipAddress = request.getRemoteAddr();
+    }
+    eev.setClientIp(ipAddress);
+    eev.setEvent(t);
+    eev.setEventType("Error");
+    eev.setEmail(authenticationService.getName());
+    eev.setCreated(new java.sql.Timestamp(Calendar.getInstance().getTime().getTime()));
+
+    return eev;
+  }
+
+  //@HystrixCommand
+  public DownloadEntry createDownloadEntry(boolean success, double speed, String fileId,
+      String server,
+      String encryptionType,
+      long startCoordinate,
+      long endCoordinate,
+      long bytes) {
+    DownloadEntry dle = new DownloadEntry();
+    dle.setDownloadLogId(0L);
+    dle.setDownloadSpeed(speed);
+    dle.setDownloadStatus(success ? "success" : "failed");
+    dle.setFileId(fileId);
+    String ipAddress = request.getHeader("X-FORWARDED-FOR");
+    if (ipAddress == null) {
+      ipAddress = request.getRemoteAddr();
+    }
+    dle.setClientIp(ipAddress);
+    dle.setEmail(authenticationService.getName());
+    dle.setApi(server);
+    dle.setEncryptionType(encryptionType);
+    dle.setStartCoordinate(startCoordinate);
+    dle.setEndCoordinate(endCoordinate);
+    dle.setBytes(bytes);
+    dle.setCreated(new java.sql.Timestamp(Calendar.getInstance().getTime().getTime()));
+    dle.setTokenSource("EGA");
+
+    return dle;
+  }
 
 }

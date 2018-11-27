@@ -15,6 +15,7 @@
  */
 package eu.elixir.ega.ebi.dataedge.service.internal;
 
+import eu.elixir.ega.ebi.dataedge.service.FileInfoService;
 import eu.elixir.ega.ebi.shared.dto.File;
 import eu.elixir.ega.ebi.shared.dto.FileDataset;
 import eu.elixir.ega.ebi.dataedge.service.DownloaderLogService;
@@ -74,6 +75,9 @@ public class LocalEGARemoteFileServiceImplTest {
     @Mock
     private DownloaderLogService downloaderLogService;
 
+    @Mock
+    private FileInfoService fileInfoService;
+
     @Before
     public void initMocks() {
         MockitoAnnotations.initMocks(this);
@@ -107,6 +111,7 @@ public class LocalEGARemoteFileServiceImplTest {
             when(forEntityDataset.getBody()).thenReturn(datasets);
             when(forEntity.getBody()).thenReturn(file);
             when(forSize.getBody()).thenReturn(1000l);
+            when(fileInfoService.getFileInfo(FILEID)).thenReturn(f);
 
             when(restTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}/datasets", FileDataset[].class, FILEID))
                     .thenReturn(forEntityDataset);
@@ -115,7 +120,7 @@ public class LocalEGARemoteFileServiceImplTest {
             when(restTemplate.getForEntity(RES_SERVICE + "/file/archive/{fileId}/size", Long.class, FILEID))
                     .thenReturn(forSize);
 
-            localEGARemoteFileServiceImpl.getFile(auth, FILEID, "plain", "destinationKey", "destinationIV", 0, 0,
+            localEGARemoteFileServiceImpl.getFile( FILEID, "plain", "destinationKey", "destinationIV", 0, 0,
                     new MockHttpServletRequest(), new MockHttpServletResponse());
         } catch (Exception e) {
             fail("Should not have thrown an exception");
@@ -130,7 +135,7 @@ public class LocalEGARemoteFileServiceImplTest {
      */
     @Test(expected = NotImplementedException.class)
     public void testGetFileHead() {
-        localEGARemoteFileServiceImpl.getFileHead(auth, FILEID, "plain", new MockHttpServletRequest(),
+        localEGARemoteFileServiceImpl.getFileHead( FILEID, "plain", new MockHttpServletRequest(),
                 new MockHttpServletResponse());
     }
 
@@ -141,7 +146,7 @@ public class LocalEGARemoteFileServiceImplTest {
      */
     @Test(expected = NotImplementedException.class)
     public void testGetFileHeader() {
-        localEGARemoteFileServiceImpl.getFileHeader(auth, FILEID, "plain", "destinationKey", null);
+        localEGARemoteFileServiceImpl.getFileHeader( FILEID, "plain", "destinationKey", null);
     }
 
     /**
@@ -151,7 +156,7 @@ public class LocalEGARemoteFileServiceImplTest {
      */
     @Test(expected = NotImplementedException.class)
     public void testGetById() {
-        localEGARemoteFileServiceImpl.getById(auth, "idType", "accession", "plain", "reference", 0, 0, null, null, null,
+        localEGARemoteFileServiceImpl.getById( "idType", "accession", "plain", "reference", 0, 0, null, null, null,
                 true, "destinationFormat", "destinationKey", new MockHttpServletRequest(),
                 new MockHttpServletResponse());
 
@@ -164,7 +169,7 @@ public class LocalEGARemoteFileServiceImplTest {
      */
     @Test(expected = NotImplementedException.class)
     public void testGetVCFById() {
-        localEGARemoteFileServiceImpl.getVCFById(auth, "idType", "accession", "plain", "reference", 0, 0, null, null,
+        localEGARemoteFileServiceImpl.getVCFById( "idType", "accession", "plain", "reference", 0, 0, null, null,
                 null, true, "destinationFormat", "destinationKey", new MockHttpServletRequest(),
                 new MockHttpServletResponse());
     }
@@ -176,7 +181,7 @@ public class LocalEGARemoteFileServiceImplTest {
      */
     @Test(expected = NotImplementedException.class)
     public void testGetHeadById() {
-        localEGARemoteFileServiceImpl.getHeadById(auth, "idType", "accession", new MockHttpServletRequest(),
+        localEGARemoteFileServiceImpl.getHeadById( "idType", "accession", new MockHttpServletRequest(),
                 new MockHttpServletResponse());
     }
 
