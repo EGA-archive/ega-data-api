@@ -21,7 +21,7 @@ image:
   imageSecrets: regcredc 
   repository: 
       eureka:
-        value: anandmohan777/netflix-eureka
+        value: cscfi/netflix-eureka
         tagMajor: 1
         tagMinor: 0
         port: 8761
@@ -29,7 +29,7 @@ image:
         debug: 5061
         debugNodePort: 30001    
       key:
-        value: anandmohan777/ega-keyserver
+        value: cscfi/ega-keyserver
         tagMajor: 1
         tagMinor: 0
         port: 9095
@@ -37,7 +37,7 @@ image:
         debug: 5094
         debugNodePort: 30002      
       filedatabase:
-        value: anandmohan777/ega-filedatabase
+        value: cscfi/ega-filedatabase
         tagMajor: 1
         tagMinor: 0
         port: 9050
@@ -45,7 +45,7 @@ image:
         debug: 5050
         debugNodePort: 30003   
       res:
-        value: anandmohan777/ega-res
+        value: cscfi/ega-res
         tagMajor: 1
         tagMinor: 0
         port: 9090
@@ -53,7 +53,7 @@ image:
         debug: 5090
         debugNodePort: 30004
       dataedge:
-        value: anandmohan777/ega-dataedge
+        value: cscfi/ega-dataedge
         tagMajor: 1
         tagMinor: 0
         port: 9059
@@ -61,7 +61,7 @@ image:
         debug: 5059
         debugNodePort: 30005
       htsget:
-        value: anandmohan777/ega-dataedge-htsget
+        value: cscfi/ega-dataedge-htsget
         tagMajor: 1
         tagMinor: 0
         port: 9060
@@ -69,7 +69,7 @@ image:
         debug: 5060
         debugNodePort: 30006      
       hystrix:
-        value: anandmohan777/netflix-hystrix
+        value: cscfi/netflix-hystrix
         tagMajor: 1
         tagMinor: 0
         port: 8088
