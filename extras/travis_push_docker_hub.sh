@@ -6,6 +6,7 @@ OSS_MODULES=( ega-data-api-netflix/ega-data-api-config
 
 EGA_API_MODULES=( ega-data-api-dataedge
                   ega-data-api-filedatabase
+                  ega-data-api-htsget
                   ega-data-api-key
                   ega-data-api-res )
 
