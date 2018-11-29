@@ -30,7 +30,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.ListenableFutureCallback;
 import org.springframework.web.client.AsyncRestTemplate;
@@ -44,7 +43,6 @@ import static eu.elixir.ega.ebi.shared.Constants.FILEDATABASE_SERVICE;
  * @author asenf
  */
 @Service
-@Transactional
 @EnableDiscoveryClient
 public class RemoteDownloaderLogServiceImpl implements DownloaderLogService {
 
