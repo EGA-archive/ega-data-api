@@ -34,7 +34,7 @@
 		<debug.hystrix.port>5089</debug.hystrix.port>
 		<debug.res.port>5090</debug.res.port>
 		<debug.key.port>5094</debug.key.port>
-		<image.version>v1</image.version>
+		<image.version>1.0</image.version>
     <dockerRegistry>ega-data-api</dockerRegistry>
 	</properties>
 

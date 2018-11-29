@@ -78,7 +78,11 @@ image:
         debugNodePort: 30007
 
 configService: "http://config.default.svc.cluster.local"
-  
+
+db:
+  username: testuser
+  password: testpassw0rd 
+    
 group:
   one: group1
   two: group2
