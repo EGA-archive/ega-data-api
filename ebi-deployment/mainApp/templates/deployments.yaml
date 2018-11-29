@@ -19,7 +19,7 @@ spec:
         spec:
           containers:
           - name: eureka
-            image: "{{ .Values.image.repository.eureka.value }}:{{ .Values.image.repository.eureka.tagMajor }}.{{ .Values.image.repository.eureka.tagMinor }}"
+            image: "{{ .Values.image.repository.eureka.value }}:{{ .Values.image.repository.eureka.tag }}"
             imagePullPolicy: {{ .Values.image.pullPolicy }}
             env:
             - name: CONFIG_SERVICE
@@ -63,7 +63,7 @@ spec:
         spec:
           containers:
           - name: key
-            image: "{{ .Values.image.repository.key.value }}:{{ .Values.image.repository.key.tagMajor }}.{{ .Values.image.repository.key.tagMinor }}"
+            image: "{{ .Values.image.repository.key.value }}:{{ .Values.image.repository.key.tag }}"
             imagePullPolicy: {{ .Values.image.pullPolicy }}
             env:
             - name: CONFIG_SERVICE
@@ -111,7 +111,7 @@ spec:
         spec:
           containers:
           - name: filedatabase
-            image: "{{ .Values.image.repository.filedatabase.value }}:{{ .Values.image.repository.filedatabase.tagMajor }}.{{ .Values.image.repository.filedatabase.tagMinor }}"
+            image: "{{ .Values.image.repository.filedatabase.value }}:{{ .Values.image.repository.filedatabase.tag }}"
             imagePullPolicy: {{ .Values.image.pullPolicy }}
             env:
             - name: CONFIG_SERVICE
@@ -159,7 +159,7 @@ spec:
         spec:
           containers:
           - name: res
-            image: "{{ .Values.image.repository.res.value }}:{{ .Values.image.repository.res.tagMajor }}.{{ .Values.image.repository.res.tagMinor }}"
+            image: "{{ .Values.image.repository.res.value }}:{{ .Values.image.repository.res.tag }}"
             imagePullPolicy: {{ .Values.image.pullPolicy }}
             env:
             - name: CONFIG_SERVICE
@@ -203,7 +203,7 @@ spec:
         spec:
           containers:
           - name: dataedge
-            image: "{{ .Values.image.repository.dataedge.value }}:{{ .Values.image.repository.dataedge.tagMajor }}.{{ .Values.image.repository.dataedge.tagMinor }}"
+            image: "{{ .Values.image.repository.dataedge.value }}:{{ .Values.image.repository.dataedge.tag }}"
             imagePullPolicy: {{ .Values.image.pullPolicy }}
             env:
             - name: CONFIG_SERVICE
@@ -247,7 +247,7 @@ spec:
         spec:
           containers:
           - name: htsget
-            image: "{{ .Values.image.repository.htsget.value }}:{{ .Values.image.repository.htsget.tagMajor }}.{{ .Values.image.repository.htsget.tagMinor }}"
+            image: "{{ .Values.image.repository.htsget.value }}:{{ .Values.image.repository.htsget.tag }}"
             imagePullPolicy: {{ .Values.image.pullPolicy }}
             env:
             - name: CONFIG_SERVICE
@@ -291,7 +291,7 @@ spec:
         spec:
           containers:
           - name: hystrix
-            image: "{{ .Values.image.repository.hystrix.value }}:{{ .Values.image.repository.hystrix.tagMajor }}.{{ .Values.image.repository.hystrix.tagMinor }}"
+            image: "{{ .Values.image.repository.hystrix.value }}:{{ .Values.image.repository.hystrix.tag }}"
             imagePullPolicy: {{ .Values.image.pullPolicy }}
             ports:
             - containerPort: {{ .Values.image.repository.hystrix.port }}
