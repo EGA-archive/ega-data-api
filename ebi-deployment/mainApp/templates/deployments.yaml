@@ -71,7 +71,9 @@ spec:
             - name: DB_USERNAME
               value: {{ .Values.db.username }}    
             - name: DB_PASSWORD
-              value: {{ .Values.db.password }}               
+              value: {{ .Values.db.password }}
+            - name: DB_URL
+              value: {{ .Values.db.url }}
             ports:
             - containerPort: {{ .Values.image.repository.key.port }}
             livenessProbe:
@@ -119,7 +121,9 @@ spec:
             - name: DB_USERNAME
               value: {{ .Values.db.username }}    
             - name: DB_PASSWORD
-              value: {{ .Values.db.password }}               
+              value: {{ .Values.db.password }}
+            - name: DB_URL
+              value: {{ .Values.db.url }}
             ports:
             - containerPort: {{ .Values.image.repository.filedatabase.port }}
             livenessProbe:

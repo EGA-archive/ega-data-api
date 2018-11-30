@@ -75,6 +75,7 @@ configService: "http://config.default.svc.cluster.local"
 db:
   username: testuser
   password: testpassw0rd 
+  url: "jdbc:postgresql://postgres.default.svc.cluster.local:5432/egapro"   
     
 group:
   one: group1
