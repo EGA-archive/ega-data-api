@@ -41,7 +41,9 @@ if  [ "$TRAVIS_BRANCH" = "master" ] &&
     [ "$TRAVIS_PULL_REQUEST" = "false" ]
 then
     push_images latest api
+    push_images "1.0" api
     push_images latest oss
+    push_images "1.0" oss
 else
     mvn clean install -DskipDockerPush
 fi
