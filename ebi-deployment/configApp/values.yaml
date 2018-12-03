@@ -19,12 +19,11 @@ image:
   repository: 
       config:
         value: cscfi/netflix-config
-        tagMajor: 1
-        tagMinor: 0
+        tag: "1.0"
         port: 8888
       postgres:
         value: anandmohan777/postgres
-        tag: v2
+        tag: "1.0"
         port: 5432
         nodePort: 30432
   

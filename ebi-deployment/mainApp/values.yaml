@@ -22,63 +22,61 @@ image:
   repository: 
       eureka:
         value: cscfi/netflix-eureka
-        tagMajor: 1
-        tagMinor: 0
+        tag: "1.0"
         port: 8761
         nodeport: 30761
         debug: 5061
         debugNodePort: 30001    
       key:
         value: cscfi/ega-keyserver
-        tagMajor: 1
-        tagMinor: 0
+        tag: "1.0"
         port: 9095
         nodeport: 30095
         debug: 5094
         debugNodePort: 30002      
       filedatabase:
         value: cscfi/ega-filedatabase
-        tagMajor: 1
-        tagMinor: 0
+        tag: "1.0"
         port: 9050
         nodeport: 30050
         debug: 5050
         debugNodePort: 30003   
       res:
         value: cscfi/ega-res
-        tagMajor: 1
-        tagMinor: 0
+        tag: "1.0"
         port: 9090
         nodeport: 30090
         debug: 5090
         debugNodePort: 30004
       dataedge:
         value: cscfi/ega-dataedge
-        tagMajor: 1
-        tagMinor: 0
+        tag: "1.0"
         port: 9059
         nodeport: 30059
         debug: 5059
         debugNodePort: 30005
       htsget:
         value: cscfi/ega-dataedge-htsget
-        tagMajor: 1
-        tagMinor: 0
+        tag: "1.0"
         port: 9060
         nodeport: 30060
         debug: 5060
         debugNodePort: 30006      
       hystrix:
         value: cscfi/netflix-hystrix
-        tagMajor: 1
-        tagMinor: 0
+        tag: "1.0"
         port: 8088
         nodeport: 30088
         debug: 5089
         debugNodePort: 30007
 
 configService: "http://config.default.svc.cluster.local"
-  
+
+db:
+  username: testuser
+  password: testpassw0rd 
+  url: "jdbc:postgresql://postgres.default.svc.cluster.local:5432/egapro"   
+    
 group:
   one: group1
   two: group2
