@@ -7,6 +7,7 @@ import eu.elixir.ega.ebi.dataedge.service.AuthenticationService;
 import eu.elixir.ega.ebi.dataedge.service.PermissionsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -20,7 +21,8 @@ import org.springframework.security.oauth2.provider.authentication.OAuth2Authent
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-@Profile("LocalEGA")
+@Profile("external-permissions")
+@Primary
 @Service
 public class ExternalPermissionsServiceImpl implements PermissionsService {
 
