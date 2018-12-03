@@ -24,7 +24,6 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-@Profile("!LocalEGA")
 @Service
 public class PermissionsServiceImpl implements PermissionsService {
 

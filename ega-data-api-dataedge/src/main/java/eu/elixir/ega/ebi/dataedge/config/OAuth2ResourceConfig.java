@@ -129,12 +129,12 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
         return remoteTokenServices;
     }
 
-    @Profile("LocalEGA")
+    @Profile("enable-single-aai")
     @Bean
     @Primary
-    public RemoteTokenServices tokenService(final @Value("${localega.auth.server.url}") String checkTokenUrl,
-        final @Value("${localega.auth.server.clientId}") String clientId,
-        final @Value("${localega.auth.server.clientsecret}") String clientSecret) {
+    public RemoteTokenServices tokenService(final @Value("${auth.server.url}") String checkTokenUrl,
+        final @Value("${auth.server.clientId}") String clientId,
+        final @Value("${auth.server.clientsecret}") String clientSecret) {
 
         RemoteTokenServices tokenService = new CachingRemoteTokenService();
         tokenService.setCheckTokenEndpointUrl(checkTokenUrl);
