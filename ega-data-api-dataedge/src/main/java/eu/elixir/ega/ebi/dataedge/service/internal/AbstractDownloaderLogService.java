@@ -10,7 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 
 @Slf4j
-public abstract class AbstractLogService implements DownloaderLogService {
+public abstract class AbstractDownloaderLogService implements DownloaderLogService {
 
   @Autowired
   private AuthenticationService authenticationService;

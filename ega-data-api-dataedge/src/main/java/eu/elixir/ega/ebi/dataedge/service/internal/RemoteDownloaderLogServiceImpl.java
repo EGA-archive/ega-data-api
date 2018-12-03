@@ -41,7 +41,8 @@ import static eu.elixir.ega.ebi.shared.Constants.FILEDATABASE_SERVICE;
  */
 @Service
 @EnableDiscoveryClient
-public class RemoteDownloaderLogServiceImpl extends AbstractLogService implements DownloaderLogService {
+public class RemoteDownloaderLogServiceImpl extends
+    AbstractDownloaderLogService implements DownloaderLogService {
 
     @Autowired
     private AsyncRestTemplate restTemplate;
