@@ -69,11 +69,17 @@ public class MyConfiguration {
 
     @Profile("add-user-ip-headers")
     @Bean
+    ClientUserIpInterceptor clientUserIpInterceptor() {
+        return new ClientUserIpInterceptor();
+    }
+
+    @Profile("add-user-ip-headers")
+    @Bean
     @Primary
     @LoadBalanced
     public RestTemplate interceptedRestTemplate() {
         RestTemplate restTemplate = new RestTemplate();
-        restTemplate.setInterceptors(Collections.singletonList(new ClientUserIpInterceptor()));
+        restTemplate.setInterceptors(Collections.singletonList(clientUserIpInterceptor()));
         return restTemplate;
     }
 
