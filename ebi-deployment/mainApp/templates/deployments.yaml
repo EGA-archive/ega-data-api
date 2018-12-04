@@ -168,6 +168,14 @@ spec:
             env:
             - name: CONFIG_SERVICE
               value: {{ .Values.configService }}
+            - name: S3_ACCESS_KEY
+              value: {{ .Values.s3.access.key }}    
+            - name: S3_ACCESS_SECRET
+              value: {{ .Values.s3.access.secret }}
+            - name: S3_ACCESS_URL
+              value: {{ .Values.s3.access.url }}
+            - name: S3_ACCESS_REGION
+              value: {{ .Values.s3.access.region }}                         
             ports:
             - containerPort: {{ .Values.image.repository.res.port }}
             livenessProbe:
