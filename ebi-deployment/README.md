@@ -6,6 +6,9 @@ Helm chart to deploy EGA-DATA-API to any Kubernetes cluster.
 
 - [Prerequisites](#Prerequisites)
 - [Installing the Chart](#Installing-the-Chart)
+    - [Configuration](#Chart-configuration)
+    - [Deployment](#Chart-deployment)
+- [Retrieving the data](#Retrieving-the-data)
 - [Uninstalling the Chart](#Uninstalling-the-Chart)
 
 ## Prerequisites
@@ -30,7 +33,24 @@ You can get the `<node-name>` by the following command
 
 ## Installing the Chart
 
-The Helm chart can be deployed as follows
+### Configuration
+
+You will need to set up the `s3` backend in order to test the data extraction.
+Set up the correct credentials in the file
+[mainApp/values.yml](mainApp/values.yml) for the `s3` service.
+
+```yaml
+s3:
+  access:
+      key: <s3-access-key>
+      secret: <s3-secret-key>
+      url: <s3-url>
+      region: europe
+```
+
+### Deployment
+
+The Helm chart can be deployed as follows once the configurations are done.
 
 First deploy the `config-service`
 
@@ -52,6 +72,22 @@ After that, you can get the Ports and Accessing point of all services by
 
 The microservices can be accessed by the URL `http://<ip-of-master-node>:<port-number>`
 
+## Retrieving the data
+
+### Retrieving the data through the `res` service
+
+The archived data files stored in the `s3` storage can be retrieved through the
+`res` service by providing the correct `sourceKey` and `sourceIV`. The
+`sourceKey` and `sourceIV` are the  passphrase and the initialization
+vector for the AES encryption that are randomly generated when the original
+data file is encrypted by `lega-cryptor`.
+
+You may use the following command to retrieve a file named `testfile` at the `s3`
+storage (note that the file is AES encrypted).
+
+    curl -G http://<ip-of-master-node>:30090/file -d sourceKey=$sourceKey -d sourceIV=$sourceIV -d filePath=testfile > outfile
+
+The retrieved file `outfile` is unencrypted.
 
 ## Uninstalling the Chart
 
