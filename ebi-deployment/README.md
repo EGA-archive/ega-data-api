@@ -37,7 +37,7 @@ You can get the `<node-name>` by the following command
 
 You will need to set up the `s3` backend in order to test the data extraction.
 Set up the correct credentials in the file
-[mainApp/values.yml](mainApp/values.yml) for the `s3` service.
+[mainApp/values.yml](../mainApp/values.yml) for the `s3` service.
 
 ```yaml
 s3:
