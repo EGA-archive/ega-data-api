@@ -6,8 +6,8 @@ Helm chart to deploy EGA-DATA-API to any Kubernetes cluster.
 
 - [Prerequisites](#Prerequisites)
 - [Installing the Chart](#Installing-the-Chart)
-    - [Configuration](#Chart-configuration)
-    - [Deployment](#Chart-deployment)
+    - [Configuration](#configuration)
+    - [Deployment](#deployment)
 - [Retrieving the data](#Retrieving-the-data)
 - [Uninstalling the Chart](#Uninstalling-the-Chart)
 
