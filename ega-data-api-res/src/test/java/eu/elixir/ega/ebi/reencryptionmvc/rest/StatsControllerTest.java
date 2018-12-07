@@ -21,6 +21,7 @@ import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 
+import eu.elixir.ega.ebi.reencryptionmvc.dto.CachePage;
 import org.cache2k.Cache;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -31,8 +32,6 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
-
-import eu.elixir.ega.ebi.reencryptionmvc.dto.CachePage;
 
 /**
  * Test class for {@link StatsController}.
