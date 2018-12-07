@@ -74,7 +74,15 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        <!-- exclude tomcat-jdbc, Spring Boot will use HikariCP automatically -->
+        <dependency>
+            <groupId>com.zaxxer</groupId>
+            <artifactId>HikariCP</artifactId>
+            <version>2.6.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+        </dependency>
 
         <!-- EGA-archive -->
         <dependency>
