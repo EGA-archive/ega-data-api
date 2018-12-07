@@ -23,7 +23,8 @@ import javax.servlet.http.HttpServletResponse;
  */
 public interface ResService {
 
-    void transfer(String sourceFormat,
+    //@Related TransferLoggingAspect
+    long transfer(String sourceFormat,
                   String sourceKey,
                   String sourceIV,
                   String destinationFormat,
