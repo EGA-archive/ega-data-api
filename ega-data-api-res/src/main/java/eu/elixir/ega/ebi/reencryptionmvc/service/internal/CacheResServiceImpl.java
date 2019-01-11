@@ -201,7 +201,7 @@ public class CacheResServiceImpl implements ResService {
 
     @Override
     @HystrixCommand
-    public void transfer(String sourceFormat,
+    public long transfer(String sourceFormat,
                          String sourceKey,
                          String sourceIV,
                          String destintionFormat,
@@ -325,6 +325,7 @@ public class CacheResServiceImpl implements ResService {
                 bytesTransferred += bytes;
                 cachePage += 1;
             }
+            return bytesTransferred;
         } catch (Exception ex) {
             throw new GeneralStreamingException("Error Location: " + errorLocation + "\n" + ex.toString(), 10);
         } finally {

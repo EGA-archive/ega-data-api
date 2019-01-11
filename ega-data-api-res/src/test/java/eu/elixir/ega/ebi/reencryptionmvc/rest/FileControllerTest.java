@@ -18,15 +18,18 @@ package eu.elixir.ega.ebi.reencryptionmvc.rest;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 
+import eu.elixir.ega.ebi.reencryptionmvc.dto.ArchiveSource;
+import eu.elixir.ega.ebi.reencryptionmvc.dto.CachePage;
+import eu.elixir.ega.ebi.reencryptionmvc.service.ArchiveService;
+import eu.elixir.ega.ebi.reencryptionmvc.service.ResService;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import org.cache2k.Cache;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -38,11 +41,6 @@ import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
-
-import eu.elixir.ega.ebi.reencryptionmvc.dto.ArchiveSource;
-import eu.elixir.ega.ebi.reencryptionmvc.dto.CachePage;
-import eu.elixir.ega.ebi.reencryptionmvc.service.ArchiveService;
-import eu.elixir.ega.ebi.reencryptionmvc.service.ResService;
 
 /**
  * Test class for {@link FileController}.
@@ -150,7 +148,7 @@ public class FileControllerTest {
      * Common mock method.
      */
     private void commonMockMethod() {
-        doNothing().when(resService).transfer(any(String.class), any(String.class), any(String.class), any(String.class),
+        doReturn(111L).when(resService).transfer(any(String.class), any(String.class), any(String.class), any(String.class),
                 any(String.class), any(String.class), any(String.class), any(Long.class), any(Long.class), any(Long.class),
                 any(String.class), any(String.class), any(HttpServletRequest.class), any(HttpServletResponse.class));
     }

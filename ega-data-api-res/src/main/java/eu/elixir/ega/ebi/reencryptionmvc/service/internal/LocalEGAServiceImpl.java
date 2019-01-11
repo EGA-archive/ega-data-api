@@ -97,7 +97,7 @@ public class LocalEGAServiceImpl implements ResService {
 
     @Override
     @HystrixCommand
-    public void transfer(String sourceFormat,
+    public long transfer(String sourceFormat,
                          String sourceKey,
                          String sourceIV,
                          String destinationFormat,
@@ -111,6 +111,7 @@ public class LocalEGAServiceImpl implements ResService {
                          String id,
                          HttpServletRequest request,
                          HttpServletResponse response) {
+        long transferSize = 0;
         InputStream inputStream;
         OutputStream outputStream;
         try {
@@ -132,9 +133,10 @@ public class LocalEGAServiceImpl implements ResService {
         response.setStatus(200);
         response.addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_OCTET_STREAM_VALUE);
         try {
-            IOUtils.copyLarge(inputStream, outputStream);
+            transferSize = IOUtils.copyLarge(inputStream, outputStream);
             inputStream.close();
             outputStream.flush();
+            return transferSize;
         } catch (IOException e) {
             Logger.getLogger(LocalEGAServiceImpl.class.getName()).log(Level.SEVERE, null, e);
             throw new RuntimeException(e);
