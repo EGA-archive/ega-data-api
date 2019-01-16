@@ -134,7 +134,12 @@ public class MyCipherConfig {
     public PGPPublicKey getPublicKey(Long keyId) {
         PGPPublicKey key = null;
         try {
-            key = new PGPPublicKey(this.pgpPrivateKeys.get(keyId).getPublicKeyPacket(), new JcaKeyFingerprintCalculator());
+
+            PGPPrivateKey pgpPrivateKey = getPrivateKey(keyId);
+            if (pgpPrivateKey != null) {
+                key = new PGPPublicKey(pgpPrivateKey.getPublicKeyPacket(), new JcaKeyFingerprintCalculator());
+            }
+
         } catch (PGPException ex) {
             Logger.getLogger(MyCipherConfig.class.getName()).log(Level.SEVERE, null, ex);
         }
