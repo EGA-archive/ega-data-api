@@ -16,6 +16,8 @@ image:
       filedatabase: filedatabase-app
       res: res-app
       dataedge: dataedge-app      
+      htsget: htsget-app    
+      hystrix: hystrix-app                
   tag: stable
   pullPolicy: Always
   imageSecrets: regcredc 
