@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package eu.elixir.ega.ebi.dataedge.dto;
+package eu.elixir.ega.ebi.shared.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -30,37 +30,23 @@ import java.sql.Timestamp;
 @AllArgsConstructor
 @Setter
 @Getter
-public class DownloadEntry implements Serializable {
+public class EventEntry implements Serializable {
 
-    private Long downloadLogId;
+    private String eventId;
     private String clientIp;
-    private String api;
+    private String event;
+    private String eventType;
     private String email;
-    private String fileId;
-    private double downloadSpeed;
-    private String downloadStatus;
-    private String encryptionType;
-    private Long startCoordinate;
-    private Long endCoordinate;
-    private Long bytes;
     private Timestamp created;
-    private String tokenSource;
 
     @Override
     public String toString() {
-        return "DownloadEntry [downloadLogId=" + downloadLogId +
+        return "EventEntry [eventId=" + eventId +
                 ", clientIp=" + clientIp +
-                ", server=" + api +
+                ", event=" + event +
+                ", eventType=" + eventType +
                 ", email=" + email +
-                ", fileId=" + fileId +
-                ", downloadSpeed=" + downloadSpeed +
-                ", downloadStatus=" + downloadStatus +
-                ", encryptionType=" + encryptionType +
-                ", startCoordinate=" + startCoordinate +
-                ", endCoordinate=" + endCoordinate +
-                ", bytes=" + bytes +
-                ", created=" + created +
-                ", TokenSource=" + tokenSource + "]";
+                ", created=" + created + "]";
     }
 
 }

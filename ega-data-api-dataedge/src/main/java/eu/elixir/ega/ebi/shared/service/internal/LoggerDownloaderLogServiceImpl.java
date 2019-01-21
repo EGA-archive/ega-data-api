@@ -1,6 +1,7 @@
-package eu.elixir.ega.ebi.dataedge.service.internal;
+package eu.elixir.ega.ebi.shared.service.internal;
 
-import eu.elixir.ega.ebi.dataedge.service.DownloaderLogService;
+import eu.elixir.ega.ebi.shared.service.DownloaderLogService;
+import eu.elixir.ega.ebi.shared.service.internal.AbstractDownloaderLogService;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;

@@ -16,8 +16,9 @@
 package eu.elixir.ega.ebi.dataedge.service.internal;
 
 import com.netflix.appinfo.InstanceInfo;
-import eu.elixir.ega.ebi.dataedge.dto.DownloadEntry;
-import eu.elixir.ega.ebi.dataedge.dto.EventEntry;
+import eu.elixir.ega.ebi.shared.dto.DownloadEntry;
+import eu.elixir.ega.ebi.shared.dto.EventEntry;
+import eu.elixir.ega.ebi.shared.service.internal.RemoteDownloaderLogServiceImpl;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

@@ -1,10 +1,10 @@
-package eu.elixir.ega.ebi.dataedge.service.internal;
+package eu.elixir.ega.ebi.shared.service.internal;
 
 
-import eu.elixir.ega.ebi.dataedge.config.GeneralStreamingException;
-import eu.elixir.ega.ebi.dataedge.config.PermissionDeniedException;
-import eu.elixir.ega.ebi.dataedge.service.AuthenticationService;
-import eu.elixir.ega.ebi.dataedge.service.PermissionsService;
+import eu.elixir.ega.ebi.shared.config.GeneralStreamingException;
+import eu.elixir.ega.ebi.shared.config.PermissionDeniedException;
+import eu.elixir.ega.ebi.shared.service.AuthenticationService;
+import eu.elixir.ega.ebi.shared.service.PermissionsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Primary;
@@ -15,10 +15,10 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.oauth2.client.OAuth2RestOperations;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.authentication.OAuth2AuthenticationDetails;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 @Profile("external-permissions")
@@ -71,7 +71,12 @@ public class ExternalPermissionsServiceImpl implements PermissionsService {
     headers.add(HttpHeaders.AUTHORIZATION, "Bearer " + token );
     HttpEntity<String> entity = new HttpEntity<>(headers);
 
-    ResponseEntity<String> response = restTemplate.exchange(url + "/files/" + stableId, HttpMethod.GET, entity, String.class);
+    ResponseEntity<String> response = null;
+    try {
+      response = restTemplate.exchange(url + "/files/" + stableId, HttpMethod.GET, entity, String.class);
+    } catch (HttpClientErrorException e) {
+      throw new PermissionDeniedException(HttpStatus.UNAUTHORIZED.toString());
+    }
     if (response == null || response.getStatusCode()!= HttpStatus.OK) {
       throw new PermissionDeniedException(HttpStatus.UNAUTHORIZED.toString());
     }

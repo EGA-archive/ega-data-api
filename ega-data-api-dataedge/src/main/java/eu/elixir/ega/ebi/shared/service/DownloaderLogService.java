@@ -13,21 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package eu.elixir.ega.ebi.dataedge.config;
+package eu.elixir.ega.ebi.shared.service;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.ResponseStatus;
+import eu.elixir.ega.ebi.shared.dto.DownloadEntry;
+import eu.elixir.ega.ebi.shared.dto.EventEntry;
 
 /**
  * @author asenf
  */
-@ResponseStatus(HttpStatus.FORBIDDEN)
-public class PermissionDeniedException extends RuntimeException {
+public interface DownloaderLogService {
 
-    private static final long serialVersionUID = 1L;
+    void logDownload(DownloadEntry downloadEntry);
 
-    public PermissionDeniedException(String code) {
-        super("Permission Denied : " + code);
-    }
+    void logEvent(EventEntry eventEntry);
+
+    EventEntry createEventEntry(String t, String ticket);
+
+    DownloadEntry createDownloadEntry(boolean success, double speed, String fileId,
+        String server,
+        String encryptionType,
+        long startCoordinate,
+        long endCoordinate,
+        long bytes);
 
 }

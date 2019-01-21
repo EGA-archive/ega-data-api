@@ -15,9 +15,10 @@
  */
 package eu.elixir.ega.ebi.dataedge.service.internal;
 
-import eu.elixir.ega.ebi.dataedge.dto.DownloadEntry;
+import eu.elixir.ega.ebi.shared.dto.DownloadEntry;
 import eu.elixir.ega.ebi.shared.dto.File;
 import eu.elixir.ega.ebi.shared.dto.FileDataset;
+import eu.elixir.ega.ebi.shared.service.internal.RemoteDownloaderLogServiceImpl;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

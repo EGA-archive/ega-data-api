@@ -18,7 +18,7 @@ package eu.elixir.ega.ebi.dataedge;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = "eu.elixir.ega.ebi")
 public class DataEdgeServiceApplication {
 
     public static void main(String[] args) {

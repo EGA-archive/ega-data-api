@@ -1,4 +1,4 @@
-package eu.elixir.ega.ebi.dataedge.service;
+package eu.elixir.ega.ebi.shared.service;
 
 import eu.elixir.ega.ebi.shared.dto.File;
 

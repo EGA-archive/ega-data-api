@@ -1,6 +1,6 @@
-package eu.elixir.ega.ebi.dataedge.service.internal;
+package eu.elixir.ega.ebi.shared.service.internal;
 
-import eu.elixir.ega.ebi.dataedge.service.AuthenticationService;
+import eu.elixir.ega.ebi.shared.service.AuthenticationService;
 import java.util.Collection;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;

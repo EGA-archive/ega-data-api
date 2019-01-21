@@ -1,6 +1,6 @@
-package eu.elixir.ega.ebi.dataedge.config;
+package eu.elixir.ega.ebi.shared.config;
 
-import eu.elixir.ega.ebi.dataedge.service.AuthenticationService;
+import eu.elixir.ega.ebi.shared.service.AuthenticationService;
 import java.io.IOException;
 import java.net.InetAddress;
 import javax.servlet.http.HttpServletRequest;
