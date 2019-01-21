@@ -1,8 +1,8 @@
 package eu.elixir.ega.ebi.shared.service.internal;
 
 
-import eu.elixir.ega.ebi.dataedge.config.GeneralStreamingException;
-import eu.elixir.ega.ebi.dataedge.config.PermissionDeniedException;
+import eu.elixir.ega.ebi.shared.config.GeneralStreamingException;
+import eu.elixir.ega.ebi.shared.config.PermissionDeniedException;
 import eu.elixir.ega.ebi.shared.service.AuthenticationService;
 import eu.elixir.ega.ebi.shared.service.PermissionsService;
 import org.springframework.beans.factory.annotation.Autowired;

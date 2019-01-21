@@ -3,10 +3,10 @@ package eu.elixir.ega.ebi.shared.service.internal;
 import static eu.elixir.ega.ebi.shared.Constants.FILEDATABASE_SERVICE;
 import static eu.elixir.ega.ebi.shared.Constants.RES_SERVICE;
 
-import eu.elixir.ega.ebi.dataedge.config.NotFoundException;
+import eu.elixir.ega.ebi.shared.config.NotFoundException;
+import eu.elixir.ega.ebi.shared.dto.File;
 import eu.elixir.ega.ebi.shared.service.FileInfoService;
 import eu.elixir.ega.ebi.shared.service.PermissionsService;
-import eu.elixir.ega.ebi.shared.dto.File;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.ResponseEntity;

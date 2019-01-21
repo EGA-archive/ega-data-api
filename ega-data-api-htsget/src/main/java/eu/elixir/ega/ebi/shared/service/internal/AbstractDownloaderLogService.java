@@ -1,7 +1,7 @@
 package eu.elixir.ega.ebi.shared.service.internal;
 
-import eu.elixir.ega.ebi.dataedge.dto.DownloadEntry;
-import eu.elixir.ega.ebi.dataedge.dto.EventEntry;
+import eu.elixir.ega.ebi.shared.dto.DownloadEntry;
+import eu.elixir.ega.ebi.shared.dto.EventEntry;
 import eu.elixir.ega.ebi.shared.service.AuthenticationService;
 import eu.elixir.ega.ebi.shared.service.DownloaderLogService;
 import java.util.Calendar;

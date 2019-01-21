@@ -2,15 +2,15 @@ package eu.elixir.ega.ebi.shared.service.internal;
 
 import static eu.elixir.ega.ebi.shared.Constants.FILEDATABASE_SERVICE;
 
-import eu.elixir.ega.ebi.dataedge.config.GeneralStreamingException;
-import eu.elixir.ega.ebi.dataedge.config.NotFoundException;
-import eu.elixir.ega.ebi.dataedge.config.PermissionDeniedException;
-import eu.elixir.ega.ebi.dataedge.config.VerifyMessageNew;
-import eu.elixir.ega.ebi.dataedge.dto.EventEntry;
+import eu.elixir.ega.ebi.shared.config.GeneralStreamingException;
+import eu.elixir.ega.ebi.shared.config.NotFoundException;
+import eu.elixir.ega.ebi.shared.config.PermissionDeniedException;
+import eu.elixir.ega.ebi.shared.config.VerifyMessageNew;
+import eu.elixir.ega.ebi.shared.dto.EventEntry;
+import eu.elixir.ega.ebi.shared.dto.FileDataset;
 import eu.elixir.ega.ebi.shared.service.AuthenticationService;
 import eu.elixir.ega.ebi.shared.service.DownloaderLogService;
 import eu.elixir.ega.ebi.shared.service.PermissionsService;
-import eu.elixir.ega.ebi.shared.dto.FileDataset;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;

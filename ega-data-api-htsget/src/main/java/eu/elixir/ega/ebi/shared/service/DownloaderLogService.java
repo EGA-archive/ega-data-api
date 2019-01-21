@@ -15,8 +15,8 @@
  */
 package eu.elixir.ega.ebi.shared.service;
 
-import eu.elixir.ega.ebi.dataedge.dto.DownloadEntry;
-import eu.elixir.ega.ebi.dataedge.dto.EventEntry;
+import eu.elixir.ega.ebi.shared.dto.DownloadEntry;
+import eu.elixir.ega.ebi.shared.dto.EventEntry;
 
 /**
  * @author asenf
