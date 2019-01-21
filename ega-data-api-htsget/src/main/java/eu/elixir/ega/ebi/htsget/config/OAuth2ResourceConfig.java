@@ -94,9 +94,9 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
         //return new DefaultAccessTokenConverter();
     }
 
-    @Bean
     @Profile("enable-aai")
     @Primary
+    @Bean
     public RemoteTokenServices remoteTokenServices(HttpServletRequest request,
                                                    //public RemoteTokenServices combinedTokenServices(HttpServletRequest request,
                                                    final @Value("${auth.server.url}") String checkTokenUrl,
@@ -124,6 +124,21 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
         remoteTokenServices.addRemoteTokenService(a);
 
         return remoteTokenServices;
+    }
+
+    @Profile("enable-single-aai")
+    @Bean
+    @Primary
+    public RemoteTokenServices tokenService(final @Value("${auth.server.url}") String checkTokenUrl,
+        final @Value("${auth.server.clientId}") String clientId,
+        final @Value("${auth.server.clientsecret}") String clientSecret) {
+
+        RemoteTokenServices tokenService = new CachingRemoteTokenService();
+        tokenService.setCheckTokenEndpointUrl(checkTokenUrl);
+        tokenService.setClientId(clientId);
+        tokenService.setClientSecret(clientSecret);
+        tokenService.setAccessTokenConverter(accessTokenConverter());
+        return tokenService;
     }
 
     @Bean
