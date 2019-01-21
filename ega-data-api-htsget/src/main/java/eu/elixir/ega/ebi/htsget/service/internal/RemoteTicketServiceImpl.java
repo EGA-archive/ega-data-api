@@ -15,10 +15,8 @@
  */
 package eu.elixir.ega.ebi.htsget.service.internal;
 
-import eu.elixir.ega.ebi.htsget.config.NotFoundException;
-import eu.elixir.ega.ebi.htsget.config.VerifyMessageNew;
+import eu.elixir.ega.ebi.shared.config.NotFoundException;
 import eu.elixir.ega.ebi.shared.dto.File;
-import eu.elixir.ega.ebi.shared.dto.FileDataset;
 import eu.elixir.ega.ebi.shared.dto.FileIndexFile;
 import eu.elixir.ega.ebi.htsget.dto.HtsgetContainer;
 import eu.elixir.ega.ebi.htsget.dto.HtsgetErrorResponse;
@@ -27,6 +25,7 @@ import eu.elixir.ega.ebi.htsget.dto.HtsgetResponse;
 import eu.elixir.ega.ebi.htsget.dto.HtsgetUrl;
 import eu.elixir.ega.ebi.shared.dto.MyExternalConfig;
 import eu.elixir.ega.ebi.htsget.service.TicketService;
+import eu.elixir.ega.ebi.shared.service.FileInfoService;
 import htsjdk.samtools.BAMFileSpan;
 import htsjdk.samtools.BAMIndex;
 import htsjdk.samtools.QueryInterval;
@@ -36,8 +35,6 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
@@ -65,6 +62,9 @@ public class RemoteTicketServiceImpl implements TicketService {
     @Autowired
     private RestTemplate restTemplate;
 
+    @Autowired
+    private FileInfoService fileInfoService;
+
     /**
      * Use the index to determine the chunk boundaries for the required intervals.
      *
@@ -90,8 +90,7 @@ public class RemoteTicketServiceImpl implements TicketService {
 
     @Override
     //@HystrixCommand
-    public Object getTicket(Authentication auth,
-                            String fileId,
+    public Object getTicket(String fileId,
                             String format,
                             int referenceIndex,
                             String referenceName,
@@ -113,7 +112,7 @@ public class RemoteTicketServiceImpl implements TicketService {
         // Ascertain Access Permissions for specified File ID
         File reqFile;
         try {
-            reqFile = getReqFile(fileId, auth, request); // request added for ELIXIR
+            reqFile = fileInfoService.getFileInfo(fileId); // request added for ELIXIR
         } catch (NotFoundException ex) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .contentType(MediaType.valueOf("application/vnd.ga4gh.htsget.v1.0+json; charset=utf-8"))
@@ -179,8 +178,7 @@ public class RemoteTicketServiceImpl implements TicketService {
 
     @Override
     //@HystrixCommand
-    public Object getVariantTicket(Authentication auth,
-                                   String fileId,
+    public Object getVariantTicket(String fileId,
                                    String format,
                                    int referenceIndex,
                                    String referenceName,
@@ -202,7 +200,7 @@ public class RemoteTicketServiceImpl implements TicketService {
         // Ascertain Access Permissions for specified File ID
         File reqFile;
         try {
-            reqFile = getReqFile(fileId, auth, request); // request added for ELIXIR
+            reqFile = fileInfoService.getFileInfo(fileId); // request added for ELIXIR
         } catch (NotFoundException ex) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .contentType(MediaType.valueOf("application/vnd.ga4gh.htsget.v1.0+json; charset=utf-8"))
@@ -264,68 +262,6 @@ public class RemoteTicketServiceImpl implements TicketService {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .contentType(MediaType.valueOf("application/vnd.ga4gh.htsget.v1.0+json; charset=utf-8"))
                 .body(new HtsgetContainer(new HtsgetErrorResponse("UnAuthorized", "No authorization for accession '" + fileId + "'")));
-    }
-
-    // *************************************************************************
-    //@HystrixCommand
-    @Cacheable(cacheNames = "reqFile")
-    private File getReqFile(String fileId, Authentication auth, HttpServletRequest request)
-            throws NotFoundException {
-
-        // Obtain all Authorised Datasets (Provided by EGA AAI)
-        HashSet<String> permissions = new HashSet<>();
-        Collection<? extends GrantedAuthority> authorities = auth.getAuthorities();
-        if (authorities != null && authorities.size() > 0) {
-            Iterator<? extends GrantedAuthority> iterator = authorities.iterator();
-            while (iterator.hasNext()) {
-                GrantedAuthority next = iterator.next();
-                permissions.add(next.getAuthority());
-            }
-        } else if (request != null) { // ELIXIR User Case: Obtain Permmissions from X-Permissions Header
-            try {
-                List<String> permissions_ = (new VerifyMessageNew(request.getHeader("X-Permissions"))).getPermissions();
-                if (permissions_ != null && permissions_.size() > 0) {
-                    //StringTokenizer t = new StringTokenizer(permissions, ",");
-                    //while (t!=null && t.hasMoreTokens()) {
-                    for (String ds : permissions_) {
-                        //String ds = t.nextToken();
-                        if (ds != null && ds.length() > 0) permissions.add(ds);
-                    }
-                }
-            } catch (Exception ex) {
-                //try {
-                //    List<String> permissions_ = (new VerifyMessage(request.getHeader("X-Permissions"))).getPermissions();
-                //    if (permissions_ != null && permissions_.size() > 0) {
-                //        for (String ds : permissions_) {
-                //            if (ds != null) {
-                //                permissions.add(ds);
-                //            }
-                //        }
-                //    }
-                //} catch (Exception ex) {
-            }
-        }
-
-        ResponseEntity<FileDataset[]> forEntityDataset = restTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}/datasets", FileDataset[].class, fileId);
-        FileDataset[] bodyDataset = forEntityDataset.getBody();
-
-        File reqFile = null;
-        ResponseEntity<File[]> forEntity = restTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}", File[].class, fileId);
-        File[] body = forEntity.getBody();
-        if ((body != null && body.length > 0) && bodyDataset != null) {
-            for (FileDataset f : bodyDataset) {
-                String datasetId = f.getDatasetId();
-                if (permissions.contains(datasetId) && body.length >= 1) {
-                    reqFile = body[0];
-                    reqFile.setDatasetId(datasetId);
-                    break;
-                }
-            }
-        } else { // 404 File Not Found
-            throw new NotFoundException(fileId, "File not found.");
-        }
-
-        return reqFile;
     }
 
     //@HystrixCommand

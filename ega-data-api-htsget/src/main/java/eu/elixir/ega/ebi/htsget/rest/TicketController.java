@@ -16,6 +16,7 @@
 package eu.elixir.ega.ebi.htsget.rest;
 
 import eu.elixir.ega.ebi.htsget.service.TicketService;
+import eu.elixir.ega.ebi.shared.service.AuthenticationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.http.HttpStatus;
@@ -60,10 +61,8 @@ public class TicketController {
                             @RequestParam(name = "notags", required = false) List<String> notags,
                             HttpServletRequest request,
                             HttpServletResponse response) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
-        return ticketService.getTicket(auth,
-                fileId,
+        return ticketService.getTicket(fileId,
                 format,
                 referenceIndex,
                 referenceName,
@@ -95,10 +94,8 @@ public class TicketController {
                                    @RequestParam(name = "notags", required = false) List<String> notags,
                                    HttpServletRequest request,
                                    HttpServletResponse response) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
-        return ticketService.getVariantTicket(auth,
-                fileId,
+        return ticketService.getVariantTicket(fileId,
                 format,
                 referenceIndex,
                 referenceName,
