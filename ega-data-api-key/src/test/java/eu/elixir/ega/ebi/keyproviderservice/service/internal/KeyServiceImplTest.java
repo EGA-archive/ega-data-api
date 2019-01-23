@@ -50,7 +50,7 @@ import eu.elixir.ega.ebi.keyproviderservice.service.KeyService;
 @TestPropertySource(locations = "classpath:application-test.properties")
 public final class KeyServiceImplTest {
 
-    private final String ID = "id";
+    private final String ID = "1";
     private final long KEY_ID = 1000l;
     private final String ENCRYPTION_KEY = "encryptionKey";
     private final String PUBLIC_KEY = "publicKey";
@@ -73,7 +73,7 @@ public final class KeyServiceImplTest {
     @Test
     public void testGetFileKey() {
         final EncryptionKey fileKey = new EncryptionKey(100l, "alias", ENCRYPTION_KEY);
-        when(encryptionKeyRepository.findById(ID)).thenReturn(fileKey);
+        when(encryptionKeyRepository.findById(Long.parseLong(ID))).thenReturn(fileKey);
         assertThat(keyService.getFileKey(ID), equalTo(ENCRYPTION_KEY));
     }
 

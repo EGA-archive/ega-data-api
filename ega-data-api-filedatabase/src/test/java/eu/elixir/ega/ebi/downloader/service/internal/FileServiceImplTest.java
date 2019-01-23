@@ -35,8 +35,10 @@ import org.springframework.test.context.junit4.SpringRunner;
 import eu.elixir.ega.ebi.downloader.domain.entity.File;
 import eu.elixir.ega.ebi.downloader.domain.entity.FileDataset;
 import eu.elixir.ega.ebi.downloader.domain.entity.FileIndexFile;
+import eu.elixir.ega.ebi.downloader.domain.entity.FileKey;
 import eu.elixir.ega.ebi.downloader.domain.repository.FileDatasetRepository;
 import eu.elixir.ega.ebi.downloader.domain.repository.FileIndexFileRepository;
+import eu.elixir.ega.ebi.downloader.domain.repository.FileKeyRepository;
 import eu.elixir.ega.ebi.downloader.domain.repository.FileRepository;
 import java.util.Iterator;
 
@@ -59,10 +61,14 @@ public class FileServiceImplTest {
 
 	@MockBean
 	private FileIndexFileRepository fileIndexFileRepository;
+	
+	@MockBean
+    private FileKeyRepository fileKeyRepository;
 
 	@Before
 	public void setup() {
 		when(fileRepository.findByFileId(any(String.class))).thenReturn(getFile());
+		when(fileKeyRepository.findByFileId(any(String.class))).thenReturn(getFileKey());
 		when(fileDatasetRepository.findByFileId(any(String.class))).thenReturn(getFileDataset());
 		when(fileDatasetRepository.findByDatasetId(any(String.class))).thenReturn(getFileDataset());
 		when(fileIndexFileRepository.findByFileId(any(String.class))).thenReturn(getFileIndexFile());
@@ -77,6 +83,16 @@ public class FileServiceImplTest {
 		assertThat(fileServiceImpl.getFileByStableId("fileId").iterator().next().getFileId(), equalTo(getFile()
 				.iterator().next().getFileId()));
 	}
+	
+    /**
+     * Test class for {@link FileServiceImpl#getKeyIdByFileId(String)}. Verify
+     * fileId retrieved from db mock call.
+     */
+    @Test
+    public void testGetKeyIdByFileId() {
+        assertThat(fileServiceImpl.getKeyIdByFileId("fileId").iterator().next().getFileId(), equalTo(getFileKey()
+                .iterator().next().getFileId()));
+    }
 
 	/**
 	 * Test class for {@link FileServiceImpl#getFileDatasetByFileId(String)}.
@@ -114,6 +130,14 @@ public class FileServiceImplTest {
 		file.setFileId("fileId");
 		return Arrays.asList(file);
 	}
+	
+	private Iterable<FileKey> getFileKey() {
+        final FileKey fileKey = new FileKey();
+        fileKey.setEncryptionAlgorithm("encryptionAlgorithm");
+        fileKey.setEncryptionKeyId(1);
+        fileKey.setFileId("fileId");
+        return Arrays.asList(fileKey);
+    }
 
 	private Iterable<FileDataset> getFileDataset() {
 		return Arrays.asList(new FileDataset("fileId", "datasetId"));

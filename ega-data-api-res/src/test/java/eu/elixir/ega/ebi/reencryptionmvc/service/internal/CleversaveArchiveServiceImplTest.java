@@ -39,6 +39,7 @@ import org.springframework.web.client.RestTemplate;
 
 import eu.elixir.ega.ebi.reencryptionmvc.dto.ArchiveSource;
 import eu.elixir.ega.ebi.reencryptionmvc.dto.EgaFile;
+import eu.elixir.ega.ebi.reencryptionmvc.dto.FileKey;
 import eu.elixir.ega.ebi.reencryptionmvc.service.ArchiveAdapterService;
 import eu.elixir.ega.ebi.reencryptionmvc.service.KeyService;
 
@@ -76,8 +77,11 @@ public class CleversaveArchiveServiceImplTest {
     @Test
     public void testGetArchiveFile() {
         final ResponseEntity<EgaFile[]> mockResponseEntity = mock(ResponseEntity.class);
+        final ResponseEntity<FileKey[]> mockResponseFileKeyEntity = mock(ResponseEntity.class);
         final EgaFile[] body = new EgaFile[1];
         body[0] = new EgaFile("fileId0", "/fire/0000TR.CEL.gpg", null, 100, "fileStatus0", null);
+        final FileKey[] filekey = new FileKey[1];
+        filekey[0] = new FileKey("fileId0", "encryptionKeyId", "encryptionAlgorithm");
 
         final String pathInput = "/EGAZ00001257562/analysis/ALL.chr22.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.vcf.gz.cip";
         final String object_get = "http://egaread:8oAgZc0DH6dR@10.32.25.44/ega/06ca84a54eeadf8acd3cf05691652d5e0014";
@@ -88,8 +92,12 @@ public class CleversaveArchiveServiceImplTest {
         final String[] filePath = { object_get, object_length, object_storage_class, pathInput };
         when(restTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}", EgaFile[].class, "id"))
                 .thenReturn(mockResponseEntity);
+        when(restTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}/key", FileKey[].class, "id"))
+        .thenReturn(mockResponseFileKeyEntity);
         when(mockResponseEntity.getStatusCode()).thenReturn(HttpStatus.OK);
         when(mockResponseEntity.getBody()).thenReturn(body);
+        when(mockResponseFileKeyEntity.getBody()).thenReturn(filekey);
+
         when(archiveAdapterService.getPath(anyString())).thenReturn(filePath);
         when(keyService.getFileKey(anyString())).thenReturn(encryptionKey);
 

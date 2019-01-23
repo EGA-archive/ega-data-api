@@ -40,6 +40,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import eu.elixir.ega.ebi.downloader.domain.entity.File;
 import eu.elixir.ega.ebi.downloader.domain.entity.FileDataset;
 import eu.elixir.ega.ebi.downloader.domain.entity.FileIndexFile;
+import eu.elixir.ega.ebi.downloader.domain.entity.FileKey;
 import eu.elixir.ega.ebi.downloader.service.FileService;
 
 /**
@@ -67,13 +68,26 @@ public class FileControllerTest {
 	@Test
 	public void testGet() throws Exception {
 		final List<File> files = new ArrayList<>();
-		final File file = new File();
-		file.setFileId("fileId");
-
+				
 		when(fileService.getFileByStableId(any(String.class))).thenReturn(files);
 		final MockHttpServletResponse response = mockMvc.perform(get("/file/fileId").accept(APPLICATION_JSON)).andReturn().getResponse();
 		assertThat(response.getStatus(), equalTo(OK.value()));
 	}
+
+	   /**
+     * Test {@link FileController#getKey(String)}. Verify the api call returns
+     * status is OK.
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testGetKey() throws Exception {
+        final List<FileKey> files = new ArrayList<>();
+        
+        when(fileService.getKeyIdByFileId(any(String.class))).thenReturn(files);
+        final MockHttpServletResponse response = mockMvc.perform(get("/file/fileId/key").accept(APPLICATION_JSON)).andReturn().getResponse();
+        assertThat(response.getStatus(), equalTo(OK.value()));
+    }
 
 	/**
 	 * Test {@link FileController#getDatasets(String)}. Verify the api call
@@ -84,9 +98,7 @@ public class FileControllerTest {
 	@Test
 	public void testGetDatasets() throws Exception {
 		final List<FileDataset> fileDatasets = new ArrayList<>();
-		final FileDataset fileDataset = new FileDataset();
-		fileDataset.setFileId("fileId");
-
+		
 		when(fileService.getFileDatasetByFileId(any(String.class))).thenReturn(fileDatasets);
 		final MockHttpServletResponse response = mockMvc
 				.perform(get("/file/file_id/datasets").accept(APPLICATION_JSON)).andReturn().getResponse();
@@ -102,9 +114,7 @@ public class FileControllerTest {
 	@Test
 	public void testGetIndex() throws Exception {
 		final List<FileIndexFile> fileIndexFiles = new ArrayList<>();
-		final FileIndexFile fileIndexFile = new FileIndexFile();
-		fileIndexFile.setFileId("fileId");
-
+		
 		when(fileService.getFileIndexByFileId(any(String.class))).thenReturn(fileIndexFiles);
 		final MockHttpServletResponse response = mockMvc.perform(get("/file/fileId/index").accept(APPLICATION_JSON))
 				.andReturn().getResponse();
