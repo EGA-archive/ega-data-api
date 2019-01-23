@@ -20,6 +20,7 @@ import eu.elixir.ega.ebi.reencryptionmvc.config.NotFoundException;
 import eu.elixir.ega.ebi.reencryptionmvc.config.ServerErrorException;
 import eu.elixir.ega.ebi.reencryptionmvc.dto.ArchiveSource;
 import eu.elixir.ega.ebi.reencryptionmvc.dto.EgaFile;
+import eu.elixir.ega.ebi.reencryptionmvc.dto.FileKey;
 import eu.elixir.ega.ebi.reencryptionmvc.service.ArchiveAdapterService;
 import eu.elixir.ega.ebi.reencryptionmvc.service.ArchiveService;
 import eu.elixir.ega.ebi.reencryptionmvc.service.KeyService;
@@ -86,8 +87,16 @@ public class CleversaveArchiveServiceImpl implements ArchiveService {
         String fileUrlString = filePath[0];
         long size = Long.valueOf(filePath[1]);
 
+        ResponseEntity<FileKey[]> fileKeys = restTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}/key", FileKey[].class, id);
+        FileKey[] fileKey = fileKeys.getBody();
+        String keyId = (fileKey != null && fileKey.length > 0) ? fileKey[0].getEncryptionKeyId() : "";
+        if (keyId == null || keyId.length() == 0) {
+            response.setStatus(532);
+            throw new ServerErrorException("Error in obtaining Archive Key for ", fileName);
+        }
+        
         // Get EgaFile encryption Key
-        String encryptionKey = keyService.getFileKey(keyKey);
+        String encryptionKey = keyService.getFileKey(keyId);
         if (encryptionKey == null || encryptionKey.length() == 0) {
             response.setStatus(532);
             throw new ServerErrorException("Error in obtaining Archive Key for ", fileName);

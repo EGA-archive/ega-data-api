@@ -15,6 +15,41 @@
  */
 package eu.elixir.ega.ebi.reencryptionmvc.config;
 
+import static com.amazonaws.HttpMethod.GET;
+
+import java.io.BufferedReader;
+import java.io.DataInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.IvParameterSpec;
+
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.cache2k.Cache;
+import org.cache2k.Cache2kBuilder;
+import org.springframework.beans.factory.FactoryBean;
+import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
+
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
@@ -25,10 +60,12 @@ import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
 import com.google.common.io.CountingInputStream;
 import com.google.gson.Gson;
+
 import eu.elixir.ega.ebi.reencryptionmvc.dto.ArchiveSource;
 import eu.elixir.ega.ebi.reencryptionmvc.dto.CachePage;
 import eu.elixir.ega.ebi.reencryptionmvc.dto.EgaAESFileHeader;
 import eu.elixir.ega.ebi.reencryptionmvc.dto.EgaFile;
+import eu.elixir.ega.ebi.reencryptionmvc.dto.FileKey;
 import eu.elixir.ega.ebi.reencryptionmvc.service.internal.CacheResServiceImpl;
 import htsjdk.samtools.seekablestream.SeekableHTTPStream;
 import htsjdk.samtools.seekablestream.SeekablePathStream;
@@ -37,42 +74,13 @@ import htsjdk.samtools.seekablestream.cipher.ebi.Glue;
 import htsjdk.samtools.seekablestream.cipher.ebi.RemoteSeekableCipherStream;
 import htsjdk.samtools.seekablestream.cipher.ebi.SeekableCipherStream;
 import htsjdk.samtools.seekablestream.ebi.AsyncBufferedSeekableHTTPStream;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.cache2k.Cache;
-import org.cache2k.Cache2kBuilder;
-import org.springframework.beans.factory.FactoryBean;
-import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
-
-import javax.crypto.BadPaddingException;
-import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.SecretKey;
-import javax.crypto.spec.IvParameterSpec;
-import java.io.BufferedReader;
-import java.io.DataInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.*;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import static com.amazonaws.HttpMethod.GET;
 
 /**
  * @author asenf
  */
 public class My2KCachePageFactory implements FactoryBean<Cache<String, CachePage>> { //extends SimpleJdbcDaoSupport
 
-    private final Cache<String, EgaAESFileHeader> myHeaderCache;
+    private Cache<String, EgaAESFileHeader> myHeaderCache;
 
     private final int pageSize;
     private final int pageCount;
@@ -85,7 +93,8 @@ public class My2KCachePageFactory implements FactoryBean<Cache<String, CachePage
     private final String fireArchive;
     private final String fireKey;
 
-    public My2KCachePageFactory(LoadBalancerClient loadBalancer,
+    public My2KCachePageFactory(Cache<String, EgaAESFileHeader> myHeaderCache,
+                                LoadBalancerClient loadBalancer,
                                 int pageSize,
                                 int pageCount,
                                 String awsAccessKeyId,
@@ -96,8 +105,7 @@ public class My2KCachePageFactory implements FactoryBean<Cache<String, CachePage
                                 String awsEndpointUrl,
                                 String awsRegion) {
 
-        this.myHeaderCache = (new My2KCacheFactory()).getObject(); //myCache;
-
+        this.myHeaderCache = myHeaderCache; //myCache;
         this.loadBalancer = loadBalancer;
         this.pageSize = pageSize;
         this.pageCount = pageCount;
@@ -198,10 +206,10 @@ public class My2KCachePageFactory implements FactoryBean<Cache<String, CachePage
 
             String fileDatabaseURL = getServiceURL("FILEDATABASE");
             HttpGet sourceRequest = new HttpGet(fileDatabaseURL + "/file/" + id);
-            String keyServerURL = getServiceURL("KEYSERVER");
-            HttpGet keyRequest = new HttpGet(keyServerURL + "/keys/filekeys/" + id);
-
+            HttpGet sourceRequestKey = new HttpGet(fileDatabaseURL + "/file/" + id + "/key");
+            
             EgaFile[] files;
+            FileKey[] fileKeyId;
             String encryptionKey;
             try {
                 // EgaFile
@@ -215,6 +223,22 @@ public class My2KCachePageFactory implements FactoryBean<Cache<String, CachePage
                 if (files == null || files.length == 0) {
                     throw new ServerErrorException("Error Loading Cache Header File data", key);
                 }
+                
+                // EgaFileKey
+                HttpResponse sourceResponseKey = localHttpclient.execute(sourceRequestKey);
+                if (sourceResponseKey.getEntity() == null)
+                    throw new ServerErrorException("Error Attempting to Load Cache Header File data ", key);
+                reader = new BufferedReader(new InputStreamReader(sourceResponseKey.getEntity().getContent()));
+                Gson gsonKey = new Gson();
+                fileKeyId = gsonKey.fromJson(reader, FileKey[].class);
+                String keyId = (fileKeyId != null && fileKeyId.length > 0) ? fileKeyId[0].getEncryptionKeyId() : "";
+                reader.close();
+                if (keyId == null || keyId.length() == 0) {
+                    throw new ServerErrorException("Error Loading Cache Header File key", key);
+                }
+
+                String keyServerURL = getServiceURL("KEYSERVER");
+                HttpGet keyRequest = new HttpGet(keyServerURL + "/keys/filekeys/" + keyId);
 
                 // encryptionKey
                 HttpResponse keyResponse = localHttpclient.execute(keyRequest);

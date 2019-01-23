@@ -18,6 +18,7 @@ package eu.elixir.ega.ebi.downloader.service;
 import eu.elixir.ega.ebi.downloader.domain.entity.File;
 import eu.elixir.ega.ebi.downloader.domain.entity.FileDataset;
 import eu.elixir.ega.ebi.downloader.domain.entity.FileIndexFile;
+import eu.elixir.ega.ebi.downloader.domain.entity.FileKey;
 import eu.elixir.ega.ebi.downloader.dto.DownloaderFile;
 
 /**
@@ -26,6 +27,8 @@ import eu.elixir.ega.ebi.downloader.dto.DownloaderFile;
 public interface FileService {
 
     Iterable<File> getFileByStableId(String fileIDs);
+    
+    Iterable<FileKey> getKeyIdByFileId(String fileID);
 
     Iterable<FileDataset> getFileDatasetByFileId(String fileID);
 

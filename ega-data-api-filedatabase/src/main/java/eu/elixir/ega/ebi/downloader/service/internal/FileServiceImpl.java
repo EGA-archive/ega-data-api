@@ -19,11 +19,14 @@ import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import eu.elixir.ega.ebi.downloader.domain.entity.File;
 import eu.elixir.ega.ebi.downloader.domain.entity.FileDataset;
 import eu.elixir.ega.ebi.downloader.domain.entity.FileIndexFile;
+import eu.elixir.ega.ebi.downloader.domain.entity.FileKey;
 import eu.elixir.ega.ebi.downloader.domain.repository.FileDatasetRepository;
 import eu.elixir.ega.ebi.downloader.domain.repository.FileIndexFileRepository;
+import eu.elixir.ega.ebi.downloader.domain.repository.FileKeyRepository;
 import eu.elixir.ega.ebi.downloader.domain.repository.FileRepository;
 import eu.elixir.ega.ebi.downloader.dto.DownloaderFile;
 import eu.elixir.ega.ebi.downloader.service.FileService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.annotation.Profile;
@@ -49,12 +52,22 @@ public class FileServiceImpl implements FileService {
 
     @Autowired
     private FileIndexFileRepository fileIndexFileRepository;
+    
+    @Autowired
+    private FileKeyRepository fileKeyRepository;
 
     @Override
     @Cacheable(cacheNames = "fileById")
     @HystrixCommand
     public Iterable<File> getFileByStableId(String fileIds) {
         return fileRepository.findByFileId(fileIds);
+    }
+    
+    @Override
+    @Cacheable(cacheNames = "fileKeyById")
+    @HystrixCommand
+    public Iterable<FileKey> getKeyIdByFileId(String fileID) {
+        return fileKeyRepository.findByFileId(fileID);
     }
 
     @Override

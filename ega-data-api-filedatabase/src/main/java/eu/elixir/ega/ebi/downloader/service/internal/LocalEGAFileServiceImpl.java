@@ -20,6 +20,7 @@ import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import eu.elixir.ega.ebi.downloader.domain.entity.File;
 import eu.elixir.ega.ebi.downloader.domain.entity.FileDataset;
 import eu.elixir.ega.ebi.downloader.domain.entity.FileIndexFile;
+import eu.elixir.ega.ebi.downloader.domain.entity.FileKey;
 import eu.elixir.ega.ebi.downloader.dto.DownloaderFile;
 import eu.elixir.ega.ebi.downloader.service.FileService;
 import lombok.extern.slf4j.Slf4j;
@@ -101,6 +102,11 @@ public class LocalEGAFileServiceImpl implements FileService {
     @Autowired
     public void setRestTemplate(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
+    }
+
+    @Override
+    public Iterable<FileKey> getKeyIdByFileId(String fileID) {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
 }

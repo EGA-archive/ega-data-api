@@ -49,7 +49,7 @@ public class KeyServiceImpl implements KeyService {
     @HystrixCommand
     @ResponseBody
     public String getFileKey(String id) {
-        EncryptionKey findById = encryptionKeyRepository.findById(id);
+        EncryptionKey findById = encryptionKeyRepository.findById(Long.parseLong(id));
         return findById.getEncryptionKey();
     }
 

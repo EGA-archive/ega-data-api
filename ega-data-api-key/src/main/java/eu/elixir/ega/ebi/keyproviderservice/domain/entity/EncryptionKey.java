@@ -33,6 +33,7 @@ import java.io.Serializable;
 @Setter
 @Getter
 @Entity
+@Table(name = "encryption_key")
 public class EncryptionKey implements Serializable {
 
     @Id

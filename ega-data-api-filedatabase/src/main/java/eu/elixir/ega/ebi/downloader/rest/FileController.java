@@ -18,6 +18,7 @@ package eu.elixir.ega.ebi.downloader.rest;
 import eu.elixir.ega.ebi.downloader.domain.entity.File;
 import eu.elixir.ega.ebi.downloader.domain.entity.FileDataset;
 import eu.elixir.ega.ebi.downloader.domain.entity.FileIndexFile;
+import eu.elixir.ega.ebi.downloader.domain.entity.FileKey;
 import eu.elixir.ega.ebi.downloader.service.FileService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -41,6 +42,12 @@ public class FileController {
     @ResponseBody
     public Iterable<File> get(@PathVariable String fileId) {
         return fileService.getFileByStableId(fileId);
+    }
+    
+    @RequestMapping(value = "/{fileId}/key", method = GET)
+    @ResponseBody
+    public Iterable<FileKey> getKey(@PathVariable String fileId) {
+        return fileService.getKeyIdByFileId(fileId);
     }
 
     @RequestMapping(value = "/{fileId}/datasets", method = GET)
