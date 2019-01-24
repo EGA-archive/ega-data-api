@@ -19,7 +19,7 @@
  */
 
 CREATE TABLE encryption_key (
-	encryption_key_id bigserial NOT NULL,
+	encryption_key_id int8 NOT NULL,
 	alias varchar(128) NOT NULL,
-	encryption_key text NOT NULL,
+	encryption_key text NOT NULL
 ) ;
