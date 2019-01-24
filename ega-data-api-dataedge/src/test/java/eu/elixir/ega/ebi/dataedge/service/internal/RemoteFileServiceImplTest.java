@@ -16,9 +16,8 @@
 package eu.elixir.ega.ebi.dataedge.service.internal;
 
 import eu.elixir.ega.ebi.dataedge.dto.*;
-import eu.elixir.ega.ebi.dataedge.service.DownloaderLogService;
-import eu.elixir.ega.ebi.dataedge.service.FileInfoService;
-import eu.elixir.ega.ebi.dataedge.service.PermissionsService;
+import eu.elixir.ega.ebi.shared.service.DownloaderLogService;
+import eu.elixir.ega.ebi.shared.service.FileInfoService;
 import eu.elixir.ega.ebi.shared.dto.File;
 import eu.elixir.ega.ebi.shared.dto.FileDataset;
 import eu.elixir.ega.ebi.shared.dto.FileIndexFile;

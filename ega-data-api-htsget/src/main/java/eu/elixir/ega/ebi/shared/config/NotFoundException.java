@@ -13,16 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package eu.elixir.ega.ebi.dataedge;
+package eu.elixir.ega.ebi.shared.config;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
-@SpringBootApplication(scanBasePackages = "eu.elixir.ega.ebi")
-public class DataEdgeServiceApplication {
+/**
+ * @author asenf
+ */
+@ResponseStatus(HttpStatus.NOT_FOUND)
+public class NotFoundException extends RuntimeException {
 
-    public static void main(String[] args) {
-        SpringApplication.run(DataEdgeServiceApplication.class, args);
+    private static final long serialVersionUID = 1L;
+
+    public NotFoundException(String error, String id) {
+        super(error + ": " + id);
     }
 
 }

@@ -18,7 +18,7 @@ package eu.elixir.ega.ebi.htsget;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = "eu.elixir.ega.ebi")
 public class HtsgetServiceApplication {
 
     public static void main(String[] args) {

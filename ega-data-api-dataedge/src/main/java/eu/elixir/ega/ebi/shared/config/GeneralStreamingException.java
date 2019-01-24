@@ -13,16 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package eu.elixir.ega.ebi.dataedge;
+package eu.elixir.ega.ebi.shared.config;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
-@SpringBootApplication(scanBasePackages = "eu.elixir.ega.ebi")
-public class DataEdgeServiceApplication {
+/**
+ * @author asenf
+ */
+@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+public class GeneralStreamingException extends RuntimeException {
 
-    public static void main(String[] args) {
-        SpringApplication.run(DataEdgeServiceApplication.class, args);
+    private static final long serialVersionUID = 1L;
+
+    public GeneralStreamingException(String error, int stage) {
+        super("Error processing Stream at stage : " + stage + " (with error " + error + ")");
     }
 
 }

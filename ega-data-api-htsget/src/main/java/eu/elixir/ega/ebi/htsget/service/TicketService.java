@@ -15,8 +15,6 @@
  */
 package eu.elixir.ega.ebi.htsget.service;
 
-import org.springframework.security.core.Authentication;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.List;
@@ -26,8 +24,7 @@ import java.util.List;
  */
 public interface TicketService {
 
-    Object getTicket(Authentication auth,
-                     String fileId,
+    Object getTicket(String fileId,
                      String format,
                      int referenceIndex,
                      String referenceName,
@@ -40,8 +37,7 @@ public interface TicketService {
                      HttpServletRequest request,
                      HttpServletResponse response);
 
-    Object getVariantTicket(Authentication auth,
-                            String fileId,
+    Object getVariantTicket(String fileId,
                             String format,
                             int referenceIndex,
                             String referenceName,

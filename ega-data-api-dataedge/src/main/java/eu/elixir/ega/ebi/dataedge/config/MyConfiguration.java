@@ -16,6 +16,7 @@
 package eu.elixir.ega.ebi.dataedge.config;
 
 import com.google.common.cache.CacheBuilder;
+import eu.elixir.ega.ebi.shared.config.ClientUserIpInterceptor;
 import eu.elixir.ega.ebi.shared.dto.MyExternalConfig;
 import java.util.Collections;
 import org.springframework.beans.factory.annotation.Value;

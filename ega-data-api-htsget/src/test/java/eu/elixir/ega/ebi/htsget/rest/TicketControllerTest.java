@@ -119,7 +119,7 @@ public class TicketControllerTest {
     @SuppressWarnings("unchecked")
     @Before
     public void commonMockMethod() {
-        when(ticketService.getVariantTicket(any(Authentication.class), any(String.class), any(String.class),
+        when(ticketService.getVariantTicket(any(String.class), any(String.class),
                 any(Integer.class), any(String.class), any(String.class), any(String.class), any(String.class),
                 any(List.class), any(List.class), any(List.class), any(HttpServletRequest.class),
                 any(HttpServletResponse.class))).thenReturn(null);

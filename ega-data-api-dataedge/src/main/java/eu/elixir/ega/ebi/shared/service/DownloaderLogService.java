@@ -13,16 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package eu.elixir.ega.ebi.dataedge;
+package eu.elixir.ega.ebi.shared.service;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
+import eu.elixir.ega.ebi.shared.dto.DownloadEntry;
+import eu.elixir.ega.ebi.shared.dto.EventEntry;
 
-@SpringBootApplication(scanBasePackages = "eu.elixir.ega.ebi")
-public class DataEdgeServiceApplication {
+/**
+ * @author asenf
+ */
+public interface DownloaderLogService {
 
-    public static void main(String[] args) {
-        SpringApplication.run(DataEdgeServiceApplication.class, args);
-    }
+    void logDownload(DownloadEntry downloadEntry);
+
+    void logEvent(EventEntry eventEntry);
+
+    EventEntry createEventEntry(String t, String ticket);
+
+    DownloadEntry createDownloadEntry(boolean success, double speed, String fileId,
+        String server,
+        String encryptionType,
+        long startCoordinate,
+        long endCoordinate,
+        long bytes);
 
 }

@@ -29,6 +29,7 @@ import eu.elixir.ega.ebi.htsget.dto.HtsgetContainer;
 import eu.elixir.ega.ebi.htsget.dto.HtsgetResponse;
 import eu.elixir.ega.ebi.shared.dto.MyExternalConfig;
 import eu.elixir.ega.ebi.htsget.service.internal.RemoteTicketServiceImpl;
+import eu.elixir.ega.ebi.shared.service.FileInfoService;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -77,6 +78,9 @@ public class RemoteTicketServiceImplTest {
     @Mock
     RestTemplate restTemplate;
 
+    @Mock
+    private FileInfoService fileInfoService;
+
     /**
      * Test class for
      * {@link RemoteTicketServiceImpl#getFile(Authentication, String, String, String, String, long, long, HttpServletRequest, HttpServletResponse)}.
@@ -93,7 +97,7 @@ public class RemoteTicketServiceImplTest {
         final List<String> notagsList = Arrays.asList(notags);
 
         final ResponseEntity<HtsgetContainer> responseEntity = (ResponseEntity) remoteTicketServiceImpl.getTicket(
-                authentication, FILEID, "plain", 0, "referenceName", "referenceMD5", "start", "end", fieldsList,
+                FILEID, "plain", 0, "referenceName", "referenceMD5", "start", "end", fieldsList,
                 tagsList, notagsList, httpServletRequest, new MockHttpServletResponse());
         final HtsgetResponse htsgetResponse = (HtsgetResponse) responseEntity.getBody().getHtsget();
 
@@ -118,7 +122,7 @@ public class RemoteTicketServiceImplTest {
         final List<String> notagsList = Arrays.asList(notags);
 
         final ResponseEntity<HtsgetContainer> responseEntity = (ResponseEntity) remoteTicketServiceImpl
-                .getVariantTicket(authentication, FILEID, "plain", 0, "referenceName", "referenceMD5", "start", "end",
+                .getVariantTicket(FILEID, "plain", 0, "referenceName", "referenceMD5", "start", "end",
                         fieldsList, tagsList, notagsList, httpServletRequest, new MockHttpServletResponse());
         final HtsgetResponse htsgetResponse = (HtsgetResponse) responseEntity.getBody().getHtsget();
 
@@ -159,6 +163,9 @@ public class RemoteTicketServiceImplTest {
         file.setFileSize(100L);
         final File[] files = {file};
         when(forEntity.getBody()).thenReturn(files);
+
+        when(fileInfoService.getFileInfo(FILEID)).thenReturn(file);
+        when(fileInfoService.getFileInfo("indexFileId")).thenReturn(file);
 
         when(externalConfig.getEgaExternalUrl()).thenReturn("egaExternalUrl");
         when(authentication.getAuthorities()).thenReturn(authorities);
