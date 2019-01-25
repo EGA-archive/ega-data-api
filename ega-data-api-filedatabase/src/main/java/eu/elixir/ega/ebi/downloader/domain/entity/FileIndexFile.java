@@ -23,6 +23,7 @@ import lombok.Setter;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.Table;
 import javax.validation.constraints.Size;
 import java.io.Serializable;
 
@@ -34,6 +35,7 @@ import java.io.Serializable;
 @Setter
 @Getter
 @Entity
+@Table(name = "index_files")
 public class FileIndexFile implements Serializable {
 
     @Id
