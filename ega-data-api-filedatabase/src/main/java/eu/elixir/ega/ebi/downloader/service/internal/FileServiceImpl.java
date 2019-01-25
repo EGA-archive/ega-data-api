@@ -53,14 +53,14 @@ public class FileServiceImpl implements FileService {
     @Override
     @Cacheable(cacheNames = "fileById")
     @HystrixCommand
-    public Iterable<File> getFileByStableId(String fileIds) {
+    public Iterable<File> getFileByStableId(Integer fileIds) {
         return fileRepository.findByFileId(fileIds);
     }
 
     @Override
     @Cacheable(cacheNames = "datasetByFile")
     @HystrixCommand
-    public Iterable<FileDataset> getFileDatasetByFileId(String fileID) {
+    public Iterable<FileDataset> getFileDatasetByFileId(Integer fileID) {
         ArrayList<FileDataset> result = new ArrayList<>();
         Iterable<String> findByFileId = fileDatasetRepository.findCustom(fileID);
         if (findByFileId != null) {
@@ -96,8 +96,8 @@ public class FileServiceImpl implements FileService {
                         file.getFileName(),
                         file.getFileSize(),
                         file.getUnencryptedChecksum(),
-                        file.getUnencryptedChecksumType(),
-                        file.getFileStatus()));
+                        file.getUnencryptedChecksumType()));
+                        //file.getFileStatus())
             }
         }
 
@@ -107,7 +107,7 @@ public class FileServiceImpl implements FileService {
     @Override
     @Cacheable(cacheNames = "fileIndexFile")
     @HystrixCommand
-    public Iterable<FileIndexFile> getFileIndexByFileId(String fileId) {
+    public Iterable<FileIndexFile> getFileIndexByFileId(Integer fileId) {
         return fileIndexFileRepository.findByFileId(fileId);
     }
 

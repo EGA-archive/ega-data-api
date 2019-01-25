@@ -39,19 +39,19 @@ public class FileController {
 
     @RequestMapping(value = "/{fileId}", method = GET)
     @ResponseBody
-    public Iterable<File> get(@PathVariable String fileId) {
+    public Iterable<File> get(@PathVariable Integer fileId) {
         return fileService.getFileByStableId(fileId);
     }
 
     @RequestMapping(value = "/{fileId}/datasets", method = GET)
     @ResponseBody
-    public Iterable<FileDataset> getDatasets(@PathVariable String fileId) {
+    public Iterable<FileDataset> getDatasets(@PathVariable Integer fileId) {
         return fileService.getFileDatasetByFileId(fileId);
     }
 
     @RequestMapping(value = "/{fileId}/index", method = GET)
     @ResponseBody
-    public Iterable<FileIndexFile> getIndex(@PathVariable String fileId) {
+    public Iterable<FileIndexFile> getIndex(@PathVariable Integer fileId) {
         return fileService.getFileIndexByFileId(fileId);
     }
 

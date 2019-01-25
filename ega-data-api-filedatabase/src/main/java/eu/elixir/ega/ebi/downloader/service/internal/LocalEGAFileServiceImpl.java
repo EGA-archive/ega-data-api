@@ -53,7 +53,7 @@ public class LocalEGAFileServiceImpl implements FileService {
     @Override
     @Cacheable(cacheNames = "fileById")
     @HystrixCommand
-    public Iterable<File> getFileByStableId(String fileIDs) {
+    public Iterable<File> getFileByStableId(Integer fileIDs) {
         // TODO: bring that back after LocalEGA key server becomes able to register itself against Eureka
         // ResponseEntity<Resource> responseEntity =
         //        restTemplate.getForEntity(fileServiceURL + "/temp/file." + id, Resource.class);
@@ -63,11 +63,11 @@ public class LocalEGAFileServiceImpl implements FileService {
             HashMap response = new Gson().fromJson(IOUtils.toString(new URL(fileServiceURL + "/temp/file/" + fileIDs).openStream(), Charset.defaultCharset()), HashMap.class);
             String filePath = String.valueOf(response.get("filepath"));
             long fileSize = Math.round(Double.parseDouble(String.valueOf(response.get("filesize"))));
-            String checksum = String.valueOf(response.get("checksum"));
-            String checksumType = String.valueOf(response.get("algo"));
+            //String checksum = String.valueOf(response.get("checksum"));
+            //String checksumType = String.valueOf(response.get("algo"));
             file = new File(fileIDs, filePath, "{path}", "{displayName}",
-                    fileSize, checksum, checksumType,
-                    "{unencryptedMD5}", "{unencType}", "available",
+                    fileSize, // checksum, checksumType,
+                    "{unencryptedMD5}", "{unencType}",// "available",
                     "{Crypt4GH Header}");
         } catch (IOException e) {
             log.error(e.getMessage(), e);
@@ -77,7 +77,7 @@ public class LocalEGAFileServiceImpl implements FileService {
 
     @Override
     @Cacheable(cacheNames = "datasetByFile")
-    public Iterable<FileDataset> getFileDatasetByFileId(String fileID) {
+    public Iterable<FileDataset> getFileDatasetByFileId(Integer fileID) {
         return Collections.singleton(new FileDataset(fileID, "EGAD01"));
     }
 
@@ -89,7 +89,7 @@ public class LocalEGAFileServiceImpl implements FileService {
 
     @Override
     @Cacheable(cacheNames = "fileIndexFile")
-    public Iterable<FileIndexFile> getFileIndexByFileId(String fileID) {
+    public Iterable<FileIndexFile> getFileIndexByFileId(Integer fileID) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 

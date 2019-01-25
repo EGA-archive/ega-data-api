@@ -29,13 +29,13 @@ import lombok.Setter;
 @Getter
 public class DownloaderFile {
 
-    private String fileId;
+    private int fileId;
     private String datasetId;
     private String displayFileName;
     private String fileName;
     private long fileSize;
     private String unencryptedChecksum;
     private String unencryptedChecksumType;
-    private String fileStatus;
+    //private String fileStatus;
 
 }

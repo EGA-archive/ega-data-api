@@ -25,12 +25,12 @@ import eu.elixir.ega.ebi.downloader.dto.DownloaderFile;
  */
 public interface FileService {
 
-    Iterable<File> getFileByStableId(String fileIDs);
+    Iterable<File> getFileByStableId(Integer fileIDs);
 
-    Iterable<FileDataset> getFileDatasetByFileId(String fileID);
+    Iterable<FileDataset> getFileDatasetByFileId(Integer fileID);
 
     Iterable<DownloaderFile> getDatasetFiles(String datasetId);
 
-    Iterable<FileIndexFile> getFileIndexByFileId(String fileID);
+    Iterable<FileIndexFile> getFileIndexByFileId(Integer fileID);
 
 }

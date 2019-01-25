@@ -39,9 +39,9 @@ import java.io.Serializable;
 public class FileDataset implements Serializable {
 
     @Id
-    @Size(max = 128)
-    @Column(name = "file_id", insertable = false, updatable = false, length = 128)
-    private String fileId;
+    //@Size(max = 128)
+    @Column(name = "file_id", insertable = false, updatable = false) //, length = 128)
+    private Integer fileId;
 
     @Size(max = 128)
     @Column(name = "dataset_id", insertable = false, updatable = false, length = 128)

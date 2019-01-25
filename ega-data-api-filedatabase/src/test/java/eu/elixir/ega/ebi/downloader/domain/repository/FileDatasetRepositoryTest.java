@@ -48,7 +48,7 @@ public class FileDatasetRepositoryTest {
 	private Iterable<FileDataset> fileDatasetOutput;
 
 	/**
-	 * Test {@link FileDatasetRepository#findByFileId(String)}. Verify the
+	 * Test {@link FileDatasetRepository#findByFileId(Integer)}. Verify the
 	 * {@link FileDataset} retrieved from db.
 	 */
 	@Test
@@ -67,7 +67,7 @@ public class FileDatasetRepositoryTest {
 	}
 
 	private void givenDataset() {
-		fileDataset = new FileDataset("f", "d");
+		fileDataset = new FileDataset(1, "d");
 		entityManager.persist(fileDataset);
 	}
 
