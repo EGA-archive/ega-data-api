@@ -15,15 +15,29 @@
  */
 package eu.elixir.ega.ebi.keyproviderservice.config;
 
+import java.util.Collections;
+import java.util.concurrent.TimeUnit;
+
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.cache.guava.GuavaCache;
+import org.springframework.cache.support.SimpleCacheManager;
+import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.retry.annotation.EnableRetry;
 import org.springframework.web.client.RestTemplate;
+
+import com.google.common.cache.CacheBuilder;
 
 /**
  * @author asenf
  */
 @Configuration
+@EnableCaching
+@EnableRetry
+@EnableEurekaClient
 public class MyConfiguration {
 
     @Value("${ega.key.path}")
@@ -51,4 +65,14 @@ public class MyConfiguration {
         return new RestTemplate();
     }
 
+    @Bean
+    public CacheManager cacheManager() {
+        SimpleCacheManager simpleCacheManager = new SimpleCacheManager();
+        GuavaCache byFileId = new GuavaCache("byId", CacheBuilder.newBuilder()
+                .expireAfterAccess(24, TimeUnit.HOURS)
+                .build());
+
+        simpleCacheManager.setCaches(Collections.singletonList(byFileId));
+        return simpleCacheManager;
+    }
 }
