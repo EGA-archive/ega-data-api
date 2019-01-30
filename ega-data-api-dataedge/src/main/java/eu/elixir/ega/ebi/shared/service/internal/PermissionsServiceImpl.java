@@ -92,7 +92,7 @@ public class PermissionsServiceImpl implements PermissionsService {
         throw new GeneralStreamingException(ex.toString(), 0);
       }
     }
-
+    System.out.println(FILEDATABASE_SERVICE);
     ResponseEntity<FileDataset[]> forEntityDataset = restTemplate
         .getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}/datasets", FileDataset[].class,
             stableId);

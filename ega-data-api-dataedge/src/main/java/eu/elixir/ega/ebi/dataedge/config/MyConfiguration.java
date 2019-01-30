@@ -89,7 +89,7 @@ public class MyConfiguration {
     public AsyncRestTemplate asyncRestTemplate() {
         return new AsyncRestTemplate();
     }
-/*
+
     @Bean
     @LoadBalanced
     public RetryTemplate retryTemplate() {
@@ -105,7 +105,7 @@ public class MyConfiguration {
 
         return retryTemplate;
     }
-*/
+
     @Bean
     public Docket swaggerSettings() {
         return new Docket(DocumentationType.SWAGGER_2)

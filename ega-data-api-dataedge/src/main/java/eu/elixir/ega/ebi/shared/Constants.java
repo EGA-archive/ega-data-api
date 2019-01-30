@@ -1,5 +1,6 @@
 package eu.elixir.ega.ebi.shared;
 
+
 public interface Constants {
 
     String FILEDATABASE_SERVICE = "http://FILEDATABASE";
