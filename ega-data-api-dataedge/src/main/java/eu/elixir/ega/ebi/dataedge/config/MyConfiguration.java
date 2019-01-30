@@ -63,7 +63,7 @@ public class MyConfiguration {
     // Ribbon Load Balanced Rest Template for communication with other Microservices
 
     @Bean
-    //@LoadBalanced
+    @LoadBalanced
     public RestTemplate restTemplate() {
         return new RestTemplate();
     }
@@ -85,7 +85,7 @@ public class MyConfiguration {
     }
 
     @Bean
-    //@LoadBalanced
+    @LoadBalanced
     public AsyncRestTemplate asyncRestTemplate() {
         return new AsyncRestTemplate();
     }
