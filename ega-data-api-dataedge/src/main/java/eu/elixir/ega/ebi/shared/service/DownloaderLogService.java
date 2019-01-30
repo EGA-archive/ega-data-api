@@ -29,7 +29,7 @@ public interface DownloaderLogService {
 
     EventEntry createEventEntry(String t, String ticket);
 
-    DownloadEntry createDownloadEntry(boolean success, double speed, String fileId,
+    DownloadEntry createDownloadEntry(boolean success, double speed, Integer fileId,
         String server,
         String encryptionType,
         long startCoordinate,

@@ -29,7 +29,7 @@ import lombok.Setter;
 @Getter
 public class FileDataset {
 
-    private String fileId;
+    private Integer fileId;
     private String datasetId;
 
 }

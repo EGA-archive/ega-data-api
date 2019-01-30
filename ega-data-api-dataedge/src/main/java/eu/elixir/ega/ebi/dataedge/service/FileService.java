@@ -27,7 +27,7 @@ import java.util.List;
  */
 public interface FileService {
 
-    void getFile(String fileId,
+    void getFile(Integer fileId,
                  String destinationFormat,
                  String destinationKey,
                  String destinationIV,
@@ -36,17 +36,17 @@ public interface FileService {
                  HttpServletRequest request,
                  HttpServletResponse response);
 
-    void getFileHead(String fileId,
+    void getFileHead(Integer fileId,
                      String destinationFormat,
                      HttpServletRequest request,
                      HttpServletResponse response);
 
-    Object getFileHeader(String fileId,
+    Object getFileHeader(Integer fileId,
                          String destinationFormat,
                          String destinationKey,
                          CRAMReferenceSource x);
 
-    void getById(String fileId,
+    void getById(Integer fileId,
                  String accession,
                  String format,
                  String reference,
@@ -61,7 +61,7 @@ public interface FileService {
                  HttpServletRequest request,
                  HttpServletResponse response);
 
-    void getVCFById(String fileId,
+    void getVCFById(Integer fileId,
                     String accession,
                     String format,
                     String reference,
@@ -76,7 +76,7 @@ public interface FileService {
                     HttpServletRequest request,
                     HttpServletResponse response);
 
-    ResponseEntity getHeadById(String fileId,
+    ResponseEntity getHeadById(Integer fileId,
                                String accession,
                                HttpServletRequest request,
                                HttpServletResponse response);

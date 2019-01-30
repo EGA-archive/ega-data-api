@@ -29,7 +29,7 @@ import lombok.Setter;
 @Getter
 public class FileIndexFile {
 
-    private String fileId;
-    private String indexFileId;
+    private Integer fileId;
+    private Integer indexFileId;
 
 }

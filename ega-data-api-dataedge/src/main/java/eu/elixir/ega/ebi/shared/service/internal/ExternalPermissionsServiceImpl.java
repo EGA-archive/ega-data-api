@@ -42,9 +42,9 @@ public class ExternalPermissionsServiceImpl implements PermissionsService {
   }
 
   @Override
-  public String getFilePermissionsEntity(String stableId) {
+  public String getFilePermissionsEntity(Integer stableId) {
 
-    if (stableId == null || stableId.isEmpty()) {
+    if (stableId == null) {
       throw new GeneralStreamingException("Need a valid stableId to proceed.", 0);
     }
 

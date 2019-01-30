@@ -49,7 +49,7 @@ public class FileController {
     private AuthenticationService authenticationService;
 
     @RequestMapping(value = "/{fileId}", method = GET)
-    public void getFile(@PathVariable String fileId,
+    public void getFile(@PathVariable Integer fileId,
                         @RequestParam(value = "destinationFormat", required = false, defaultValue = "aes128") String destinationFormat,
                         @RequestParam(value = "destinationKey", required = false, defaultValue = "") String destinationKey,
                         @RequestParam(value = "destinationIV", required = false, defaultValue = "RANDOM") String destinationIV,
@@ -82,7 +82,7 @@ public class FileController {
     }
 
     @RequestMapping(value = "/{fileId}", method = HEAD)
-    public void getFileHead(@PathVariable String fileId,
+    public void getFileHead(@PathVariable Integer fileId,
                             @RequestParam(value = "destinationFormat", required = false, defaultValue = "aes128") String destinationFormat,
                             HttpServletRequest request,
                             HttpServletResponse response) {
@@ -95,7 +95,7 @@ public class FileController {
 
     // Experimental - Return a BAM Header
     @RequestMapping(value = "/{fileId}/header", method = GET)
-    public Object getFileHeader(@PathVariable String fileId,
+    public Object getFileHeader(@PathVariable Integer fileId,
                                 @RequestParam(value = "destinationFormat", required = false, defaultValue = "aes128") String destinationFormat,
                                 @RequestParam(value = "destinationKey", required = false, defaultValue = "") String destinationKey) {
 
@@ -114,7 +114,7 @@ public class FileController {
     // {id} -- 'file', 'sample', 'run', ...
     @RequestMapping(value = "/byid/{type}", method = GET)
     @ResponseBody
-    public void getById(@PathVariable String type,
+    public void getById(@PathVariable Integer type,
                         @RequestParam(value = "accession") String accession,
                         @RequestParam(value = "format", required = false, defaultValue = "bam") String format,
                         @RequestParam(value = "chr", required = false, defaultValue = "") String reference,
@@ -155,7 +155,7 @@ public class FileController {
 
     @RequestMapping(value = "/variant/byid/{type}", method = GET)
     @ResponseBody
-    public void getByVariantId(@PathVariable String type,
+    public void getByVariantId(@PathVariable Integer type,
                                @RequestParam(value = "accession") String accession,
                                @RequestParam(value = "format", required = false, defaultValue = "vcf") String format,
                                @RequestParam(value = "chr", required = false, defaultValue = "") String reference,
@@ -191,7 +191,7 @@ public class FileController {
 
     @RequestMapping(value = "/byid/{type}", method = HEAD)
     @ResponseBody
-    public ResponseEntity getHeadById(@PathVariable String type,
+    public ResponseEntity getHeadById(@PathVariable Integer type,
                                       @RequestParam(value = "accession") String accession,
                                       HttpServletRequest request,
                                       HttpServletResponse response) {

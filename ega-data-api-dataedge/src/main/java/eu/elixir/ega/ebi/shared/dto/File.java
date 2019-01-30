@@ -29,13 +29,14 @@ import lombok.Setter;
 @Getter
 public class File {
 
-    private String fileId;
+    private Integer fileId;
     private String datasetId;
     private String displayFileName;
     private String fileName;
     private long fileSize;
+    //private String header;
     private String unencryptedChecksum;
     private String unencryptedChecksumType;
-    private String fileStatus;
+    //private String fileStatus;
 
 }

@@ -23,8 +23,8 @@ public class FileInfoServiceImpl implements FileInfoService{
   private RestTemplate restTemplate;
 
   @Override
-  @Cacheable(cacheNames = "reqFile", key="T(org.springframework.security.core.context.SecurityContextHolder).getContext().getAuthentication() + #p0")
-  public File getFileInfo(String fileId) {
+  //@Cacheable(cacheNames = "reqFile", key="T(org.springframework.security.core.context.SecurityContextHolder).getContext().getAuthentication() + #p0")
+  public File getFileInfo(Integer fileId) {
 
     //check User has permissions for this file
     String datasetId = permissionService.getFilePermissionsEntity(fileId);
@@ -43,7 +43,7 @@ public class FileInfoServiceImpl implements FileInfoService{
         reqFile.setFileSize(forSize.getBody());
       }
     } else { // 404 File Not Found
-      throw new NotFoundException(fileId, "4");
+      throw new NotFoundException(fileId.toString(), "4");
     }
     return reqFile;
   }

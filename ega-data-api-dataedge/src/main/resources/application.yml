@@ -4,6 +4,8 @@ eureka.client.enabled: false
 
 security.oauth2.resource.jwt.key-value: ${JWTKEY}
 
+spring.datasource.url: ${DB_URL} #jdbc:postgresql://postgres.default.svc.cluster.local:5432/egapro
+
 FILEDATABASE:
   listOfServers: ${FILEDATABASE_SERVERS:filedatabase}
 

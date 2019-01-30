@@ -36,7 +36,7 @@ public class DownloadEntry implements Serializable {
     private String clientIp;
     private String api;
     private String email;
-    private String fileId;
+    private Integer fileId;
     private double downloadSpeed;
     private String downloadStatus;
     private String encryptionType;

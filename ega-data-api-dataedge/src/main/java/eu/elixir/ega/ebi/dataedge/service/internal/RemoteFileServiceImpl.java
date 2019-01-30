@@ -60,6 +60,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.constraints.Null;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -107,7 +108,7 @@ public class RemoteFileServiceImpl implements FileService {
 
     @Override
     //@HystrixCommand
-    public void getFile(String fileId,
+    public void getFile(Integer fileId,
                         String destinationFormat,
                         String destinationKey,
                         String destinationIV,
@@ -260,8 +261,8 @@ public class RemoteFileServiceImpl implements FileService {
 
     @Override
     //@HystrixCommand
-    @Cacheable(cacheNames = "fileHead", key="T(org.springframework.security.core.context.SecurityContextHolder).getContext().getAuthentication() + #p0 + #p1 + #p2 + #p3")
-    public void getFileHead(String fileId,
+    //@Cacheable(cacheNames = "fileHead", key="T(org.springframework.security.core.context.SecurityContextHolder).getContext().getAuthentication() + #p0 + #p1 + #p2 + #p3")
+    public void getFileHead(Integer fileId,
                             String destinationFormat,
                             HttpServletRequest request,
                             HttpServletResponse response) {
@@ -288,8 +289,8 @@ public class RemoteFileServiceImpl implements FileService {
 
     @Override
     //@HystrixCommand
-    @Cacheable(cacheNames = "headerFile", key="T(org.springframework.security.core.context.SecurityContextHolder).getContext().getAuthentication() + #p0 + #p1 + #p2 + #p3")
-    public Object getFileHeader(String fileId,
+    //@Cacheable(cacheNames = "headerFile", key="T(org.springframework.security.core.context.SecurityContextHolder).getContext().getAuthentication() + #p0 + #p1 + #p2 + #p3")
+    public Object getFileHeader(Integer fileId,
                                 String destinationFormat,
                                 String destinationKey,
                                 CRAMReferenceSource x) {
@@ -331,7 +332,7 @@ public class RemoteFileServiceImpl implements FileService {
 
     @Override
     //@HystrixCommand
-    public void getById(String fileId,
+    public void getById(Integer fileId,
                         String accession,
                         String format,
                         String reference,
@@ -349,10 +350,8 @@ public class RemoteFileServiceImpl implements FileService {
         // Adding a content header in the response: binary data
         response.addHeader("Content-Type", MediaType.valueOf("application/octet-stream").toString());
 
-        String localFileId = "";
-        if (fileId.equalsIgnoreCase("file")) { // Currently only support File IDs
-            localFileId = accession;
-        }
+        Integer localFileId = fileId;
+
         CountingOutputStream cOut = null;
         long timeDelta = System.currentTimeMillis();
 
@@ -486,7 +485,7 @@ public class RemoteFileServiceImpl implements FileService {
 
     @Override
     //@HystrixCommand
-    public void getVCFById(String fileId,
+    public void getVCFById(Integer fileId,
                            String accession,
                            String format,
                            String reference,
@@ -504,10 +503,8 @@ public class RemoteFileServiceImpl implements FileService {
         // Adding a content header in the response: binary data
         response.addHeader("Content-Type", MediaType.valueOf("application/octet-stream").toString());
 
-        String localFileId = "";
-        if (fileId.equalsIgnoreCase("file")) { // Currently only support File IDs
-            localFileId = accession;
-        }
+        Integer localFileId = fileId;
+
 
         long timeDelta = System.currentTimeMillis();
         CountingOutputStream cOut = null;
@@ -632,7 +629,7 @@ public class RemoteFileServiceImpl implements FileService {
     }
 
     //@HystrixCommand
-    private URI getResUri(String fileStableIdPath,
+    private URI getResUri(Integer fileStableIdPath,
                           String destFormat,
                           String destKey,
                           String destIV,
@@ -640,7 +637,7 @@ public class RemoteFileServiceImpl implements FileService {
                           Long endCoord) {
         destFormat = destFormat.equals("AES") ? "aes128" : destFormat; // default to 128-bit if not specified
         String url = RES_SERVICE + "/file";
-        if (fileStableIdPath.startsWith("EGAF")) { // If an ID is specified - resolve this in RES
+        if (fileStableIdPath != null) { // If an ID is specified - resolve this in RES
             url += "/archive/" + fileStableIdPath;
         }
 
@@ -695,7 +692,7 @@ public class RemoteFileServiceImpl implements FileService {
 
     //@HystrixCommand
     @Cacheable(cacheNames = "indexFile", key="T(org.springframework.security.core.context.SecurityContextHolder).getContext().getAuthentication() + #p0")
-    private FileIndexFile getFileIndexFile(String fileId) {
+    private FileIndexFile getFileIndexFile(Integer fileId) {
         FileIndexFile indexFile = null;
         ResponseEntity<FileIndexFile[]> forEntity = restTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}/index", FileIndexFile[].class, fileId);
         FileIndexFile[] body = forEntity.getBody();
@@ -708,14 +705,12 @@ public class RemoteFileServiceImpl implements FileService {
     @Override
     //@HystrixCommand
     @Cacheable(cacheNames = "fileSize", key="T(org.springframework.security.core.context.SecurityContextHolder).getContext().getAuthentication() + #p0 + #p1 + #p2 +#p3")
-    public ResponseEntity getHeadById(String fileId,
+    public ResponseEntity getHeadById(Integer fileId,
                                       String accession,
                                       HttpServletRequest request,
                                       HttpServletResponse response) {
-        String localFileId = "";
-        if (fileId.equalsIgnoreCase("file")) { // Currently only support File IDs
-            localFileId = accession;
-        }
+        Integer localFileId = fileId;
+
 
         // Ascertain Access Permissions for specified File ID
         File reqFile = fileInfoService.getFileInfo(localFileId);

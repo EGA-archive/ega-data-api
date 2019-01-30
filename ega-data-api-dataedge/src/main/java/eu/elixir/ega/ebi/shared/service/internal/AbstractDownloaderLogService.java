@@ -47,7 +47,7 @@ public abstract class AbstractDownloaderLogService implements DownloaderLogServi
   }
 
   @Override
-  public DownloadEntry createDownloadEntry(boolean success, double speed, String fileId,
+  public DownloadEntry createDownloadEntry(boolean success, double speed, Integer fileId,
       String server, String encryptionType, long startCoordinate, long endCoordinate, long bytes) {
     DownloadEntry dle = new DownloadEntry();
     dle.setDownloadLogId(0L);

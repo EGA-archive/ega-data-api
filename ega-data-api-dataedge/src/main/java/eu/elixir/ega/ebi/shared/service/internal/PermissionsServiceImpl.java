@@ -23,6 +23,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+
 @Service
 public class PermissionsServiceImpl implements PermissionsService {
 
@@ -44,7 +45,7 @@ public class PermissionsServiceImpl implements PermissionsService {
   }
 
   @Override
-  public String getFilePermissionsEntity(String stableId) {
+  public String getFilePermissionsEntity(Integer stableId) {
     // Obtain all Authorised Datasets (Provided by EGA AAI)
     HashSet<String> permissions = new HashSet<>();
     Collection<? extends GrantedAuthority> authorities = authenticationService.getAuthorities();
@@ -104,7 +105,7 @@ public class PermissionsServiceImpl implements PermissionsService {
         }
       }
     } else { // 404 File Not Found
-      throw new NotFoundException(stableId, "4");
+      throw new NotFoundException(stableId.toString(), "4");
     }
     throw new PermissionDeniedException(HttpStatus.UNAUTHORIZED.toString());
   }
