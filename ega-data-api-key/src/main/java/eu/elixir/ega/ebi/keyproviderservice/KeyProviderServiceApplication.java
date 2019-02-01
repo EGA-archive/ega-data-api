@@ -30,7 +30,6 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 @ComponentScan
 @EnableCaching
 @EnableHystrix
-@EnableSwagger2
 @EnableDiscoveryClient
 @EnableHystrixDashboard
 public class KeyProviderServiceApplication {
