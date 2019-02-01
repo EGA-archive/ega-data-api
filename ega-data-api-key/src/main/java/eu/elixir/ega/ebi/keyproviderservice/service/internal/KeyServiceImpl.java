@@ -16,9 +16,12 @@
 package eu.elixir.ega.ebi.keyproviderservice.service.internal;
 
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
+
 import eu.elixir.ega.ebi.keyproviderservice.config.MyCipherConfig;
-import eu.elixir.ega.ebi.keyproviderservice.domain.entity.EncryptionKey;
-import eu.elixir.ega.ebi.keyproviderservice.domain.repository.EncryptionKeyRepository;
+import eu.elixir.ega.ebi.keyproviderservice.domain.file.entity.FileKey;
+import eu.elixir.ega.ebi.keyproviderservice.domain.file.repository.FileKeyRepository;
+import eu.elixir.ega.ebi.keyproviderservice.domain.key.entity.EncryptionKey;
+import eu.elixir.ega.ebi.keyproviderservice.domain.key.repository.EncryptionKeyRepository;
 import eu.elixir.ega.ebi.keyproviderservice.dto.KeyPath;
 import eu.elixir.ega.ebi.keyproviderservice.service.KeyService;
 import org.bouncycastle.openpgp.PGPPrivateKey;
@@ -29,6 +32,8 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -45,12 +50,21 @@ public class KeyServiceImpl implements KeyService {
     @Autowired
     private EncryptionKeyRepository encryptionKeyRepository; // Per-File AES Keys
 
+    @Autowired
+    private FileKeyRepository fileKeyRepository;
+
     @Override
     @HystrixCommand
     @ResponseBody
     public String getFileKey(String id) {
-        EncryptionKey findById = encryptionKeyRepository.findById(id);
-        return findById.getEncryptionKey();
+        Iterable<FileKey> fileKeys = fileKeyRepository.findByFileId(id);
+
+        if (fileKeys.iterator().hasNext()) {
+            FileKey fileKey = fileKeys.iterator().next();
+            EncryptionKey findById = encryptionKeyRepository.findById(fileKey.getEncryptionKeyId());
+            return findById.getEncryptionKey();
+        } 
+        return null;
     }
 
     @Override

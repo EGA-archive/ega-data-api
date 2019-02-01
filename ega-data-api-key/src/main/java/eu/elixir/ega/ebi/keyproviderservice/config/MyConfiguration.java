@@ -15,10 +15,18 @@
  */
 package eu.elixir.ega.ebi.keyproviderservice.config;
 
+import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
+
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.guava.GuavaCache;
+import org.springframework.cache.support.SimpleCacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestTemplate;
+
+import com.google.common.cache.CacheBuilder;
 
 /**
  * @author asenf
@@ -49,6 +57,20 @@ public class MyConfiguration {
     @Bean
     public RestTemplate restTemplate() {
         return new RestTemplate();
+    }
+    
+    @Bean
+    public CacheManager cacheManager() {
+        SimpleCacheManager simpleCacheManager = new SimpleCacheManager();
+        GuavaCache byFileId = new GuavaCache("byId", CacheBuilder.newBuilder()
+                .expireAfterAccess(24, TimeUnit.HOURS)
+                .build());
+        GuavaCache byFileKeyId = new GuavaCache("byFileKeyId", CacheBuilder.newBuilder()
+                .expireAfterAccess(24, TimeUnit.HOURS)
+                .build());
+
+        simpleCacheManager.setCaches(Arrays.asList(byFileId, byFileKeyId));
+        return simpleCacheManager;
     }
 
 }

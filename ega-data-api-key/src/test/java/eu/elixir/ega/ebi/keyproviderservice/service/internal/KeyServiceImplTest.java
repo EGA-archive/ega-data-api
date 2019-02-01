@@ -21,6 +21,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -36,8 +37,10 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import eu.elixir.ega.ebi.keyproviderservice.config.MyCipherConfig;
-import eu.elixir.ega.ebi.keyproviderservice.domain.entity.EncryptionKey;
-import eu.elixir.ega.ebi.keyproviderservice.domain.repository.EncryptionKeyRepository;
+import eu.elixir.ega.ebi.keyproviderservice.domain.file.entity.FileKey;
+import eu.elixir.ega.ebi.keyproviderservice.domain.file.repository.FileKeyRepository;
+import eu.elixir.ega.ebi.keyproviderservice.domain.key.entity.EncryptionKey;
+import eu.elixir.ega.ebi.keyproviderservice.domain.key.repository.EncryptionKeyRepository;
 import eu.elixir.ega.ebi.keyproviderservice.dto.KeyPath;
 import eu.elixir.ega.ebi.keyproviderservice.service.KeyService;
 
@@ -65,6 +68,9 @@ public final class KeyServiceImplTest {
 
     @MockBean
     private EncryptionKeyRepository encryptionKeyRepository;
+    
+    @MockBean
+    private FileKeyRepository fileKeyRepository;
 
     /**
      * Test class for {@link KeyServiceImpl#getFileKey(String)}. Verify the
@@ -72,8 +78,11 @@ public final class KeyServiceImplTest {
      */
     @Test
     public void testGetFileKey() {
-        final EncryptionKey fileKey = new EncryptionKey(100l, "alias", ENCRYPTION_KEY);
-        when(encryptionKeyRepository.findById(ID)).thenReturn(fileKey);
+         FileKey filekey = new FileKey(ID, 200l, "encryptionAlgorithm");
+        final EncryptionKey encryptionKey = new EncryptionKey(200l, "alias", ENCRYPTION_KEY);
+        
+        when(encryptionKeyRepository.findById(200l)).thenReturn(encryptionKey);
+        when(fileKeyRepository.findByFileId(ID)).thenReturn(Arrays.asList(filekey));
         assertThat(keyService.getFileKey(ID), equalTo(ENCRYPTION_KEY));
     }
 

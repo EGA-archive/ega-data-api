@@ -13,20 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package eu.elixir.ega.ebi.keyproviderservice.domain.repository;
+package eu.elixir.ega.ebi.keyproviderservice.domain.key.repository;
 
-import eu.elixir.ega.ebi.keyproviderservice.domain.entity.EncryptionKey;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+
+import eu.elixir.ega.ebi.keyproviderservice.domain.key.entity.EncryptionKey;
 
 /**
  * @author asenf
  */
-public interface EncryptionKeyRepository extends CrudRepository<EncryptionKey, Integer> {
+public interface EncryptionKeyRepository extends CrudRepository<EncryptionKey, Long> {
 
     @Cacheable(cacheNames = "byId")
-    EncryptionKey findById(@Param("id") String id);
+    EncryptionKey findById(@Param("id") Long id);
 
 }
  

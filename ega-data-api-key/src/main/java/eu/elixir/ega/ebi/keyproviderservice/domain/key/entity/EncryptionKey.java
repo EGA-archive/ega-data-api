@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package eu.elixir.ega.ebi.keyproviderservice.domain.entity;
+package eu.elixir.ega.ebi.keyproviderservice.domain.key.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -33,6 +33,7 @@ import java.io.Serializable;
 @Setter
 @Getter
 @Entity
+@Table(name = "encryption_key")
 public class EncryptionKey implements Serializable {
 
     @Id
