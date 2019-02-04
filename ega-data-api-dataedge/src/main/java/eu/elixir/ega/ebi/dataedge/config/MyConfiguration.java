@@ -30,10 +30,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
-import org.springframework.retry.annotation.EnableRetry;
-import org.springframework.retry.backoff.FixedBackOffPolicy;
-import org.springframework.retry.policy.SimpleRetryPolicy;
-import org.springframework.retry.support.RetryTemplate;
+//import org.springframework.retry.annotation.EnableRetry;
+//import org.springframework.retry.backoff.FixedBackOffPolicy;
+//import org.springframework.retry.policy.SimpleRetryPolicy;
+//import org.springframework.retry.support.RetryTemplate;
 import org.springframework.web.client.AsyncRestTemplate;
 import org.springframework.web.client.RestTemplate;
 import springfox.documentation.builders.PathSelectors;
@@ -49,7 +49,7 @@ import java.util.concurrent.TimeUnit;
  */
 @Configuration
 @EnableCaching
-@EnableRetry
+//@EnableRetry
 @EnableEurekaClient
 public class MyConfiguration {
 
@@ -90,7 +90,7 @@ public class MyConfiguration {
         return new AsyncRestTemplate();
     }
 
-    @Bean
+/*    @Bean
     @LoadBalanced
     public RetryTemplate retryTemplate() {
         RetryTemplate retryTemplate = new RetryTemplate();
@@ -105,7 +105,7 @@ public class MyConfiguration {
 
         return retryTemplate;
     }
-
+*/
     @Bean
     public Docket swaggerSettings() {
         return new Docket(DocumentationType.SWAGGER_2)

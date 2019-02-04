@@ -51,7 +51,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.retry.support.RetryTemplate;
+//import org.springframework.retry.support.RetryTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RequestCallback;
 import org.springframework.web.client.ResponseExtractor;
@@ -92,8 +92,8 @@ public class RemoteFileServiceImpl implements FileService {
     @Autowired
     private RestTemplate restTemplate;
 
-    @Autowired
-    private RetryTemplate retryTemplate;
+//    @Autowired
+//    private RetryTemplate retryTemplate;
 
     // Database Repositories/Services
 
