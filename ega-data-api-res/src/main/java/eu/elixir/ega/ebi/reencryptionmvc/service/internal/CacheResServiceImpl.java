@@ -212,12 +212,12 @@ public class CacheResServiceImpl implements ResService {
                          long endCoordinate,
                          long fileSize,
                          String httpAuth,   // null / "" with new storage back end
-                         String id,
+                         Integer id,
                          HttpServletRequest request,
                          HttpServletResponse response) {
 
         // Check if File Header is in Cache - otherwise Load it
-        if (!myHeaderCache.containsKey(id))
+        if (!myHeaderCache.containsKey(id.toString()))
             loadHeaderCleversafe(id, fileLocation, httpAuth, fileSize, response, sourceKey);
 
         // Streams and Digests for this data transfer
@@ -622,7 +622,7 @@ public class CacheResServiceImpl implements ResService {
         return key;
     }
 
-    private void loadHeaderCleversafe(String id, String url, String httpAuth,
+    private void loadHeaderCleversafe(Integer id, String url, String httpAuth,
                                       long fileSize, HttpServletResponse response_, String sourceKey) {
         boolean close = false;
 
@@ -664,7 +664,7 @@ public class CacheResServiceImpl implements ResService {
             content.readFully(IV);
 
             EgaAESFileHeader header = new EgaAESFileHeader(IV, "aes256", fileSize, url, sourceKey);
-            myHeaderCache.put(id, header);
+            myHeaderCache.put(id.toString(), header);
         } catch (IOException ex) {
             throw new ServerErrorException("LoadHeader: " + ex.toString() + " :: ", url);
         }

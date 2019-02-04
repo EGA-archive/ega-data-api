@@ -59,7 +59,7 @@ public class CleversaveArchiveServiceImpl implements ArchiveService {
 //    @Retryable(maxAttempts = 4, backoff = @Backoff(delay = 2000, multiplier = 2))
     @Cacheable(cacheNames = "archive")
     @HystrixCommand
-    public ArchiveSource getArchiveFile(String id, HttpServletResponse response) {
+    public ArchiveSource getArchiveFile(Integer id, HttpServletResponse response) {
         // Get Filename from EgaFile ID - via DATA service (potentially multiple files)
         ResponseEntity<EgaFile[]> forEntity = restTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}", EgaFile[].class, id);
         response.setStatus(forEntity.getStatusCodeValue());
@@ -71,7 +71,7 @@ public class CleversaveArchiveServiceImpl implements ArchiveService {
         String fileName = (body != null && body.length > 0) ? forEntity.getBody()[0].getFileName() : "";
         if ((body == null || body.length == 0)) {
             response.setStatus(forEntity.getStatusCodeValue());
-            throw new NotFoundException("Can't obtain File data for ID", id);
+            throw new NotFoundException("Can't obtain File data for ID", id.toString());
         }
         if (fileName.startsWith("/fire")) fileName = fileName.substring(16);
         // Guess Encryption Format from File

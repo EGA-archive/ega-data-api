@@ -69,7 +69,7 @@ public class FileController {
                         @RequestParam(value = "endCoordinate", required = false, defaultValue = "0") long endCoordinate,
                         @RequestParam(value = "fileSize", required = false, defaultValue = "0") long fileSize,
                         @RequestParam(value = "httpAuth", required = false, defaultValue = "") String httpAuth,
-                        String id,
+                        Integer id,
                         HttpServletRequest request,
                         HttpServletResponse response) {
         resService.transfer(sourceFormat,
@@ -91,7 +91,7 @@ public class FileController {
     // Archive File (List File ID rather than full specification) --------------
     @GetMapping(value = "/archive/{id}")
     @ResponseBody
-    public void getArchiveFile(@PathVariable("id") String id,
+    public void getArchiveFile(@PathVariable("id") Integer id,
                                @RequestParam(value = "destinationFormat") String destinationFormat,
                                @RequestParam(value = "destinationKey", required = false) String destinationKey,
                                @RequestParam(value = "destinationIV", required = false) String destinationIV,
@@ -122,14 +122,14 @@ public class FileController {
 
     // Archive File (List File ID rather than full specification) --------------
     @GetMapping(value = "/archive/{id}/size")
-    public long getArchiveFileSize(@PathVariable("id") String id,
+    public long getArchiveFileSize(@PathVariable("id") Integer id,
                                    HttpServletRequest request,
                                    HttpServletResponse response) {
 
         // Resolve Archive ID to actual File Path/URL - Needs Organization-Specific Implementation!
         ArchiveSource source = archiveService.getArchiveFile(id, response);
         if (source == null) {
-            throw new NotFoundException("Archive File not found, id", id);
+            throw new NotFoundException("Archive File not found, id", id.toString());
         }
 
         // Return File Size

@@ -108,7 +108,7 @@ public class LocalEGAServiceImpl implements ResService {
                          long endCoordinate,
                          long fileSize,
                          String httpAuth,
-                         String id,
+                         Integer id,
                          HttpServletRequest request,
                          HttpServletResponse response) {
         long transferSize = 0;

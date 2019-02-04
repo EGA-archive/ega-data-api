@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package eu.elixir.ega.ebi.reencryptionmvc.dto;
+package eu.elixir.ega.ebi.shared.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -27,13 +27,9 @@ import lombok.Setter;
 @AllArgsConstructor
 @Setter
 @Getter
-public class EgaFile {
+public class FileDataset2 {
 
-    private Integer fileId;
-    private String fileName;
-    private String filePath;
-    private long fileSize;
-    //private String fileStatus;
-    private String header;
+    private String fileId;
+    private String datasetId;
 
 }

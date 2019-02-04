@@ -26,6 +26,6 @@ import javax.servlet.http.HttpServletResponse;
 @Cacheable
 public interface ArchiveService {
 
-    ArchiveSource getArchiveFile(String id, HttpServletResponse response);
+    ArchiveSource getArchiveFile(Integer id, HttpServletResponse response);
 
 }

@@ -53,13 +53,13 @@ public class GenericArchiveServiceImpl implements ArchiveService {
     @Override
     @Retryable(maxAttempts = 8, backoff = @Backoff(delay = 2000, multiplier = 2))
     @HystrixCommand
-    public ArchiveSource getArchiveFile(String id, HttpServletResponse response) {
+    public ArchiveSource getArchiveFile(Integer id, HttpServletResponse response) {
         // Get Filename from EgaFile ID - via DATA service (potentially multiple files)
         ResponseEntity<EgaFile[]> forEntity = restTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}", EgaFile[].class, id);
         int statusCodeValue = forEntity.getStatusCodeValue();
         EgaFile[] body = forEntity.getBody();
         if ((body == null || body.length == 0)) {
-            throw new NotFoundException("Can't obtain File data for ID", id);
+            throw new NotFoundException("Can't obtain File data for ID", id.toString());
         }
         String fileName = forEntity.getBody()[0].getFileName();
 

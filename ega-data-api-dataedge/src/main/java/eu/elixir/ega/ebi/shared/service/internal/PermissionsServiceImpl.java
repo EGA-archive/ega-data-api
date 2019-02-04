@@ -10,7 +10,7 @@ import eu.elixir.ega.ebi.shared.dto.EventEntry;
 import eu.elixir.ega.ebi.shared.service.AuthenticationService;
 import eu.elixir.ega.ebi.shared.service.DownloaderLogService;
 import eu.elixir.ega.ebi.shared.service.PermissionsService;
-import eu.elixir.ega.ebi.shared.dto.FileDataset;
+import eu.elixir.ega.ebi.shared.dto.FileDataset2;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -93,12 +93,13 @@ public class PermissionsServiceImpl implements PermissionsService {
       }
     }
     System.out.println(FILEDATABASE_SERVICE);
-    ResponseEntity<FileDataset[]> forEntityDataset = restTemplate
-        .getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}/datasets", FileDataset[].class,
-            stableId);
-    FileDataset[] bodyDataset = forEntityDataset.getBody();
+    System.out.println(stableId);
+    ResponseEntity<FileDataset2[]> forEntityDataset = restTemplate
+        .getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}/datasets", FileDataset2[].class,
+    stableId);
+    FileDataset2[] bodyDataset = forEntityDataset.getBody();
     if (bodyDataset != null) {
-      for (FileDataset f : bodyDataset) {
+      for (FileDataset2 f : bodyDataset) {
         String datasetId = f.getDatasetId();
         if (permissions.contains(datasetId)) {
           return datasetId;
@@ -107,6 +108,7 @@ public class PermissionsServiceImpl implements PermissionsService {
     } else { // 404 File Not Found
       throw new NotFoundException(stableId.toString(), "4");
     }
+    //return "EGAD01";
     throw new PermissionDeniedException(HttpStatus.UNAUTHORIZED.toString());
   }
 }

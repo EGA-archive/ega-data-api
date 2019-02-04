@@ -60,15 +60,18 @@ public class LocalEGAArchiveServiceImpl implements ArchiveService {
     private GuardedString sharedKey;
 
     @Override
-    @Retryable(maxAttempts = 8, backoff = @Backoff(delay = 2000, multiplier = 2))
+    //@Retryable(maxAttempts = 8, backoff = @Backoff(delay = 2000, multiplier = 2))
     @HystrixCommand
-    public ArchiveSource getArchiveFile(String id, HttpServletResponse response) {
+    public ArchiveSource getArchiveFile(Integer id, HttpServletResponse response) {
         ResponseEntity<EgaFile[]> responseEntity = restTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}", EgaFile[].class, id);
+        System.out.println(FILEDATABASE_SERVICE + "/file/" + id);
         EgaFile egaFile = responseEntity.getBody()[0];
         String url = egaFile.getFileName();
         long size = egaFile.getFileSize();
         String header = egaFile.getHeader();
+        System.out.println("Header" + header);
         try {
+
             String privateKey = keyService.getPrivateKey(headerFactory.getKeyIds(header.getBytes()).iterator().next()); // select first subkey
             Map.Entry<String, String> parsedHeader = parseHeader(header, privateKey);
             return new ArchiveSource(url, size, null, "aes256", parsedHeader.getKey(), parsedHeader.getValue());
