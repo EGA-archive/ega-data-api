@@ -69,10 +69,10 @@ public class LocalEGAArchiveServiceImpl implements ArchiveService {
         String url = egaFile.getFileName();
         long size = egaFile.getFileSize();
         String header = egaFile.getHeader();
-        System.out.println("Header" + header);
+        System.out.println("Header" + header.getBytes());
         try {
 
-            String privateKey = keyService.getPrivateKey(headerFactory.getKeyIds(header.getBytes()).iterator().next()); // select first subkey
+            String privateKey = keyService.getPrivateKey(headerFactory.getKeyIds(Base64.getDecoder().decode(header)).iterator().next()); // select first subkey
             Map.Entry<String, String> parsedHeader = parseHeader(header, privateKey);
             return new ArchiveSource(url, size, null, "aes256", parsedHeader.getKey(), parsedHeader.getValue());
         } catch (IOException | PGPException | BadBlockException e) {
