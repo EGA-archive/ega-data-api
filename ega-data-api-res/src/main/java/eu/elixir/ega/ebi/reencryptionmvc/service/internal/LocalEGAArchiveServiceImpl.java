@@ -23,6 +23,8 @@ import eu.elixir.ega.ebi.reencryptionmvc.service.KeyService;
 import no.ifi.uio.crypt4gh.factory.HeaderFactory;
 import no.ifi.uio.crypt4gh.pojo.Header;
 import no.ifi.uio.crypt4gh.pojo.Record;
+import org.apache.commons.codec.DecoderException;
+import org.apache.commons.codec.binary.Hex;
 import org.bouncycastle.jcajce.provider.util.BadBlockException;
 import org.bouncycastle.openpgp.PGPException;
 import org.identityconnectors.common.security.GuardedString;
@@ -38,10 +40,8 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.AbstractMap;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.Map;
+import java.math.BigInteger;
+import java.util.*;
 
 import static eu.elixir.ega.ebi.shared.Constants.FILEDATABASE_SERVICE;
 
@@ -71,11 +71,13 @@ public class LocalEGAArchiveServiceImpl implements ArchiveService {
         String header = egaFile.getHeader();
         System.out.println("Header" + header.getBytes());
         try {
-
-            String privateKey = keyService.getPrivateKey(headerFactory.getKeyIds(Base64.getDecoder().decode(header)).iterator().next()); // select first subkey
+            byte[] headerBytes = Hex.decodeHex(header.toCharArray());
+            Collection<String> keyIds = headerFactory.getKeyIds(headerBytes);
+            System.out.println("Header" + keyIds);
+            String privateKey = keyService.getPrivateKey(new BigInteger(keyIds.iterator().next()).toString()); // select first subkey
             Map.Entry<String, String> parsedHeader = parseHeader(header, privateKey);
             return new ArchiveSource(url, size, null, "aes256", parsedHeader.getKey(), parsedHeader.getValue());
-        } catch (IOException | PGPException | BadBlockException e) {
+        } catch (IOException | PGPException | BadBlockException | DecoderException e) {
             throw new RuntimeException(e.getMessage(), e);
         }
     }

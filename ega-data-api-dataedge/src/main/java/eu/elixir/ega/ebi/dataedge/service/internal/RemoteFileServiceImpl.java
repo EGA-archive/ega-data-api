@@ -119,6 +119,7 @@ public class RemoteFileServiceImpl implements FileService {
 
         // Ascertain Access Permissions for specified File ID
         File reqFile = fileInfoService.getFileInfo(fileId); // request added for ELIXIR
+        System.out.println();
         if (reqFile == null) {
             try {
                 Thread.sleep(2500);
@@ -165,8 +166,10 @@ public class RemoteFileServiceImpl implements FileService {
 //                    response.setBufferSize((int) (endCoordinate - startCoordinate));
             response.setBufferSize(DEFAULT_BUFFER_SIZE);
         }
-
+        //System.out.println(getResUri(fileId, destinationFormat, destinationKey, destinationIV, startCoordinate, endCoordinate));
+        //System.out.println("smth " + fileId + "smth " + destinationFormat + "smth " + destinationKey + "smth " + destinationIV + "smth " + startCoordinate + "smth " + endCoordinate);
         try {
+
             // Get Send Stream - http Response, wrap in Digest Stream
             outDigest = MessageDigest.getInstance("MD5");
             DigestOutputStream outDigestStream = new DigestOutputStream(response.getOutputStream(), outDigest);
@@ -227,6 +230,8 @@ public class RemoteFileServiceImpl implements FileService {
             // Build Request URI with Ticket Parameters and get requested file from RES (timed for statistics)
             timeDelta = System.currentTimeMillis();
             int cnt = 2;
+            System.out.println(getResUri(fileId, destinationFormat, destinationKey, destinationIV, startCoordinate, endCoordinate));
+            System.out.println("smth " + fileId + "smth " + destinationFormat + "smth " + destinationKey + "smth " + destinationIV + "smth " + startCoordinate + "smth " + endCoordinate);
             do {
                 xferResult = restTemplate.execute(getResUri(fileId, destinationFormat, destinationKey, destinationIV, startCoordinate, endCoordinate), HttpMethod.GET, requestCallback, responseExtractor);
             } while (xferResult.getBytes() <= 0 && cnt-- > 0);

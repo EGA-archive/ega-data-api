@@ -102,6 +102,20 @@ public class FileController {
 
         // Resolve Archive ID to actual File Path/URL - Needs Organization-Specific Implementation!
         ArchiveSource source = archiveService.getArchiveFile(id, response);
+        System.out.println(source.getEncryptionFormat() + "     " +
+                source.getEncryptionKey() + "     " +
+                        source.getEncryptionIV() + "     " +
+                        destinationFormat + "     " +
+                        destinationKey + "     " +
+                        destinationIV + "     " +
+                        source.getFileUrl() + "     " +
+                        startCoordinate + "     " +
+                        endCoordinate + "     " +
+                        source.getSize() + "     " +
+                        source.getAuth() + "     " +
+                        id + "     " +
+                        request + "     " +
+                response);
 
         // Merge execution with fully specified function
         getFile(source.getEncryptionFormat(),
