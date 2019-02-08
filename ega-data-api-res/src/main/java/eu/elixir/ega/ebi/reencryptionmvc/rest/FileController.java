@@ -101,6 +101,8 @@ public class FileController {
                                HttpServletResponse response) {
 
         // Resolve Archive ID to actual File Path/URL - Needs Organization-Specific Implementation!
+        System.out.println(response);
+        System.out.println(id);
         ArchiveSource source = archiveService.getArchiveFile(id, response);
         System.out.println(source.getEncryptionFormat() + "     " +
                 source.getEncryptionKey() + "     " +

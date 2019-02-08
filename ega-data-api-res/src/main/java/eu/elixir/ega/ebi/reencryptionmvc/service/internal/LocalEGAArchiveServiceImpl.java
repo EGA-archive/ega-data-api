@@ -67,26 +67,37 @@ public class LocalEGAArchiveServiceImpl implements ArchiveService {
         System.out.println(FILEDATABASE_SERVICE + "/file/" + id);
         EgaFile egaFile = responseEntity.getBody()[0];
         String url = egaFile.getFileName();
+        System.out.println(egaFile.getFileName());
         long size = egaFile.getFileSize();
+        System.out.println(egaFile.getFileSize());
         String header = egaFile.getHeader();
         System.out.println("Header" + header.getBytes());
         try {
             byte[] headerBytes = Hex.decodeHex(header.toCharArray());
             Collection<String> keyIds = headerFactory.getKeyIds(headerBytes);
             System.out.println("Header" + keyIds);
-            String privateKey = keyService.getPrivateKey(new BigInteger(keyIds.iterator().next()).toString()); // select first subkey
-            Map.Entry<String, String> parsedHeader = parseHeader(header, privateKey);
+            String actual_key = new BigInteger(Hex.decodeHex(keyIds.iterator().next().toCharArray())).toString();
+            System.out.println("actual_key" + actual_key);
+            String privateKey = keyService.getPrivateKey(actual_key); // select first subkey
+            System.out.println(privateKey);
+            Map.Entry<String, String> parsedHeader = parseHeader(headerBytes, privateKey);
+            System.out.println(parsedHeader.getKey());
+            System.out.println(parsedHeader.getValue());
             return new ArchiveSource(url, size, null, "aes256", parsedHeader.getKey(), parsedHeader.getValue());
         } catch (IOException | PGPException | BadBlockException | DecoderException e) {
+            System.out.println(e);
             throw new RuntimeException(e.getMessage(), e);
         }
     }
 
     @HystrixCommand
-    protected Map.Entry<String, String> parseHeader(String headerString, String key) throws IOException, PGPException, BadBlockException {
+    protected Map.Entry<String, String> parseHeader(byte[] headerBytes, String key) throws IOException, PGPException, BadBlockException {
         final char[][] passphrase = new char[1][1];
         sharedKey.access(chars -> passphrase[0] = Arrays.copyOf(chars, chars.length));
-        Header header = headerFactory.getHeader(headerString.getBytes(), key, passphrase[0]);
+        System.out.println(passphrase[0]);
+        System.out.println(headerBytes);
+        System.out.println(key);
+        Header header = headerFactory.getHeader(headerBytes, key, passphrase[0]);
         Record record = header.getEncryptedHeader().getRecords().iterator().next();
         Base64.Encoder encoder = Base64.getEncoder();
         return new AbstractMap.SimpleEntry<>(encoder.encodeToString(record.getKey()), encoder.encodeToString(record.getIv()));
