@@ -27,3 +27,12 @@ nb-configuration.xml
 *.zip
 *.tar.gz
 *.rar
+
+# DataAPI development files
+venv_simulator
+
+# VS code settings
+.vscode
+
+# OS X folder attributes
+.DS_Store
