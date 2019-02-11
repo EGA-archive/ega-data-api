@@ -27,6 +27,7 @@ import io.minio.errors.*;
 import io.minio.http.Method;
 import no.ifi.uio.crypt4gh.stream.Crypt4GHOutputStream;
 import no.ifi.uio.crypt4gh.stream.SeekableStreamInput;
+import org.springframework.security.crypto.codec.Hex;
 import org.apache.commons.crypto.stream.CtrCryptoOutputStream;
 import org.apache.commons.crypto.stream.PositionedCryptoInputStream;
 import org.apache.commons.io.IOUtils;
@@ -40,7 +41,6 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.security.crypto.codec.Hex;
 import org.springframework.stereotype.Service;
 import org.xmlpull.v1.XmlPullParserException;
 
@@ -55,6 +55,9 @@ import java.net.URL;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.Security;
+import org.apache.commons.codec.binary.Base64;
+
+import java.util.Arrays;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -115,6 +118,11 @@ public class LocalEGAServiceImpl implements ResService {
         InputStream inputStream;
         OutputStream outputStream;
         try {
+            //byte[] decodedSourceKey = Base64.decodeBase64(sourceKey.getBytes());
+            //System.out.println(Arrays.toString(decodedSourceKey) + "\n");
+            //byte[] decodedSourceIV = Base64.decodeBase64(sourceIV.getBytes());
+            //System.out.println(new String(decodedSourceIV, "UTF-8") + "\n");
+
             inputStream = getInputStream(Hex.decode(sourceKey),
                     Hex.decode(sourceIV),
                     fileLocation,

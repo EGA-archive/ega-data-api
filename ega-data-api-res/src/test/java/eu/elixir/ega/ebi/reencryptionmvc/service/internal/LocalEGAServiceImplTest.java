@@ -16,6 +16,7 @@
 package eu.elixir.ega.ebi.reencryptionmvc.service.internal;
 
 import org.apache.commons.codec.DecoderException;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.IOUtils;
 import org.junit.Before;
@@ -34,6 +35,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 
 import static org.junit.Assert.assertEquals;
@@ -75,18 +77,26 @@ public class LocalEGAServiceImplTest {
     }*/
 
     @Test
-    public void blabla(){
-        Collection<String> collection = new ArrayList<String>();
+    public void blabla() {
 
-        collection.add("c6c98c951fb49c87");
-        String actual_key = null;
-        try {
-            actual_key = new BigInteger(Hex.decodeHex(collection.iterator().next().toCharArray())).toString();
-            System.out.prin
-        } catch (DecoderException e) {
-            e.printStackTrace();
+            String string = "JkhY/Hq5EhcmPzYIBrUGOQ==";
+
+
+            // Get bytes from string
+
+            byte[] byteArray = Base64.decodeBase64(string.getBytes());
+
+
+            // Print the decoded array
+
+            System.out.println(Arrays.toString(byteArray));
+
+
+            // Print the decoded string 
+
+            String decodedString = new String(byteArray);
+
+            System.out.println(string + " = " + decodedString);
+        System.out.println(Hex.encodeHex(byteArray));
         }
-        System.out.println(actual_key);
-    }
-
 }

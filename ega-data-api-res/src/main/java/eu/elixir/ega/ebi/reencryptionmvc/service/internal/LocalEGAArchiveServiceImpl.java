@@ -66,7 +66,7 @@ public class LocalEGAArchiveServiceImpl implements ArchiveService {
         ResponseEntity<EgaFile[]> responseEntity = restTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}", EgaFile[].class, id);
         System.out.println(FILEDATABASE_SERVICE + "/file/" + id);
         EgaFile egaFile = responseEntity.getBody()[0];
-        String url = egaFile.getFileName();
+        String url = egaFile.getFileId().toString();
         System.out.println(egaFile.getFileName());
         long size = egaFile.getFileSize();
         System.out.println(egaFile.getFileSize());
@@ -99,8 +99,8 @@ public class LocalEGAArchiveServiceImpl implements ArchiveService {
         System.out.println(key);
         Header header = headerFactory.getHeader(headerBytes, key, passphrase[0]);
         Record record = header.getEncryptedHeader().getRecords().iterator().next();
-        Base64.Encoder encoder = Base64.getEncoder();
-        return new AbstractMap.SimpleEntry<>(encoder.encodeToString(record.getKey()), encoder.encodeToString(record.getIv()));
+        //Base64.Encoder encoder = Base64.getEncoder();
+        return new AbstractMap.SimpleEntry<>(Hex.encodeHexString(record.getKey()), Hex.encodeHexString(record.getIv()));
     }
 
     @Autowired

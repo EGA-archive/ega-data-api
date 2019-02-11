@@ -779,7 +779,8 @@ public class RemoteFileServiceImpl implements FileService {
         if (startCoordinate > 0 || endCoordinate > 0) {
             length = endCoordinate - startCoordinate;
         } else {
-            length = reqFile.getFileSize() - 16;
+            length = reqFile.getFileSize() - 32;
+            //length = reqFile.getFileSize();
         }
 
         return (length + prefix);

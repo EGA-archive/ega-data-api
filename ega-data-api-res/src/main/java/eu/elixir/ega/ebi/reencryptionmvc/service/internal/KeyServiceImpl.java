@@ -63,7 +63,7 @@ public class KeyServiceImpl implements KeyService {
     @Override
     @HystrixCommand
     public String getPublicKey(String id) {
-        return restTemplate.getForEntity(KEYS_SERVICE + "/keys/retrieve/{keyId}/public/{keyType}", String.class, id, "email").getBody();
+        return restTemplate.getForEntity(KEYS_SERVICE + "/keys/retrieve/{keyId}/public", String.class, id).getBody();
     }
 
     /**

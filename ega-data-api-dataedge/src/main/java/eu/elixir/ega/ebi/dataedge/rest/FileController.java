@@ -202,6 +202,7 @@ public class FileController {
 
         return fileService.getHeadById(type, accession, request, response);
     }
+        int prefix = 16;
 
     @RequestMapping(value = "/**", method = RequestMethod.OPTIONS)
     public ResponseEntity handle() {

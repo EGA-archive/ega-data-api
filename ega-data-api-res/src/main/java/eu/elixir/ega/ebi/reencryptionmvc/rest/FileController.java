@@ -104,19 +104,19 @@ public class FileController {
         System.out.println(response);
         System.out.println(id);
         ArchiveSource source = archiveService.getArchiveFile(id, response);
-        System.out.println(source.getEncryptionFormat() + "     " +
-                source.getEncryptionKey() + "     " +
-                        source.getEncryptionIV() + "     " +
-                        destinationFormat + "     " +
-                        destinationKey + "     " +
-                        destinationIV + "     " +
-                        source.getFileUrl() + "     " +
-                        startCoordinate + "     " +
-                        endCoordinate + "     " +
-                        source.getSize() + "     " +
-                        source.getAuth() + "     " +
-                        id + "     " +
-                        request + "     " +
+        System.out.println("getEncryptionFormat" + source.getEncryptionFormat() + "     \n" +
+                           "getEncryptionKey" + source.getEncryptionKey() + "     \n" +
+                           "getEncryptionIV" + source.getEncryptionIV() + "     \n" +
+                        "destinationFormat" + destinationFormat + "     \n" +
+                        "destinationKey" + destinationKey + "     \n" +
+                        "destinationIV" + destinationIV + "     \n" +
+                        source.getFileUrl() + "     \n" +
+                        startCoordinate + "     \n" +
+                        endCoordinate + "     \n" +
+                        source.getSize() + "     \n" +
+                        source.getAuth() + "     \n" +
+                        id + "     \n" +
+                        request + "     \n" +
                 response);
 
         // Merge execution with fully specified function
