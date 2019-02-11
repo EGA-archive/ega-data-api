@@ -15,6 +15,8 @@
  */
 package eu.elixir.ega.ebi.reencryptionmvc.service.internal;
 
+import org.apache.commons.codec.DecoderException;
+import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -30,6 +32,9 @@ import javax.servlet.http.HttpServletResponse;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.Collection;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -54,7 +59,7 @@ public class LocalEGAServiceImplTest {
      * Test method for
      * {@link LocalEGAServiceImpl#transfer(String, String, String, String, String, String, String, long, long, long, String, String, HttpServletRequest, HttpServletResponse)}.
      */
-    @Test
+   /* @Test
     public void testTransfer() {
         try {
             MockHttpServletRequest request = new MockHttpServletRequest();
@@ -67,6 +72,21 @@ public class LocalEGAServiceImplTest {
             e.printStackTrace(System.out);
             fail("Should not have thrown an exception");
         }
+    }*/
+
+    @Test
+    public void blabla(){
+        Collection<String> collection = new ArrayList<String>();
+
+        collection.add("c6c98c951fb49c87");
+        String actual_key = null;
+        try {
+            actual_key = new BigInteger(Hex.decodeHex(collection.iterator().next().toCharArray())).toString();
+            System.out.prin
+        } catch (DecoderException e) {
+            e.printStackTrace();
+        }
+        System.out.println(actual_key);
     }
 
 }

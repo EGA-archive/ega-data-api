@@ -75,6 +75,8 @@ public class KeyServiceImpl implements KeyService {
     @Override
     @HystrixCommand
     public String getPrivateKey(String id) {
+        System.out.println(KEYS_SERVICE + "/keys/retrieve/{keyId}/private/key");
+        System.out.println(restTemplate.getForEntity(KEYS_SERVICE + "/keys/retrieve/{keyId}/private/key", String.class, id).getBody());
         return restTemplate.getForEntity(KEYS_SERVICE + "/keys/retrieve/{keyId}/private/key", String.class, id).getBody();
     }
 

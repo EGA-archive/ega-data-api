@@ -101,8 +101,10 @@ public class MyCipherConfig {
                 // Store the Key Object
                 pgpPrivateKeys.put(keyId, pgpPrivateKey);
                 // Store the set of Paths to Key and Passphrase
+                System.out.println(keyId + keyPath[i] + keyPassPath[i].trim());
                 keyPaths.put(keyId, new KeyPath(keyPath[i], keyPassPath[i].trim()));
                 // Store Re-Armoured Key String
+                System.out.println(keyId + pgpPublicKey.toString() + pgpPrivateKey.toString());
                 reArmourKey(keyId, pgpPublicKey, pgpPrivateKey);
             } catch (IOException ex) {
                 Logger.getLogger(MyCipherConfig.class.getName()).log(Level.SEVERE, null, ex);
@@ -286,7 +288,8 @@ public class MyCipherConfig {
 
         final StringBuilder clearKey = new StringBuilder();
         sharedKey.access(clearKey::append);
-        char[] passPhrase = clearKey.toString().toCharArray();
+        char[] passPhrase = clearKey.toString().trim().toCharArray();
+        System.out.println(passPhrase);
         PGPDigestCalculator sha1Calc = new JcaPGPDigestCalculatorProviderBuilder().build().get(HashAlgorithmTags.SHA1);
         PGPKeyRingGenerator keyRingGen = new PGPKeyRingGenerator(PGPSignature.POSITIVE_CERTIFICATION, ecdsaKeyPair,
                 "key@ega.org", sha1Calc, null, null, new JcaPGPContentSignerBuilder(ecdsaKeyPair.getPublicKey().getAlgorithm(), HashAlgorithmTags.SHA1), new JcePBESecretKeyEncryptorBuilder(PGPEncryptedData.AES_256, sha1Calc).setProvider("BC").build(passPhrase));
