@@ -18,7 +18,6 @@ package eu.elixir.ega.ebi.keyproviderservice.domain.key.repository;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
-import org.springframework.stereotype.Repository;
 
 import eu.elixir.ega.ebi.keyproviderservice.domain.key.entity.EncryptionKey;
 

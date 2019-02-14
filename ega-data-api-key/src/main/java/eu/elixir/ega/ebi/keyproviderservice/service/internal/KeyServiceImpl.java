@@ -56,6 +56,9 @@ public class KeyServiceImpl implements KeyService {
 
     @Autowired
     private FileKeyRepository fileKeyRepository;
+    
+    @Autowired
+    private AesCtr256Ega aesCtr256Ega;
 
     @Value("${ega.key.dbPasswordDecryptKey}")
     private String dbPasswordDecryptKey;
@@ -73,7 +76,7 @@ public class KeyServiceImpl implements KeyService {
                 EncryptionKey encryptionKey = encryptionKeyRepository.findById(fileKey.getEncryptionKeyId());
 
                 ByteArrayInputStream inputStream = new ByteArrayInputStream(Base64.getDecoder().decode(encryptionKey.getEncryptionKey()));
-                final InputStream decrypt = new AesCtr256Ega().decrypt(inputStream, dbPasswordDecryptKey.toCharArray());
+                final InputStream decrypt = aesCtr256Ega.decrypt(inputStream, dbPasswordDecryptKey.toCharArray());
                 byte[] buffer = new byte[1024];
                 int totalRead = 0;
                 int read;

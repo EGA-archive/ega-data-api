@@ -18,9 +18,13 @@ package eu.elixir.ega.ebi.keyproviderservice.service.internal;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -36,6 +40,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import eu.elixir.ega.ebi.keyproviderservice.aesdecryption.AesCtr256Ega;
 import eu.elixir.ega.ebi.keyproviderservice.config.MyCipherConfig;
 import eu.elixir.ega.ebi.keyproviderservice.domain.file.entity.FileKey;
 import eu.elixir.ega.ebi.keyproviderservice.domain.file.repository.FileKeyRepository;
@@ -55,7 +60,8 @@ public final class KeyServiceImplTest {
 
     private final String ID = "id";
     private final long KEY_ID = 1000l;
-    private final String ENCRYPTION_KEY = "encryptionKey";
+    private final String ENCRYPTION_KEY = "R6MBpz0ynOMwpceOIzornRNZ1Utp8ByQwumb";
+    private final String ACTUAL_KEY_VALUE = "actualKeyValue";
     private final String PUBLIC_KEY = "publicKey";
     private final String ASCII_ARMOURED_KEY = "AsciiArmouredKey";
     private final String KEY_TYPE = "keyType";
@@ -70,20 +76,26 @@ public final class KeyServiceImplTest {
     private EncryptionKeyRepository encryptionKeyRepository;
     
     @MockBean
+    private AesCtr256Ega aesCtr256Ega;
+    
+    @MockBean
     private FileKeyRepository fileKeyRepository;
 
     /**
      * Test class for {@link KeyServiceImpl#getFileKey(String)}. Verify the
      * EncryptionKey.
+     * @throws IOException 
      */
     @Test
-    public void testGetFileKey() {
+    public void testGetFileKey() throws IOException {
          FileKey filekey = new FileKey(ID, 200l, "encryptionAlgorithm");
         final EncryptionKey encryptionKey = new EncryptionKey(200l, "alias", ENCRYPTION_KEY);
-        
+        final InputStream inputStream = new ByteArrayInputStream(ACTUAL_KEY_VALUE.getBytes());
+
+        when(aesCtr256Ega.decrypt(any(), any())).thenReturn(inputStream);
         when(encryptionKeyRepository.findById(200l)).thenReturn(encryptionKey);
         when(fileKeyRepository.findByFileId(ID)).thenReturn(Arrays.asList(filekey));
-        assertThat(keyService.getFileKey(ID), equalTo(ENCRYPTION_KEY));
+        assertThat(keyService.getFileKey(ID), equalTo(ACTUAL_KEY_VALUE));
     }
 
     /**
