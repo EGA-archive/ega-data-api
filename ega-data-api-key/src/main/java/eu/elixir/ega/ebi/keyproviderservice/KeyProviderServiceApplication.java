@@ -15,47 +15,24 @@
  */
 package eu.elixir.ega.ebi.keyproviderservice;
 
-import com.google.common.cache.CacheBuilder;
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
-import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
-import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
-import org.springframework.cache.guava.GuavaCache;
-import org.springframework.cache.support.SimpleCacheManager;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.cloud.netflix.hystrix.EnableHystrix;
 import org.springframework.cloud.netflix.hystrix.dashboard.EnableHystrixDashboard;
-import org.springframework.context.annotation.Bean;
-import springfox.documentation.swagger2.annotations.EnableSwagger2;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
 
-import java.util.Collections;
-import java.util.concurrent.TimeUnit;
-
-@SpringBootApplication
+@Configuration
+@ComponentScan
 @EnableCaching
 @EnableHystrix
-@EnableAutoConfiguration(exclude = {DataSourceAutoConfiguration.class, HibernateJpaAutoConfiguration.class})
-@EnableSwagger2
 @EnableDiscoveryClient
 @EnableHystrixDashboard
 public class KeyProviderServiceApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(KeyProviderServiceApplication.class, args);
-    }
-
-    @Bean
-    public CacheManager cacheManager() {
-        SimpleCacheManager simpleCacheManager = new SimpleCacheManager();
-        GuavaCache byFileId = new GuavaCache("byId", CacheBuilder.newBuilder()
-                .expireAfterAccess(24, TimeUnit.HOURS)
-                .build());
-
-        simpleCacheManager.setCaches(Collections.singletonList(byFileId));
-        return simpleCacheManager;
     }
 
 }

@@ -1,5 +1,5 @@
-/*
- * Copyright 2018 ELIXIR EGA
+/* 
+ * Copyright 2017 ELIXIR EGA
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,20 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package eu.elixir.ega.ebi.keyproviderservice.domain.repository;
-
-import eu.elixir.ega.ebi.keyproviderservice.domain.entity.EncryptionKey;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.data.repository.CrudRepository;
-import org.springframework.data.repository.query.Param;
-
 /**
- * @author asenf
+ * Author:  asenf
+ * Created: 17-Feb-2017
  */
-public interface EncryptionKeyRepository extends CrudRepository<EncryptionKey, Integer> {
 
-    @Cacheable(cacheNames = "byId")
-    EncryptionKey findById(@Param("id") String id);
-
-}
- 
+CREATE TABLE encryption_key (
+	encryption_key_id int8 NOT NULL,
+	alias varchar(128) NOT NULL,
+	encryption_key text NOT NULL
+) ;

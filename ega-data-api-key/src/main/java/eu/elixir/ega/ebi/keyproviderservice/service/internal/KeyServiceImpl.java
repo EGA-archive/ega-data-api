@@ -15,21 +15,30 @@
  */
 package eu.elixir.ega.ebi.keyproviderservice.service.internal;
 
-import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
-import eu.elixir.ega.ebi.keyproviderservice.config.MyCipherConfig;
-import eu.elixir.ega.ebi.keyproviderservice.domain.entity.EncryptionKey;
-import eu.elixir.ega.ebi.keyproviderservice.domain.repository.EncryptionKeyRepository;
-import eu.elixir.ega.ebi.keyproviderservice.dto.KeyPath;
-import eu.elixir.ega.ebi.keyproviderservice.service.KeyService;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.util.Base64;
+import java.util.Set;
+
 import org.bouncycastle.openpgp.PGPPrivateKey;
 import org.bouncycastle.openpgp.PGPPublicKey;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import java.util.Set;
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
+
+import eu.elixir.ega.ebi.keyproviderservice.aesdecryption.AesCtr256Ega;
+import eu.elixir.ega.ebi.keyproviderservice.config.MyCipherConfig;
+import eu.elixir.ega.ebi.keyproviderservice.domain.file.entity.FileKey;
+import eu.elixir.ega.ebi.keyproviderservice.domain.file.repository.FileKeyRepository;
+import eu.elixir.ega.ebi.keyproviderservice.domain.key.entity.EncryptionKey;
+import eu.elixir.ega.ebi.keyproviderservice.domain.key.repository.EncryptionKeyRepository;
+import eu.elixir.ega.ebi.keyproviderservice.dto.KeyPath;
+import eu.elixir.ega.ebi.keyproviderservice.service.KeyService;
 
 /**
  * @author asenf
@@ -45,12 +54,42 @@ public class KeyServiceImpl implements KeyService {
     @Autowired
     private EncryptionKeyRepository encryptionKeyRepository; // Per-File AES Keys
 
+    @Autowired
+    private FileKeyRepository fileKeyRepository;
+    
+    @Autowired
+    private AesCtr256Ega aesCtr256Ega;
+
+    @Value("${ega.key.dbPasswordDecryptKey}")
+    private String dbPasswordDecryptKey;
+
     @Override
     @HystrixCommand
     @ResponseBody
     public String getFileKey(String id) {
-        EncryptionKey findById = encryptionKeyRepository.findById(id);
-        return findById.getEncryptionKey();
+        String key = "";
+        try {
+            Iterable<FileKey> fileKeys = fileKeyRepository.findByFileId(id);
+
+            if (fileKeys.iterator().hasNext()) {
+                FileKey fileKey = fileKeys.iterator().next();
+                EncryptionKey encryptionKey = encryptionKeyRepository.findById(fileKey.getEncryptionKeyId());
+
+                ByteArrayInputStream inputStream = new ByteArrayInputStream(Base64.getDecoder().decode(encryptionKey.getEncryptionKey()));
+                final InputStream decrypt = aesCtr256Ega.decrypt(inputStream, dbPasswordDecryptKey.toCharArray());
+                byte[] buffer = new byte[1024];
+                int totalRead = 0;
+                int read;
+                while ((read = decrypt.read(buffer)) != -1) {
+                    totalRead += read;
+                }
+
+                key = new String(buffer, 0, totalRead);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return key;
     }
 
     @Override

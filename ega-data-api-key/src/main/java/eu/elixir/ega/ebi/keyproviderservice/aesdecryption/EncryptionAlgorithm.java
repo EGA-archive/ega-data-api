@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2017 ELIXIR EGA
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,13 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/**
- * Author:  asenf
- * Created: 17-Feb-2017
- */
+package eu.elixir.ega.ebi.keyproviderservice.aesdecryption;
 
-CREATE TABLE encryption_key (
-	encryption_key_id bigserial NOT NULL,
-	alias varchar(128) NOT NULL,
-	encryption_key text NOT NULL,
-) ;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+
+public interface EncryptionAlgorithm {
+
+    OutputStream encrypt(char[] password, OutputStream outputStream) throws IOException;
+
+    InputStream decrypt(InputStream inputStream, char[] password) throws IOException;
+
+}
