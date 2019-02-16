@@ -72,8 +72,7 @@ import static com.amazonaws.HttpMethod.GET;
  */
 public class My2KCachePageFactory implements FactoryBean<Cache<String, CachePage>> { //extends SimpleJdbcDaoSupport
 
-    private final Cache<String, EgaAESFileHeader> myHeaderCache;
-
+    private Cache<String, EgaAESFileHeader> myHeaderCache;
     private final int pageSize;
     private final int pageCount;
     private final LoadBalancerClient loadBalancer;
@@ -85,7 +84,8 @@ public class My2KCachePageFactory implements FactoryBean<Cache<String, CachePage
     private final String fireArchive;
     private final String fireKey;
 
-    public My2KCachePageFactory(LoadBalancerClient loadBalancer,
+    public My2KCachePageFactory(Cache<String, EgaAESFileHeader> myHeaderCache,
+                                LoadBalancerClient loadBalancer,
                                 int pageSize,
                                 int pageCount,
                                 String awsAccessKeyId,
@@ -96,8 +96,7 @@ public class My2KCachePageFactory implements FactoryBean<Cache<String, CachePage
                                 String awsEndpointUrl,
                                 String awsRegion) {
 
-        this.myHeaderCache = (new My2KCacheFactory()).getObject(); //myCache;
-
+        this.myHeaderCache = myHeaderCache;
         this.loadBalancer = loadBalancer;
         this.pageSize = pageSize;
         this.pageCount = pageCount;

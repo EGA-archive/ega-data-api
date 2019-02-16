@@ -72,6 +72,9 @@ public class MyConfiguration {
 
     @Autowired
     private LoadBalancerClient loadBalancer;
+    
+    @Autowired
+    private Cache<String, EgaAESFileHeader> myCache;
 
     @LoadBalanced
     @Bean
@@ -103,7 +106,8 @@ public class MyConfiguration {
     public Cache<String, CachePage> myPageCache() throws Exception {
         int pagesize = 1024 * 1024 * 12;    // 12 MB Page Size
         int pageCount = 1200;               // 1200 * 12 = 14 GB Cache Size
-        return (new My2KCachePageFactory(loadBalancer,
+        return (new My2KCachePageFactory(myCache,
+                loadBalancer,
                 pagesize,
                 pageCount,
                 awsKey,
