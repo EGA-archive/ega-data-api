@@ -76,7 +76,6 @@ public class CleversaveArchiveServiceImpl implements ArchiveService {
         if (fileName.startsWith("/fire")) fileName = fileName.substring(16);
         // Guess Encryption Format from File
         String encryptionFormat = fileName.toLowerCase().endsWith("gpg") ? "symmetricgpg" : "aes256";
-        String keyKey = encryptionFormat.toLowerCase().equals("symmetricgpg") ? "GPG" : "AES";
         // Get Cleversafe URL from Filename via Fire
         String[] filePath = archiveAdapterService.getPath(fileName);
         if (filePath == null || filePath[0] == null) {
@@ -87,7 +86,7 @@ public class CleversaveArchiveServiceImpl implements ArchiveService {
         long size = Long.valueOf(filePath[1]);
 
         // Get EgaFile encryption Key
-        String encryptionKey = keyService.getFileKey(keyKey);
+        String encryptionKey = keyService.getFileKey(id);
         if (encryptionKey == null || encryptionKey.length() == 0) {
             response.setStatus(532);
             throw new ServerErrorException("Error in obtaining Archive Key for ", fileName);

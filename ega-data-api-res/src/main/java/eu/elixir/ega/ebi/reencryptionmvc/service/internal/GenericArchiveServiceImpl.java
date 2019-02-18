@@ -65,13 +65,12 @@ public class GenericArchiveServiceImpl implements ArchiveService {
 
         // Guess Encryption Format from File
         String encryptionFormat = fileName.toLowerCase().endsWith("gpg") ? "symmetricgpg" : "aes256";
-        String keyKey = encryptionFormat.toLowerCase().equals("symmetricgpg") ? "GPG" : "AES";
 
         String fileUrlString = body[0].getFileName();
         long size = body[0].getFileSize();
 
         // Get EgaFile encryption Key
-        String encryptionKey = keyService.getFileKey(keyKey);
+        String encryptionKey = keyService.getFileKey(id);
 
         // Build result object and return it
         return new ArchiveSource(fileUrlString, size, "", encryptionFormat, encryptionKey, null);
