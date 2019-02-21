@@ -28,11 +28,21 @@ nb-configuration.xml
 *.tar.gz
 *.rar
 
-# DataAPI development files
+# .factorypath files
+.factorypath
+
+# DataAPI simulator environment files
 venv_simulator
+
+# Python compiled and cache files
+__pycache__
+*.pyc
 
 # VS code settings
 .vscode
 
 # OS X folder attributes
 .DS_Store
+
+# Personal files
+personal
