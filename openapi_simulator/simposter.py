@@ -176,6 +176,13 @@ class ImposterWrapper():
 
         return service_status
 
+    def restart_service(self, name):
+        """
+        Restarts a running service.
+        """
+        self.stop_service(name)
+        self.start_service(name)
+
     def start_service(self, name):
         """
         Starts one of the available services.
@@ -244,11 +251,12 @@ class ImposterWrapper():
             logging.warning("Can't stop unknown service '%s'", name)
             return
 
-        for service in self.running_services.values():
+        for port, service in self.running_services.items():
             if service['name'].lower() == name.lower():
                 logging.info("Stopping service %s", service['name'])
                 check_output(['docker', 'stop', service['docker_id']])
-
+                del self.running_services[port]
+                break
 
     def run_checks(self):
         """
@@ -273,8 +281,10 @@ if __name__ == '__main__':
                         help='list all services available for simulation.')
     PARSER.add_argument('-o', '--omit', nargs='+', default=[],
                         help='Set services to not be simulated.')
+    PARSER.add_argument('-r', '--restart', nargs='+', default=[],
+                        help="Set service names (or 'all') to restart.")
     PARSER.add_argument('-s', '--stop', nargs='+', default=[],
-                        help="Set service names to stop, or 'all'.")
+                        help="Set service names (or 'all')  to stop.")
     PARSER.add_argument('--service_dir', default='openapi',
                         help='Set service directory for openapi specifications')
 
@@ -286,7 +296,7 @@ if __name__ == '__main__':
 
     ARGS = PARSER.parse_args()
 
-    if ARGS.services == [] and not ARGS.list and not ARGS.stop:
+    if ARGS.services == [] and not (ARGS.list or ARGS.stop or ARGS.restart):
         PARSER.print_help()
         print("Available services for simulation:")
         ARGS.list = True
@@ -345,3 +355,6 @@ if __name__ == '__main__':
 
     for service_name in ARGS.stop:
         IMPOSTER.stop_service(service_name)
+
+    for service_name in ARGS.restart:
+        IMPOSTER.restart_service(service_name)
