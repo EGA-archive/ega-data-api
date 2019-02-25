@@ -5,9 +5,6 @@ eureka.client.enabled: false
 # Used when a custom token is generated and we have an ASCII encoded key
 security.oauth2.resource.jwt.key-value: ${JWTKEY}
 
-# Format should be: jdbc:postgresql://<ip_or_service>:<port>/<db_name>
-spring.datasource.url: ${DB_URL}
-
 FILEDATABASE:
   listOfServers: ${FILEDATABASE_SERVERS:filedatabase}
 
