@@ -65,7 +65,7 @@ public class LocalEGAArchiveServiceImpl implements ArchiveService {
     public ArchiveSource getArchiveFile(String id, HttpServletResponse response) {
         ResponseEntity<EgaFile[]> responseEntity = restTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}", EgaFile[].class, id);
         EgaFile egaFile = responseEntity.getBody()[0];
-        String url = egaFile.getFileName();
+        String url = egaFile.getFilePath();
         long size = egaFile.getFileSize();
         String header = egaFile.getHeader();
         try {
