@@ -95,7 +95,7 @@ public class LocalEGAArchiveServiceImplTest {
     public void testGetArchiveFile() {
         final ArchiveSource archiveSource = localEGAArchiveService.getArchiveFile("id", new MockHttpServletResponse());
 
-        assertThat(archiveSource.getFileUrl(), equalTo("name"));
+        assertThat(archiveSource.getFileUrl(), equalTo("/path/test.enc"));
         assertThat(archiveSource.getSize(), equalTo(100L));
         assertThat(archiveSource.getEncryptionFormat(), equalTo("aes256"));
         assertThat(archiveSource.getEncryptionKey(), equalTo("a2V5")); //Base64 encoded string "key"
