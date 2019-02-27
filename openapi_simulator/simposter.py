@@ -1,14 +1,16 @@
 #!/usr/bin/env python3
 """
-Simpostor is a small wrapper around the imposter "scriptable, multipurpose mock
+This is a small wrapper around the imposter "scriptable, multipurpose mock
 server" which can be used as a convenient way to list and run mock services from
 OpenAPI specifications.
 """
 
 import re
 import os
+import sys
 import json
 import logging
+import argparse
 from subprocess import Popen, PIPE, check_output
 
 import yaml
@@ -266,95 +268,152 @@ class ImposterWrapper():
         self.check_docker()
         self.check_docker_image()
 
+class MultilevelParser():
+    """
+    Multilevel argument parser, where a subcommand is used to control which part
+    of the parser is used.
+    """
+
+    def __init__(self):
+        parser = argparse.ArgumentParser(
+            description='Mock service provider using imposter.',
+            usage="""./simulator <command> [<args>]
+
+The available subcommands for the simulator are:
+   start      starts one or more named services, or 'all', default: 'all'.
+   stop       stops one or more named services, or 'all', default: 'all'.
+   restart    restarts one or more named services, or 'all', default: 'all'.
+   list       lists all available services.
+""")
+        parser.add_argument('command', help='Subcommand to run')
+        # parse_args defaults to [1:] for args, but you need to
+        # exclude the rest of the args too, or validation will fail
+        args = parser.parse_args(sys.argv[1:2])
+        if not hasattr(self, "subcommand_%s" % args.command):
+            logging.error('Unrecognized command, "%s"', args.command)
+            parser.print_help()
+            exit(1)
+
+        # remove the first subcommand from sys.argv
+        del sys.argv[1]
+        # use call the function named as subcommand
+        getattr(self, "subcommand_%s" % args.command)()
+
+    @staticmethod
+    def subcommand_start():
+        """
+        Used to start mock services.
+        """
+        parser = argparse.ArgumentParser(
+            description='Starts one or more services')
+
+        parser.add_argument('services', nargs='*', default=['all'])
+
+        parser.add_argument('--service_dir', default='openapi',
+                            help=('Set service directory for openapi '
+                                  'specifications'))
+
+        args = parser.parse_args()
+        imposter = ImposterWrapper(args.service_dir)
+
+        if 'all' in args.services:
+            args.services.remove('all')
+            args.services += list(imposter.available_services.keys())
+
+        for service_name in list(set(args.services)):
+            imposter.start_service(service_name)
+
+    @staticmethod
+    def subcommand_stop():
+        """
+        Used to stop mock services.
+        """
+        parser = argparse.ArgumentParser(
+            description='Stops one or more services')
+
+        parser.add_argument('services', nargs='*', default=['all'])
+
+        parser.add_argument('--service_dir', default='openapi',
+                            help=('Set service directory for openapi '
+                                  'specifications'))
+
+        args = parser.parse_args()
+        imposter = ImposterWrapper(args.service_dir)
+
+        if 'all' in args.services:
+            args.services.remove('all')
+            args.services += list(imposter.available_services.keys())
+
+        for service_name in list(set(args.services)):
+            imposter.stop_service(service_name)
+
+    @staticmethod
+    def subcommand_restart():
+        """
+        Used to restart mock services.
+        """
+        parser = argparse.ArgumentParser(
+            description='Restarts one or more services')
+
+        parser.add_argument('--service_dir', default='openapi',
+                            help=('Set service directory for openapi '
+                                  'specifications'))
+
+        parser.add_argument('services', nargs='*', default=['all'])
+
+        args = parser.parse_args()
+        imposter = ImposterWrapper(args.service_dir)
+
+        running = [s['name'] for s in imposter.running_services.values()]
+
+        if 'all' in args.services:
+            args.services.remove('all')
+            args.services += running
+
+        if not args.services:
+            print("No running services to restart")
+
+        for service_name in list(set(args.services)):
+            imposter.restart_service(service_name)
+
+    @staticmethod
+    def subcommand_list():
+        """
+        Used to list available mock services.
+        """
+        parser = argparse.ArgumentParser(
+            description='Lists all available mock services')
+
+        parser.add_argument('--service_dir', default='openapi',
+                            help=('Set service directory for openapi '
+                                  'specifications'))
+
+        args = parser.parse_args()
+        imposter = ImposterWrapper(args.service_dir)
+
+        if not imposter.available_services:
+            print('No valid service specifications found.')
+        else:
+            length = max([len(s) for s in imposter.available_services])
+            for service_name in imposter.available_services:
+                service_status = imposter.service_status(service_name)
+                color = 'red'
+                status = 'Not running'
+                port = ''
+                if service_status['running']:
+                    status = 'Running'
+                    color = 'green'
+                    port = service_status['port']
+                status = '[%s]' % color_print(status, color)
+                if port:
+                    status += ' (port %s)' % port
+                print('{0:{length}} {1}'.format(service_name, status,
+                                                length=length))
 
 if __name__ == '__main__':
 
-    import argparse
-
-    PARSER = argparse.ArgumentParser(description=__doc__)
-    # Positional arguments
-    PARSER.add_argument('services', nargs='*', default=[],
-                        help="One or more OpenAPI service names, or 'all'.")
-
-    # Optional arguments
-    PARSER.add_argument('-l', '--list', action='store_true',
-                        help='list all services available for simulation.')
-    PARSER.add_argument('-o', '--omit', nargs='+', default=[],
-                        help='Set services to not be simulated.')
-    PARSER.add_argument('-r', '--restart', nargs='+', default=[],
-                        help="Set service names (or 'all') to restart.")
-    PARSER.add_argument('-s', '--stop', nargs='+', default=[],
-                        help="Set service names (or 'all')  to stop.")
-    PARSER.add_argument('--service_dir', default='openapi',
-                        help='Set service directory for openapi specifications')
-
-    # Logging arguments
-    PARSER.add_argument('-v', '--verbose', action='count', default=3,
-                        help='Increase output Verbosity.')
-    PARSER.add_argument('-q', '--quiet', action='count', default=0,
-                        help='Decrease output Verbosity.')
-
-    ARGS = PARSER.parse_args()
-
-    if ARGS.services == [] and not (ARGS.list or ARGS.stop or ARGS.restart):
-        PARSER.print_help()
-        print("Available services for simulation:")
-        ARGS.list = True
-
     logging.basicConfig(format='%(asctime)s %(levelname)s: %(message)s',
                         datefmt='%H:%M:%S',
-                        level=(5-ARGS.verbose+ARGS.quiet)*10)
+                        level=logging.INFO)
 
-    IMPOSTER = ImposterWrapper(ARGS.service_dir)
-
-    # list available specifications (if asked to)
-    if ARGS.list:
-        if not IMPOSTER.available_services:
-            print('No valid service specifications found.')
-        else:
-            LENGTH = max([len(s) for s in IMPOSTER.available_services])
-            for service_name in IMPOSTER.available_services:
-                SERVICE_STATUS = IMPOSTER.service_status(service_name)
-                COLOR = 'red'
-                STATUS = 'Not running'
-                PORT = ''
-                if SERVICE_STATUS['running']:
-                    STATUS = 'Running'
-                    COLOR = 'green'
-                    PORT = SERVICE_STATUS['port']
-                STATUS = '[%s]' % color_print(STATUS, COLOR)
-                if PORT:
-                    STATUS += ' (port %s)' % PORT
-                print('{0:{length}} {1}'.format(service_name, STATUS,
-                                                length=LENGTH))
-
-    # figure out what services to start
-    SERVICES = []
-    for service_name in ARGS.services:
-        # add all specs if 'all' is set
-        if service_name == 'all':
-            SERVICES = list(IMPOSTER.available_services.keys())
-        # make sure the spec is in 'all' before adding it
-        elif service_name in IMPOSTER.available_services.keys():
-            SERVICES += [service_name]
-        # else, print a warning that the spec is unknown
-        else:
-            logging.warning('Unknown service: %s', service_name)
-
-    # remove services in --omit
-    for service_name in ARGS.omit:
-        if service_name not in IMPOSTER.available_services.keys():
-            logging.warning("Can't remove unknown service: %s", service_name)
-            continue
-        if service_name in SERVICES:
-            logging.debug("removing omitted service: %s", service_name)
-            del SERVICES[service_name]
-
-    for service_name in SERVICES:
-        IMPOSTER.start_service(service_name)
-
-    for service_name in ARGS.stop:
-        IMPOSTER.stop_service(service_name)
-
-    for service_name in ARGS.restart:
-        IMPOSTER.restart_service(service_name)
+    MultilevelParser()
