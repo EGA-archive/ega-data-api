@@ -97,7 +97,7 @@ public class KeyServiceImplTest {
     public void testGetPublicKey() {
         final ResponseEntity<String> mockResponseEntity = mock(ResponseEntity.class);
         final String keyMock = "key";
-        when(restTemplate.getForEntity(KEYS_SERVICE + "/retrieve/{keyId}/public/{keyType}", String.class, "test@elixir.org", "email"))
+        when(restTemplate.getForEntity(KEYS_SERVICE + "/keys/retrieve/{keyId}/public", String.class, "test@elixir.org"))
                 .thenReturn(mockResponseEntity);
         when(mockResponseEntity.getBody()).thenReturn(keyMock);
 
@@ -114,7 +114,7 @@ public class KeyServiceImplTest {
     public void testGetPrivateKey() {
         final ResponseEntity<String> mockResponseEntity = mock(ResponseEntity.class);
         final String keyMock = "key";
-        when(restTemplate.getForEntity(KEYS_SERVICE + "/retrieve/{keyId}/private/key", String.class, "id"))
+        when(restTemplate.getForEntity(KEYS_SERVICE + "/keys/retrieve/{keyId}/private/key", String.class, "id"))
                 .thenReturn(mockResponseEntity);
         when(mockResponseEntity.getBody()).thenReturn(keyMock);
 
