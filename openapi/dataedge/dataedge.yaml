@@ -9,7 +9,7 @@ info:
     name: Apache 2.0
     url: 'http://www.apache.org/licenses/LICENSE-2.0'
 host: 'localhost:9059'
-basePath: /
+basePath: ''
 tags:
   - name: file-controller
     description: File Controller
@@ -131,6 +131,9 @@ paths:
       responses:
         '200':
           description: OK
+          examples:
+            octet-stream:
+              'c1c14c03471b51597e80f09d010ffe3df50a3f0466966a63c130000b6cb2f4bf08e49e92fe05ae17bdce5b8c6e41f9fedd9930f103576489b253997493a9c305e894f380ae3632616ad56e201a48096cef3ee6c835e882b10ea45fd420fa8561d9fb5e73654f5722485070b7faeea76381b2dc2dd380f9aae4919195d23970e2af9af8456981d654de78012966cffb3219d81646446111126a1818f777e0498783854f90776a65878aac00c1c18da442aecf4e25caaf8badb918b449984d98b645e23f0a17c9ad796ad990d53b5f84a97ce01ed0b164c1f670ce6cb176875189264fcad6d339de9a48f538eb959e8091d2e62a94709c93e00c83942345c04250a9cc855f078bcd664e0744d57c1ef540e68a348b71033f7506267ac68f7dbe9d41641e895bae31977119de55a71c1f208092df9c20294b263aec176b188aa5ade7f89967898bb353323ec422b7f12e39aa30d636babad7c5777adccbaab69cb6ead334a6b60b04e01c057278f2a5551149210989ea9329e2b185c586300f1abd3c3c0a2cff9780ecaec5f16010b796665f2f07922991d42bd18956dd475af6c709bb45f0a211e319473699ce6e6eb2dc00e6514a39889845a2c944e3885a71123e9f51c7f26273e7013ca5305681312db86f73cd1e4c7791d3c6af8a80b11245ce1cf4e3d4dc1fd5a68f129c6c8c71d3e05b87ce71dfa8d879282d0eaa63658924df67a6a740634ea7290ddf8cbb12d27a011d4951e2154c56ca72e4bd63f68ffcf8a2b831b2805fa1dd90a4eb71aecdc94e45aa11b632f539748eb9d866a917034ffac6f1517a4202aa91d235bf34eb9a52e73bfc2829b6c37ba9de3814c0f074a15d424d0bbe0e3540306cb781346c54b687fc9d0c136ca700a07ac6abaec1f1a37f773b04d7891ab5c7'
         '401':
           description: Unauthorized
         '403':
@@ -282,6 +285,9 @@ paths:
       responses:
         '200':
           description: OK
+          examples:
+            octet-stream:
+              'c1c14c03471b51597e80f09d010ffe3df50a3f0466966a63c130000b6cb2f4bf08e49e92fe05ae17bdce5b8c6e41f9fedd9930f103576489b253997493a9c305e894f380ae3632616ad56e201a48096cef3ee6c835e882b10ea45fd420fa8561d9fb5e73654f5722485070b7faeea76381b2dc2dd380f9aae4919195d23970e2af9af8456981d654de78012966cffb3219d81646446111126a1818f777e0498783854f90776a65878aac00c1c18da442aecf4e25caaf8badb918b449984d98b645e23f0a17c9ad796ad990d53b5f84a97ce01ed0b164c1f670ce6cb176875189264fcad6d339de9a48f538eb959e8091d2e62a94709c93e00c83942345c04250a9cc855f078bcd664e0744d57c1ef540e68a348b71033f7506267ac68f7dbe9d41641e895bae31977119de55a71c1f208092df9c20294b263aec176b188aa5ade7f89967898bb353323ec422b7f12e39aa30d636babad7c5777adccbaab69cb6ead334a6b60b04e01c057278f2a5551149210989ea9329e2b185c586300f1abd3c3c0a2cff9780ecaec5f16010b796665f2f07922991d42bd18956dd475af6c709bb45f0a211e319473699ce6e6eb2dc00e6514a39889845a2c944e3885a71123e9f51c7f26273e7013ca5305681312db86f73cd1e4c7791d3c6af8a80b11245ce1cf4e3d4dc1fd5a68f129c6c8c71d3e05b87ce71dfa8d879282d0eaa63658924df67a6a740634ea7290ddf8cbb12d27a011d4951e2154c56ca72e4bd63f68ffcf8a2b831b2805fa1dd90a4eb71aecdc94e45aa11b632f539748eb9d866a917034ffac6f1517a4202aa91d235bf34eb9a52e73bfc2829b6c37ba9de3814c0f074a15d424d0bbe0e3540306cb781346c54b687fc9d0c136ca700a07ac6abaec1f1a37f773b04d7891ab5c7'
         '401':
           description: Unauthorized
         '403':
@@ -367,6 +373,9 @@ paths:
       responses:
         '200':
           description: OK
+          examples:
+            octet-stream:
+              'c1c14c03471b51597e80f09d010ffe3df50a3f0466966a63c130000b6cb2f4bf08e49e92fe05ae17bdce5b8c6e41f9fedd9930f103576489b253997493a9c305e894f380ae3632616ad56e201a48096cef3ee6c835e882b10ea45fd420fa8561d9fb5e73654f5722485070b7faeea76381b2dc2dd380f9aae4919195d23970e2af9af8456981d654de78012966cffb3219d81646446111126a1818f777e0498783854f90776a65878aac00c1c18da442aecf4e25caaf8badb918b449984d98b645e23f0a17c9ad796ad990d53b5f84a97ce01ed0b164c1f670ce6cb176875189264fcad6d339de9a48f538eb959e8091d2e62a94709c93e00c83942345c04250a9cc855f078bcd664e0744d57c1ef540e68a348b71033f7506267ac68f7dbe9d41641e895bae31977119de55a71c1f208092df9c20294b263aec176b188aa5ade7f89967898bb353323ec422b7f12e39aa30d636babad7c5777adccbaab69cb6ead334a6b60b04e01c057278f2a5551149210989ea9329e2b185c586300f1abd3c3c0a2cff9780ecaec5f16010b796665f2f07922991d42bd18956dd475af6c709bb45f0a211e319473699ce6e6eb2dc00e6514a39889845a2c944e3885a71123e9f51c7f26273e7013ca5305681312db86f73cd1e4c7791d3c6af8a80b11245ce1cf4e3d4dc1fd5a68f129c6c8c71d3e05b87ce71dfa8d879282d0eaa63658924df67a6a740634ea7290ddf8cbb12d27a011d4951e2154c56ca72e4bd63f68ffcf8a2b831b2805fa1dd90a4eb71aecdc94e45aa11b632f539748eb9d866a917034ffac6f1517a4202aa91d235bf34eb9a52e73bfc2829b6c37ba9de3814c0f074a15d424d0bbe0e3540306cb781346c54b687fc9d0c136ca700a07ac6abaec1f1a37f773b04d7891ab5c7'
         '401':
           description: Unauthorized
         '403':
@@ -435,6 +444,10 @@ paths:
           description: OK
           schema:
             type: object
+          examples:
+            text/plain; charset=ANSI_X3.4-1968: |
+              @HD VN:1.6 SO:coordinate
+              @SQ SN:ref LN:45
         '401':
           description: Unauthorized
         '403':
@@ -456,6 +469,9 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/Iterable_string'
+          examples:
+            text/plain; charset=utf-8:
+              'EGAD00001003338'
         '401':
           description: Unauthorized
         '403':
@@ -483,6 +499,20 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/Iterable_File'
+          examples:
+            application/json:
+              [
+                {
+                  "datasetId": "EGAD00001003338",
+                  "displayFileName": "example_file",
+                  "fileId": "EGAF00000000014",
+                  "fileName": "example_file.enc",
+                  "fileSize": 719,
+                  "fileStatus": "OK",
+                  "unencryptedChecksum": "01199b8d5984bd9ae77077dd9a869803",
+                  "unencryptedChecksumType": "plain"
+                }
+              ]
         '401':
           description: Unauthorized
         '403':
@@ -510,6 +540,18 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/File'
+          examples:
+            application/json:
+              {
+                "datasetId": "EGAD00001003338",
+                "displayFileName": "example_file",
+                "fileId": "EGAF00000000014",
+                "fileName": "example_file.enc",
+                "fileSize": 719,
+                "fileStatus": "OK",
+                "unencryptedChecksum": "01199b8d5984bd9ae77077dd9a869803",
+                "unencryptedChecksumType": "plain"
+              }
         '401':
           description: Unauthorized
         '403':
@@ -531,6 +573,9 @@ paths:
           description: OK
           schema:
             type: string
+          examples:
+            long:
+              1853
         '401':
           description: Unauthorized
         '403':
@@ -570,6 +615,9 @@ paths:
           description: OK
           schema:
             type: string
+          examples:
+            text/plain; charset=utf-8:
+              'Testing'
         '401':
           description: Unauthorized
         '403':
@@ -715,6 +763,19 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/htsget'
+          examples:
+            application/vnd.ga4gh.htsget.v1.0+json; charset=utf-8:
+              {
+                "format": "SAM",
+                "HtsgetUrl": [
+                  {
+                    "url": "https://localega.eu/example.sam",
+                    "headers": {
+                      "authorization": "public"
+                    }
+                  }
+                ]
+              }
         '401':
           description: Unauthorized
         '403':
@@ -823,6 +884,19 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/htsget'
+          examples:
+            application/vnd.ga4gh.htsget.v1.0+json; charset=utf-8:
+              {
+                "format": "SAM",
+                "HtsgetUrl": [
+                  {
+                    "url": "https://localega.eu/example.sam",
+                    "headers": {
+                      "authorization": "public"
+                    }
+                  }
+                ]
+              }
         '401':
           description: Unauthorized
         '403':
