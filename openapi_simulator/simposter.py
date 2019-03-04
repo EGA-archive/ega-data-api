@@ -284,6 +284,12 @@ The available subcommands for the simulator are:
    stop       stops one or more named services, or 'all', default: 'all'.
    restart    restarts one or more named services, or 'all', default: 'all'.
    list       lists all available services.
+
+The simulator will run imposter instances on the ports in the OpenAPI files, or
+on port 8443 if no port is given. Once a service is running, navigate a brower
+to localhost:<port>/_spec/ to see which endpoints are available and how they are
+configured.
+
 """)
         parser.add_argument('command', help='Subcommand to run')
         # parse_args defaults to [1:] for args, but you need to

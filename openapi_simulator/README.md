@@ -6,7 +6,10 @@ Currently the services are defined by an OpenAPI 2.0 (swagger) specification, al
 ```
 {
   "plugin": "com.gatehill.imposter.plugin.openapi.OpenApiPluginImpl",
-  "specFile": "<openapi>.yaml"
+  "specFile": "<openapi>.yaml",
+  "response": {
+    "scriptFile": "<script-name>.groovy"
+  }
 }
 ```
-More options can be added to the imposter configuration to control things such as mock replies on REST enpoints, as described at https://github.com/outofcoffee/imposter/blob/master/docs/configuration.md.
+More options can be added to the imposter configuration, as described at https://github.com/outofcoffee/imposter/blob/master/docs/configuration.md. To start the mock server run `./mock.sh start all`, and then navigate a web browser to http://localhost:<port>/_spec/, where port is given in the OpenAPI specifications (and will be listed when you start the mock services, or run `./mock.sh list`).
