@@ -214,7 +214,7 @@ class ImposterWrapper():
                 port = int(yaml_spec.get('host', '').split(':')[-1])
             except ValueError:
                 logging.warning(('Could not get port from specification, using '
-                                 'default value of %s', port))
+                                 'default value of %s'), port)
         while port in self.running_services:
             other = self.running_services[port]['name']
             logging.warning(('Service %s is set to run on port %s, but port is '

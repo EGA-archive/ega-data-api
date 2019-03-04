@@ -470,8 +470,10 @@ paths:
           schema:
             $ref: '#/definitions/Iterable_string'
           examples:
-            text/plain; charset=utf-8:
-              'EGAD00001003338'
+            application/json: |
+              [
+                "EGAD00001003338"
+              ]
         '401':
           description: Unauthorized
         '403':
@@ -500,14 +502,14 @@ paths:
           schema:
             $ref: '#/definitions/Iterable_File'
           examples:
-            application/json:
+            application/json: |
               [
                 {
                   "datasetId": "EGAD00001003338",
                   "displayFileName": "example_file",
                   "fileId": "EGAF00000000014",
                   "fileName": "example_file.enc",
-                  "fileSize": 719,
+                  "fileSize": "719",
                   "fileStatus": "OK",
                   "unencryptedChecksum": "01199b8d5984bd9ae77077dd9a869803",
                   "unencryptedChecksumType": "plain"
@@ -528,7 +530,7 @@ paths:
       consumes:
         - application/json
       produces:
-        - 'application/json'
+        - application/json
       parameters:
         - name: fileId
           in: path
@@ -541,7 +543,7 @@ paths:
           schema:
             $ref: '#/definitions/File'
           examples:
-            application/json:
+            application/json: |
               {
                 "datasetId": "EGAD00001003338",
                 "displayFileName": "example_file",
@@ -567,15 +569,15 @@ paths:
       consumes:
         - application/json
       produces:
-        - 'long'
+        - 'text/plain'
       responses:
         '200':
           description: OK
           schema:
             type: string
           examples:
-            long:
-              1853
+            text/plain:
+              '1853'
         '401':
           description: Unauthorized
         '403':
@@ -764,7 +766,7 @@ paths:
           schema:
             $ref: '#/definitions/htsget'
           examples:
-            application/vnd.ga4gh.htsget.v1.0+json; charset=utf-8:
+            application/vnd.ga4gh.htsget.v1.0+json; charset=utf-8: |
               {
                 "format": "SAM",
                 "HtsgetUrl": [
@@ -885,7 +887,7 @@ paths:
           schema:
             $ref: '#/definitions/htsget'
           examples:
-            application/vnd.ga4gh.htsget.v1.0+json; charset=utf-8:
+            application/vnd.ga4gh.htsget.v1.0+json; charset=utf-8: |
               {
                 "format": "SAM",
                 "HtsgetUrl": [
