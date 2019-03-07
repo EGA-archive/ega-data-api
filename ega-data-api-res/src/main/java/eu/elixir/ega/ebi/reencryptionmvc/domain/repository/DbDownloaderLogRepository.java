@@ -36,8 +36,8 @@ public class DbDownloaderLogRepository implements DownloaderLog {
             //Out
             new SqlOutParameter("req_id", Types.INTEGER),
             new SqlOutParameter("header", Types.VARCHAR),
-            new SqlOutParameter("vault_path", Types.VARCHAR),
-            new SqlOutParameter("vault_type", Types.OTHER),
+            new SqlOutParameter("archive_path", Types.VARCHAR),
+            new SqlOutParameter("archive_type", Types.OTHER),
             new SqlOutParameter("file_size", Types.INTEGER),
             new SqlOutParameter("unencrypted_checksum", Types.VARCHAR),
             new SqlOutParameter("unencrypted_checksum_type", Types.OTHER)
