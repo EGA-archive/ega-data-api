@@ -23,8 +23,10 @@ import eu.elixir.ega.ebi.reencryptionmvc.service.KeyService;
 import no.ifi.uio.crypt4gh.factory.HeaderFactory;
 import no.ifi.uio.crypt4gh.pojo.Header;
 import no.ifi.uio.crypt4gh.pojo.Record;
+import org.apache.commons.codec.DecoderException;
 import org.bouncycastle.jcajce.provider.util.BadBlockException;
 import org.bouncycastle.openpgp.PGPException;
+import org.apache.commons.codec.binary.Hex;
 import org.identityconnectors.common.security.GuardedString;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
@@ -38,10 +40,8 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.AbstractMap;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.Map;
+import java.math.BigInteger;
+import java.util.*;
 
 import static eu.elixir.ega.ebi.shared.Constants.FILEDATABASE_SERVICE;
 
@@ -69,22 +69,23 @@ public class LocalEGAArchiveServiceImpl implements ArchiveService {
         long size = egaFile.getFileSize();
         String header = egaFile.getHeader();
         try {
-            String privateKey = keyService.getPrivateKey(headerFactory.getKeyIds(header.getBytes()).iterator().next()); // select first subkey
-            Map.Entry<String, String> parsedHeader = parseHeader(header, privateKey);
+            byte[] headerBytes = Hex.decodeHex(header.toCharArray());
+            Collection<String> keyIds = headerFactory.getKeyIds(headerBytes);
+            String privateKey = keyService.getPrivateKey(new BigInteger(Hex.decodeHex(keyIds.iterator().next().toCharArray())).toString()); // select first subkey
+            Map.Entry<String, String> parsedHeader = parseHeader(headerBytes, privateKey);
             return new ArchiveSource(url, size, null, "aes256", parsedHeader.getKey(), parsedHeader.getValue());
-        } catch (IOException | PGPException | BadBlockException e) {
+        } catch (IOException | PGPException | BadBlockException | DecoderException e) {
             throw new RuntimeException(e.getMessage(), e);
         }
     }
 
     @HystrixCommand
-    protected Map.Entry<String, String> parseHeader(String headerString, String key) throws IOException, PGPException, BadBlockException {
+    protected Map.Entry<String, String> parseHeader(byte[] headerBytes, String key) throws IOException, PGPException, BadBlockException {
         final char[][] passphrase = new char[1][1];
         sharedKey.access(chars -> passphrase[0] = Arrays.copyOf(chars, chars.length));
-        Header header = headerFactory.getHeader(headerString.getBytes(), key, passphrase[0]);
+        Header header = headerFactory.getHeader(headerBytes, key, passphrase[0]);
         Record record = header.getEncryptedHeader().getRecords().iterator().next();
-        Base64.Encoder encoder = Base64.getEncoder();
-        return new AbstractMap.SimpleEntry<>(encoder.encodeToString(record.getKey()), encoder.encodeToString(record.getIv()));
+        return new AbstractMap.SimpleEntry<>(Hex.encodeHexString(record.getKey()), Hex.encodeHexString(record.getIv()));
     }
 
     @Autowired
