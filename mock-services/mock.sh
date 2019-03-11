@@ -10,6 +10,9 @@
 SIMULATOR="openapi_simulator"
 VIRTUALENV="venv_simulator"
 
+# Change directory to the script directory
+cd $(dirname $0)
+
 if [[ ! -d "$VIRTUALENV" ]]
 then
     echo "[Creating virtualenv '$VIRTUALENV' for the simulator]"
