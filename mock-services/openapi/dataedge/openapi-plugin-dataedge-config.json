@@ -1,0 +1,7 @@
+{
+  "plugin": "com.gatehill.imposter.plugin.openapi.OpenApiPluginImpl",
+  "specFile": "dataedge.yaml",
+  "response": {
+    "scriptFile": "mock-values.groovy"
+  }
+}
