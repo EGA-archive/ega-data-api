@@ -37,6 +37,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.web.client.RestTemplate;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import eu.elixir.ega.ebi.shared.dto.DownloadEntry;
 import eu.elixir.ega.ebi.shared.dto.EventEntry;
 import eu.elixir.ega.ebi.shared.service.internal.RemoteDownloaderLogServiceImpl;
@@ -56,6 +58,9 @@ public class RemoteDownloaderLogServiceImplTest {
 
     @Mock
     private RestTemplate restTemplate;
+    
+    @Mock
+    private ObjectMapper objectMapper;
 
     @Before
     public void initMocks() throws Exception {

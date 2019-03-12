@@ -33,8 +33,6 @@ import eu.elixir.ega.ebi.shared.dto.DownloadEntry;
 import eu.elixir.ega.ebi.shared.dto.EventEntry;
 import eu.elixir.ega.ebi.shared.service.DownloaderLogService;
 
-//import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
-
 /**
  * @author asenf
  */
@@ -45,9 +43,11 @@ public class RemoteDownloaderLogServiceImpl extends
 
     @Autowired
     private RestTemplate restTemplate;
-
+    
+    @Autowired
+    private ObjectMapper objectMapper;
+    
     @Override
-    //@HystrixCommand
     @Async
     public void logDownload(DownloadEntry downloadEntry) {
 
@@ -57,15 +57,15 @@ public class RemoteDownloaderLogServiceImpl extends
         // Jackson ObjectMapper to convert requestBody to JSON
         String json = null;
         try {
-            json = new ObjectMapper().writeValueAsString(downloadEntry);
-        } catch (JsonProcessingException ignored) {
+            json = objectMapper.writeValueAsString(downloadEntry);
+        } catch (JsonProcessingException jsonProcessingException) {
+            throw new RuntimeException(jsonProcessingException);
         }
 
         restTemplate.postForEntity(FILEDATABASE_SERVICE + "/log/download/", new HttpEntity<>(json, headers), String.class);
     }
 
     @Override
-    //@HystrixCommand
     @Async
     public void logEvent(EventEntry eventEntry) {
 
@@ -75,8 +75,9 @@ public class RemoteDownloaderLogServiceImpl extends
         // Jackson ObjectMapper to convert requestBody to JSON
         String json = null;
         try {
-            json = new ObjectMapper().writeValueAsString(eventEntry);
-        } catch (JsonProcessingException ignored) {
+            json = objectMapper.writeValueAsString(eventEntry);
+        } catch (JsonProcessingException jsonProcessingException) {
+            throw new RuntimeException(jsonProcessingException);
         }
 
         restTemplate.postForEntity(FILEDATABASE_SERVICE + "/log/event/", new HttpEntity<>(json, headers), String.class);
