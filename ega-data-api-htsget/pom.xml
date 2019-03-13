@@ -192,7 +192,7 @@
                         <version>${docker.maven.version}</version>
                         <configuration>
                             <imageName>${dockerRegistry}/ega-dataedge-htsget</imageName>
-                            <baseImage>java:8</baseImage>
+                            <baseImage>java:8-alpine</baseImage>
                             <imageTags>
                                 <imageTag>${image.version}</imageTag>
                                 <imageTag>latest</imageTag>
@@ -244,7 +244,7 @@
                         <version>${docker.maven.version}</version>
                         <configuration>
                             <imageName>${dockerRegistry}/ega-dataedge-htsget</imageName>
-                            <baseImage>java:8</baseImage>
+                            <baseImage>java:8-alpine</baseImage>
                             <imageTags>
                                 <imageTag>${image.version}</imageTag>
                                 <imageTag>latest</imageTag>
