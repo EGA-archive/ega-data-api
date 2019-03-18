@@ -17,24 +17,21 @@ package eu.elixir.ega.ebi.shared.service.internal;
 
 import static eu.elixir.ega.ebi.shared.Constants.FILEDATABASE_SERVICE;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import eu.elixir.ega.ebi.shared.dto.DownloadEntry;
-import eu.elixir.ega.ebi.shared.dto.EventEntry;
-import eu.elixir.ega.ebi.shared.service.DownloaderLogService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.springframework.util.concurrent.ListenableFuture;
-import org.springframework.util.concurrent.ListenableFutureCallback;
-import org.springframework.web.client.AsyncRestTemplate;
 import org.springframework.web.client.RestTemplate;
 
-//import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import eu.elixir.ega.ebi.shared.dto.DownloadEntry;
+import eu.elixir.ega.ebi.shared.dto.EventEntry;
+import eu.elixir.ega.ebi.shared.service.DownloaderLogService;
 
 /**
  * @author asenf
@@ -45,13 +42,13 @@ public class RemoteDownloaderLogServiceImpl extends
     AbstractDownloaderLogService implements DownloaderLogService {
 
     @Autowired
-    private AsyncRestTemplate restTemplate;
+    private RestTemplate restTemplate;
 
     @Autowired
-    private RestTemplate syncRestTemplate;
-
+    private ObjectMapper objectMapper;
+    
     @Override
-    //@HystrixCommand
+    @Async
     public void logDownload(DownloadEntry downloadEntry) {
 
         HttpHeaders headers = new HttpHeaders();
@@ -60,37 +57,16 @@ public class RemoteDownloaderLogServiceImpl extends
         // Jackson ObjectMapper to convert requestBody to JSON
         String json = null;
         try {
-            json = new ObjectMapper().writeValueAsString(downloadEntry);
-        } catch (JsonProcessingException ignored) {
+            json = objectMapper.writeValueAsString(downloadEntry);
+        } catch (JsonProcessingException jsonProcessingException) {
+            throw new RuntimeException(jsonProcessingException);
         }
 
-        HttpEntity<String> entity = new HttpEntity<>(json, headers);
-        //HttpEntity entity = new HttpEntity("parameters", headers);
-
-        ListenableFuture<ResponseEntity<String>> futureEntity;
-        futureEntity = restTemplate.postForEntity(FILEDATABASE_SERVICE + "/log/download/", entity, String.class);
-
-        futureEntity
-                .addCallback(new ListenableFutureCallback<ResponseEntity>() {
-                    @Override
-                    public void onSuccess(ResponseEntity result) {
-                        System.out.println(result.getBody());
-                    }
-
-                    @Override
-                    public void onFailure(Throwable t) {
-                        System.out.println("LOG FAILURE: " + t.toString());
-                    }
-                });
-
-        // Old Synchronous Call
-        //syncRestTemplate.postForObject(SERVICE_URL + "/log/download/", downloadEntry, Void.class);
-        //restTemplate.ppostForEntity(SERVICE_URL + "/log/download/", downloadEntry, Void.class);
-
+        restTemplate.postForEntity(FILEDATABASE_SERVICE + "/log/download/", new HttpEntity<>(json, headers), String.class);
     }
 
     @Override
-    //@HystrixCommand
+    @Async
     public void logEvent(EventEntry eventEntry) {
 
         HttpHeaders headers = new HttpHeaders();
@@ -99,30 +75,12 @@ public class RemoteDownloaderLogServiceImpl extends
         // Jackson ObjectMapper to convert requestBody to JSON
         String json = null;
         try {
-            json = new ObjectMapper().writeValueAsString(eventEntry);
-        } catch (JsonProcessingException ignored) {
+            json = objectMapper.writeValueAsString(eventEntry);
+        } catch (JsonProcessingException jsonProcessingException) {
+            throw new RuntimeException(jsonProcessingException);
         }
 
-        HttpEntity<String> entity = new HttpEntity<>(json, headers);
-        //HttpEntity entity = new HttpEntity("parameters", headers);
-
-        ListenableFuture<ResponseEntity<String>> futureEntity;
-        futureEntity = restTemplate.postForEntity(FILEDATABASE_SERVICE + "/log/event/", entity, String.class);
-
-        futureEntity
-                .addCallback(new ListenableFutureCallback<ResponseEntity>() {
-                    @Override
-                    public void onSuccess(ResponseEntity result) {
-                        System.out.println(result.getBody());
-                    }
-
-                    @Override
-                    public void onFailure(Throwable t) {
-                    }
-                });
-
-        // Old Synchronous Call
-        //restTemplate.postForObject(SERVICE_URL + "/log/event/", eventEntry, Void.class);
+        restTemplate.postForEntity(FILEDATABASE_SERVICE + "/log/event/", new HttpEntity<>(json, headers), String.class);
     }
 
 }

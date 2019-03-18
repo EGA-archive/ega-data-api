@@ -15,10 +15,10 @@
  */
 package eu.elixir.ega.ebi.htsget.config;
 
-import com.google.common.cache.CacheBuilder;
-import eu.elixir.ega.ebi.shared.config.ClientUserIpInterceptor;
-import eu.elixir.ega.ebi.shared.dto.MyExternalConfig;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.concurrent.TimeUnit;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
@@ -34,15 +34,17 @@ import org.springframework.retry.annotation.EnableRetry;
 import org.springframework.retry.backoff.FixedBackOffPolicy;
 import org.springframework.retry.policy.SimpleRetryPolicy;
 import org.springframework.retry.support.RetryTemplate;
-import org.springframework.web.client.AsyncRestTemplate;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.web.client.RestTemplate;
+
+import com.google.common.cache.CacheBuilder;
+
+import eu.elixir.ega.ebi.shared.config.ClientUserIpInterceptor;
+import eu.elixir.ega.ebi.shared.dto.MyExternalConfig;
 import springfox.documentation.builders.PathSelectors;
 import springfox.documentation.builders.RequestHandlerSelectors;
 import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spring.web.plugins.Docket;
-
-import java.util.Arrays;
-import java.util.concurrent.TimeUnit;
 
 /**
  * @author asenf
@@ -51,6 +53,7 @@ import java.util.concurrent.TimeUnit;
 @EnableCaching
 @EnableRetry
 @EnableEurekaClient
+@EnableAsync
 public class MyConfiguration {
 
     @Value("${ega.ega.external.url}")
@@ -82,12 +85,6 @@ public class MyConfiguration {
         RestTemplate restTemplate = new RestTemplate();
         restTemplate.setInterceptors(Collections.singletonList(clientUserIpInterceptor()));
         return restTemplate;
-    }
-
-    @Bean
-    @LoadBalanced
-    public AsyncRestTemplate asyncRestTemplate() {
-        return new AsyncRestTemplate();
     }
 
     @Bean

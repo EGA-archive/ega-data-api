@@ -15,10 +15,16 @@
  */
 package eu.elixir.ega.ebi.dataedge.service.internal;
 
-import com.netflix.appinfo.InstanceInfo;
-import eu.elixir.ega.ebi.shared.dto.DownloadEntry;
-import eu.elixir.ega.ebi.shared.dto.EventEntry;
-import eu.elixir.ega.ebi.shared.service.internal.RemoteDownloaderLogServiceImpl;
+import static eu.elixir.ega.ebi.shared.Constants.FILEDATABASE_SERVICE;
+import static org.junit.Assert.fail;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.powermock.api.mockito.PowerMockito.mock;
+import static org.powermock.api.mockito.PowerMockito.when;
+import static org.powermock.api.mockito.PowerMockito.whenNew;
+
+import java.net.URI;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -29,17 +35,13 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.util.concurrent.ListenableFuture;
-import org.springframework.web.client.AsyncRestTemplate;
 import org.springframework.web.client.RestTemplate;
 
-import java.net.URI;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
-import static eu.elixir.ega.ebi.shared.Constants.FILEDATABASE_SERVICE;
-import static org.junit.Assert.fail;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
-import static org.powermock.api.mockito.PowerMockito.*;
+import eu.elixir.ega.ebi.shared.dto.DownloadEntry;
+import eu.elixir.ega.ebi.shared.dto.EventEntry;
+import eu.elixir.ega.ebi.shared.service.internal.RemoteDownloaderLogServiceImpl;
 
 /**
  * Test class for {@link RemoteDownloaderLogServiceImpl}.
@@ -55,22 +57,21 @@ public class RemoteDownloaderLogServiceImplTest {
     private RemoteDownloaderLogServiceImpl remoteDownloaderLogServiceImpl;
 
     @Mock
-    private AsyncRestTemplate restTemplate;
-
+    private RestTemplate restTemplate;
+    
     @Mock
-    private RestTemplate syncRestTemplate;
+    private ObjectMapper objectMapper;
 
     @Before
     public void initMocks() throws Exception {
         MockitoAnnotations.initMocks(this);
 
-        final InstanceInfo instance = mock(InstanceInfo.class);
         final URI uriMock = mock(URI.class);
-        @SuppressWarnings("unchecked") final ListenableFuture<ResponseEntity<String>> futureEntityMock = mock(ListenableFuture.class);
+        final ResponseEntity<String> responseString = mock(ResponseEntity.class);
 
         whenNew(URI.class).withAnyArguments().thenReturn(uriMock);
-        when(restTemplate.postForEntity(eq(FILEDATABASE_SERVICE + "/log/download/"), any(), eq(String.class))).thenReturn(futureEntityMock);
-        when(restTemplate.postForEntity(eq(FILEDATABASE_SERVICE + "/log/event/"), any(), eq(String.class))).thenReturn(futureEntityMock);
+        when(restTemplate.postForEntity(eq(FILEDATABASE_SERVICE + "/log/download/"), any(), eq(String.class))).thenReturn(responseString);
+        when(restTemplate.postForEntity(eq(FILEDATABASE_SERVICE + "/log/event/"), any(), eq(String.class))).thenReturn(responseString);
     }
 
     /**
