@@ -153,7 +153,7 @@
         <dependency>
             <groupId>no.uio.ifi</groupId>
             <artifactId>crypt4gh</artifactId>
-            <version>1.1.0</version>
+            <version>1.2.1</version>
         </dependency>
         <dependency>
             <groupId>io.minio</groupId>

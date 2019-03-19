@@ -18,8 +18,8 @@ package eu.elixir.ega.ebi.reencryptionmvc.service.internal;
 import eu.elixir.ega.ebi.reencryptionmvc.dto.ArchiveSource;
 import eu.elixir.ega.ebi.reencryptionmvc.dto.EgaFile;
 import eu.elixir.ega.ebi.reencryptionmvc.service.KeyService;
-import no.ifi.uio.crypt4gh.factory.HeaderFactory;
-import no.ifi.uio.crypt4gh.pojo.*;
+import no.uio.ifi.crypt4gh.factory.HeaderFactory;
+import no.uio.ifi.crypt4gh.pojo.*;
 import org.apache.commons.codec.binary.Hex;
 import org.bouncycastle.jcajce.provider.util.BadBlockException;
 import org.bouncycastle.openpgp.PGPException;
@@ -76,7 +76,7 @@ public class LocalEGAArchiveServiceImplTest {
 
         final UnencryptedHeader unencryptedHeader = new UnencryptedHeader(null, 0, 0);
         final EncryptedHeader encryptedHeader = new EncryptedHeader(1, Collections.singletonList(new Record(0, 0, 0, 0, EncryptionAlgorithm.AES_256_CTR, "key".getBytes(), "iv".getBytes())));
-        when(headerFactory.getKeyIds(Matchers.any())).thenReturn(Collections.singleton("c6c98c"));
+        when(headerFactory.getKeyIds(Matchers.any())).thenReturn(Collections.singleton("C6C98C"));
         when(headerFactory.getHeader(Matchers.<byte[]>any(), anyString(), Matchers.any())).thenReturn(new Header(unencryptedHeader, encryptedHeader));
         when(keyService.getPrivateKey(Matchers.any())).thenReturn("-412260");
 
