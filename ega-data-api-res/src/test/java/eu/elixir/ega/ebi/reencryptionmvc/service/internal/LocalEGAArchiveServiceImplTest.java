@@ -18,8 +18,9 @@ package eu.elixir.ega.ebi.reencryptionmvc.service.internal;
 import eu.elixir.ega.ebi.reencryptionmvc.dto.ArchiveSource;
 import eu.elixir.ega.ebi.reencryptionmvc.dto.EgaFile;
 import eu.elixir.ega.ebi.reencryptionmvc.service.KeyService;
-import no.ifi.uio.crypt4gh.factory.HeaderFactory;
-import no.ifi.uio.crypt4gh.pojo.*;
+import no.uio.ifi.crypt4gh.factory.HeaderFactory;
+import no.uio.ifi.crypt4gh.pojo.*;
+import org.apache.commons.codec.binary.Hex;
 import org.bouncycastle.jcajce.provider.util.BadBlockException;
 import org.bouncycastle.openpgp.PGPException;
 import org.identityconnectors.common.security.GuardedString;
@@ -75,11 +76,12 @@ public class LocalEGAArchiveServiceImplTest {
 
         final UnencryptedHeader unencryptedHeader = new UnencryptedHeader(null, 0, 0);
         final EncryptedHeader encryptedHeader = new EncryptedHeader(1, Collections.singletonList(new Record(0, 0, 0, 0, EncryptionAlgorithm.AES_256_CTR, "key".getBytes(), "iv".getBytes())));
-        when(headerFactory.getKeyIds(Matchers.any())).thenReturn(Collections.singleton("keyId"));
+        when(headerFactory.getKeyIds(Matchers.any())).thenReturn(Collections.singleton("C6C98C"));
         when(headerFactory.getHeader(Matchers.<byte[]>any(), anyString(), Matchers.any())).thenReturn(new Header(unencryptedHeader, encryptedHeader));
+        when(keyService.getPrivateKey(Matchers.any())).thenReturn("-412260");
 
         final ResponseEntity<EgaFile[]> mockResponseEntity = mock(ResponseEntity.class);
-        final EgaFile[] body = new EgaFile[]{new EgaFile("id", "name", "/path/test.enc", 100, "ready", "header")};
+        final EgaFile[] body = new EgaFile[]{new EgaFile("id", "name", "/path/test.enc", 100, "ready", Hex.encodeHexString("header".getBytes()))};
 
         when(restTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}", EgaFile[].class, "id")).thenReturn(mockResponseEntity);
         when(mockResponseEntity.getStatusCode()).thenReturn(HttpStatus.OK);
@@ -98,8 +100,8 @@ public class LocalEGAArchiveServiceImplTest {
         assertThat(archiveSource.getFileUrl(), equalTo("/path/test.enc"));
         assertThat(archiveSource.getSize(), equalTo(100L));
         assertThat(archiveSource.getEncryptionFormat(), equalTo("aes256"));
-        assertThat(archiveSource.getEncryptionKey(), equalTo("a2V5")); //Base64 encoded string "key"
-        assertThat(archiveSource.getEncryptionIV(), equalTo("aXY=")); //Base64 encoded string "iv"
+        assertThat(archiveSource.getEncryptionKey(), equalTo("6b6579")); //HEX encoded string "key"
+        assertThat(archiveSource.getEncryptionIV(), equalTo("6976")); //HEX encoded string "iv"
     }
 
 }

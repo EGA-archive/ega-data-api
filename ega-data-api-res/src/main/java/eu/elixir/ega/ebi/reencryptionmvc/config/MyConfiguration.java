@@ -17,7 +17,7 @@ package eu.elixir.ega.ebi.reencryptionmvc.config;
 
 import com.google.common.cache.CacheBuilder;
 import eu.elixir.ega.ebi.reencryptionmvc.dto.*;
-import no.ifi.uio.crypt4gh.factory.HeaderFactory;
+import no.uio.ifi.crypt4gh.factory.HeaderFactory;
 import org.apache.commons.io.IOUtils;
 import org.cache2k.Cache;
 import org.identityconnectors.common.security.GuardedString;
