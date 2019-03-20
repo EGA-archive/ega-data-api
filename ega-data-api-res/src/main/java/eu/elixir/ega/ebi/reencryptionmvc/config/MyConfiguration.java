@@ -55,13 +55,13 @@ public class MyConfiguration {
     @Value("${ega.ebi.fire.key}")
     private String fireKey;
 
-    @Value("${ega.ebi.aws.access.key}")
+    @Value("${ega.ebi.aws.access.key:#{null}}")
     private String awsKey;
-    @Value("${ega.ebi.aws.access.secret}")
+    @Value("${ega.ebi.aws.access.secret:#{null}}")
     private String awsSecretKey;
-    @Value("${ega.ebi.aws.endpoint.url}")
+    @Value("${ega.ebi.aws.endpoint.url:#{null}}")
     private String awsEndpointUrl;
-    @Value("${ega.ebi.aws.endpoint.region}")
+    @Value("${ega.ebi.aws.endpoint.region:#{null}}")
     private String awsRegion;
 
     @Value("${service.archive.class}")

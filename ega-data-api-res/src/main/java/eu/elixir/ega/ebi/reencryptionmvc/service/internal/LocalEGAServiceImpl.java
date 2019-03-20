@@ -70,16 +70,16 @@ public class LocalEGAServiceImpl implements ResService {
     private static final int DEFAULT_BUFFER_SIZE = 1024 * 4;
     private static final int MAX_EXPIRATION_TIME = 7 * 24 * 3600;
 
-    @Value("${ega.ebi.aws.endpoint.url}")
+    @Value("${ega.ebi.aws.endpoint.url:#{null}}")
     private String s3URL;
 
     @Value("${ega.ebi.aws.bucket:lega}")
     private String s3Bucket;
 
-    @Value("${ega.ebi.aws.access.key}")
+    @Value("${ega.ebi.aws.access.key:#{null}}")
     private String s3Key;
 
-    @Value("${ega.ebi.aws.access.secret}")
+    @Value("${ega.ebi.aws.access.secret:#{null}}")
     private String s3Secret;
 
     @Autowired
