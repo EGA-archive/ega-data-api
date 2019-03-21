@@ -46,7 +46,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
-import org.springframework.retry.support.RetryTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -93,9 +92,6 @@ public class RemoteFileServiceImplTest {
 
     @Mock
     private RestTemplate restTemplate;
-
-    @Mock
-    private RetryTemplate retryTemplate;
 
     @Mock
     MyExternalConfig externalConfig;
