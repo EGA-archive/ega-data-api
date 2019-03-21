@@ -22,6 +22,7 @@ import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.when;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -116,14 +117,17 @@ public class MyUserAuthenticationConverterTest {
      */
     @Test
     public void testExtractAuthentication() {
-        final Map<String, String> input = new HashMap<String, String>();
+        final Map<String, Object> input = new HashMap<>();
         input.put(USERNAME, USERNAME_VAL);
+        input.put(AUTHORITIES, authorities);
+        input.put(DATASET1, Arrays.asList(new String[] { "F1", "F2", "F3", "F4" }));
 
-        final UsernamePasswordAuthenticationToken output = (UsernamePasswordAuthenticationToken) myUserAuthenticationConverter
+        final CustomUsernamePasswordAuthenticationToken output = (CustomUsernamePasswordAuthenticationToken) myUserAuthenticationConverter
                 .extractAuthentication(input);
 
         assertThat(output.getPrincipal(), equalTo(user));
         assertThat(output.getAuthorities(), equalTo(authorities));
+        assertThat(output.getDatasetFileMapping().get(DATASET1), equalTo(input.get(DATASET1)));
     }
 
 }

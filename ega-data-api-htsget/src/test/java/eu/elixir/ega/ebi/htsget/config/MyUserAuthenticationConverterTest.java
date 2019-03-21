@@ -21,13 +21,14 @@ import static org.mockito.Matchers.any;
 import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.when;
 
-import eu.elixir.ega.ebi.htsget.config.MyUserAuthenticationConverter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -36,7 +37,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -116,14 +116,17 @@ public class MyUserAuthenticationConverterTest {
      */
     @Test
     public void testExtractAuthentication() {
-        final Map<String, String> input = new HashMap<String, String>();
+        final Map<String, Object> input = new HashMap<>();
         input.put(USERNAME, USERNAME_VAL);
+        input.put(AUTHORITIES, authorities);
+        input.put(DATASET1, Arrays.asList(new String[] { "F1", "F2", "F3", "F4" }));
 
-        final UsernamePasswordAuthenticationToken output = (UsernamePasswordAuthenticationToken) myUserAuthenticationConverter
+        final CustomUsernamePasswordAuthenticationToken output = (CustomUsernamePasswordAuthenticationToken) myUserAuthenticationConverter
                 .extractAuthentication(input);
 
         assertThat(output.getPrincipal(), equalTo(user));
         assertThat(output.getAuthorities(), equalTo(authorities));
+        assertThat(output.getDatasetFileMapping().get(DATASET1), equalTo(input.get(DATASET1)));
     }
 
 }
