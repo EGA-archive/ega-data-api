@@ -27,8 +27,8 @@ jobs:
         - sudo service postgresql stop
         - while sudo lsof -Pi :5432 -sTCP:LISTEN -t; do sleep 1; done
         - cd extras
-        - docker-compose up -d
-        - sleep 150
+        - docker-compose up
+        - sleep 120
         - cd ../ega-data-api-it
       script:
         - mvn test
