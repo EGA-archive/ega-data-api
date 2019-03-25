@@ -58,7 +58,7 @@ services:
       - DB_SCHEMA=dev_ega_file
       - DB_USERNAME=testuser
       - DB_PASSWORD=testpassw0rd      
-      - DB_URL=jdbc:postgresql://postgres:5432/lega
+      - DB_URL=jdbc:postgresql://postgres:6432/lega
     networks:
       - webnet        
 
@@ -82,7 +82,7 @@ services:
   postgres:
     image: anandmohan777/postgres:localegatest
     ports:
-      - "5432:5432"
+      - "5432:6432"
     environment:
       - POSTGRES_USER=testuser
       - POSTGRES_PASSWORD=testpassw0rd
