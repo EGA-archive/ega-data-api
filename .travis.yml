@@ -11,5 +11,22 @@ cache:
   directories:
   - $HOME/.m2
 
-script:
-  - ./extras/travis_push_docker_hub.sh
+  
+stages:
+  - name: unittests
+    if: type IN (push, pull_request)
+  - name: integtests
+    if: type IN (pull_request)
+    
+jobs:
+  include:
+    - stage: unittests
+      script: mvn test
+    - stage: integtests
+      before_script:
+        - cd deploy/test       
+        - docker-compose up -d
+        - sleep 180
+        - cd ../ega-data-api-it
+      script:
+        - mvn test
