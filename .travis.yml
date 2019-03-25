@@ -24,9 +24,12 @@ jobs:
       script: mvn test
     - stage: integtests
       before_script:
-        - cd extras       
+        - sudo service postgresql stop
+        - while sudo lsof -Pi :5432 -sTCP:LISTEN -t; do sleep 1; done
+        - cd extras
         - docker-compose up -d
         - sleep 150
         - cd ../ega-data-api-it
       script:
         - mvn test
+        
