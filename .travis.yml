@@ -24,9 +24,9 @@ jobs:
       script: mvn test
     - stage: integtests
       before_script:
-        - cd deploy/test       
+        - cd extras       
         - docker-compose up -d
-        - sleep 180
+        - sleep 150
         - cd ../ega-data-api-it
       script:
         - mvn test
