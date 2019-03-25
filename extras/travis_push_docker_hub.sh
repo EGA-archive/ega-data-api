@@ -44,6 +44,4 @@ then
     push_images "1.0" api
     push_images latest oss
     push_images "1.0" oss
-else
-    mvn clean install -DskipDockerPush
 fi

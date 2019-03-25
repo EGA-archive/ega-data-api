@@ -11,5 +11,33 @@ cache:
   directories:
   - $HOME/.m2
 
-script:
-  - ./extras/travis_push_docker_hub.sh
+  
+stages:
+  - name: unit test
+    if: type IN (push, pull_request)
+  - name: integ test
+    if: type IN (push, pull_request)
+  - name: image build
+    if: type = push AND branch = master       
+    
+jobs:
+  include:
+    - stage: unit test
+      script: mvn test
+    - stage: integ test
+      before_script:
+        - sudo service postgresql stop
+        - cd extras/postgresdb
+        - docker build -t ega-data-api/ega-postgres .
+        - cd ../
+        - source ./variables.sh
+        - docker-compose up -d
+        - sleep 90
+        - cd ../ega-data-api-it
+      script:
+        - mvn test -Dtest=!DataedgeIntgTest,!MetadataControllerIntgTest
+    - stage: image build
+      script: ./extras/travis_push_docker_hub.sh
+
+notifications:
+  email: false      
