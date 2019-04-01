@@ -67,22 +67,12 @@ public class PermissionsServiceImpl implements PermissionsService {
   @Override
   public String getFilePermissionsEntity(String stableId) {
     
-    if (authenticationService.getAuthentication() instanceof OAuth2Authentication) {
-        OAuth2Authentication authentication = (OAuth2Authentication) authenticationService.getAuthentication();
-        if (authentication != null && authentication.getUserAuthentication() instanceof CustomUsernamePasswordAuthenticationToken) {
-            CustomUsernamePasswordAuthenticationToken athenticationToken = (CustomUsernamePasswordAuthenticationToken) authentication.getUserAuthentication();
-            Map<String, List<String>> datasetFileMapping = athenticationToken.getDatasetFileMapping();
-            if (datasetFileMapping != null) {
-                String datasetId = datasetFileMapping.entrySet().parallelStream()
-                        .filter(e -> e.getValue().contains(stableId)).map(Map.Entry::getKey).findFirst()
-                        .orElse(null);
-                if (datasetId != null) {
-                    return datasetId;
-                }
-            }
-        }
+    //Obtains datasetId from AAI Token Introspection result
+    String datasetFromAAI = authenticationService.getDatasetIdByStableId(stableId);
+    if(datasetFromAAI != null) {
+        return datasetFromAAI;
     }
-    
+        
     // Obtain all Authorised Datasets (Provided by EGA AAI)
     HashSet<String> permissions = new HashSet<>();
     Collection<? extends GrantedAuthority> authorities = authenticationService.getAuthorities();

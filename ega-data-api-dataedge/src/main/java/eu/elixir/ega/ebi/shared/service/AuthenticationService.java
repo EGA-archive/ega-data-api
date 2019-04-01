@@ -12,5 +12,7 @@ public interface AuthenticationService {
   String getName();
 
   Collection<? extends GrantedAuthority> getAuthorities();
+  
+  String getDatasetIdByStableId(String stableId);
 
 }
