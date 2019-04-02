@@ -80,7 +80,7 @@ services:
       - webnet       
       
   postgres:
-    image: anandmohan777/postgres:localegatest
+    image: ega-data-api/ega-postgres
     ports:
       - "5432:5432"
     environment:
