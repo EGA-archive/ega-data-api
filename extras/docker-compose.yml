@@ -1,7 +1,7 @@
 version: "3.4"
 services:
   dataedge:
-    image: ega-data-api/ega-data-api-dataedge
+    image: ega-data-api/ega-dataedge
     ports:
       - "9058:9058"
       - "5059:5059"
@@ -20,7 +20,7 @@ services:
       - webnet
       
   resserver:
-    image: ega-data-api/ega-data-api-res
+    image: ega-data-api/ega-res
     depends_on: 
       - filedatabase
       - keyserver      
@@ -47,7 +47,7 @@ services:
       - webnet  
       
   filedatabase:
-    image: ega-data-api/ega-data-api-filedatabase
+    image: ega-data-api/ega-filedatabase
     depends_on: 
       - postgres
     ports:
@@ -63,7 +63,7 @@ services:
       - webnet        
 
   keyserver:
-    image: ega-data-api/ega-data-api-key
+    image: ega-data-api/ega-keyserver
     depends_on: 
       - postgres
     ports:
