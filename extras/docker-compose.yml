@@ -21,19 +21,16 @@ services:
       
   resserver:
     image: ega-data-api/ega-res
-    depends_on: 
-      - filedatabase
-      - keyserver      
     ports:
       - "9092:9092"
     environment:
       - SPRING_PROFILES_ACTIVE=no-oss,LocalEGA
       - server.port=9092
-      - ega.ebi.aws.access.key=D0MmGMmrOLwxjEE5
-      - ega.ebi.aws.access.secret=PT6hqA1oaW65whte0y4NDMQ88KDCtBp9
-      - ega.ebi.aws.endpoint.url=http://130.239.81.206:9000  
-      - ega.ebi.aws.endpoint.region=europe
-      - ega.sharedpass.path=/src/test/resources/pgp/ega.shared.pass      
+      - ega.ebi.aws.access.key=${AWS_ACCESS_KEY}
+      - ega.ebi.aws.access.secret=${AWS_SECRET}
+      - ega.ebi.aws.endpoint.url=${ENDPOINT_URL}
+      - ega.ebi.aws.endpoint.region=${ENDPOINT_REGION}
+      - ega.sharedpass.path=/src/test/resources/pgp/ega.shared.pass
       - FILEDATABASE.listOfServers=filedatabase:9051
       - RES2.listOfServers=resserver:9092
       - KEYSERVER.listOfServers=keyserver:9095 
@@ -45,27 +42,9 @@ services:
       - service.archive.class=""
     networks:
       - webnet  
-      
-  filedatabase:
-    image: ega-data-api/ega-filedatabase
-    depends_on: 
-      - postgres
-    ports:
-      - "9051:9051"
-    environment:
-      - SPRING_PROFILES_ACTIVE=no-oss
-      - server.port=9051
-      - DB_SCHEMA=dev_ega_file
-      - DB_USERNAME=testuser
-      - DB_PASSWORD=testpassw0rd      
-      - DB_URL=jdbc:postgresql://postgres:5432/lega
-    networks:
-      - webnet        
 
   keyserver:
     image: ega-data-api/ega-keyserver
-    depends_on: 
-      - postgres
     ports:
       - "9095:9095"
     environment:
@@ -79,19 +58,33 @@ services:
     networks:
       - webnet       
       
+  filedatabase:
+    image: ega-data-api/ega-filedatabase
+    depends_on: 
+      - postgres
+    ports:
+      - "9051:9051"
+    environment:
+      - SPRING_PROFILES_ACTIVE=no-oss
+      - server.port=9051
+      - DB_SCHEMA=${POSTGRES_SCHEMA}
+      - DB_USERNAME=${POSTGRES_USER}
+      - DB_PASSWORD=${POSTGRES_PASSWORD}
+      - DB_URL=jdbc:postgresql://postgres:5432/${POSTGRES_DB}
+    networks:
+      - webnet        
+      
   postgres:
     image: ega-data-api/ega-postgres
     ports:
       - "5432:5432"
     environment:
-      - POSTGRES_USER=testuser
-      - POSTGRES_PASSWORD=testpassw0rd
-      - POSTGRES_DB=lega
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
       - PGDATA=/var/lib/postgresql/data/pgdata
-    
     networks:
       - webnet
 
-# Creating internal network from Docker Swarm.
 networks:
   webnet:
