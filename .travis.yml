@@ -13,16 +13,18 @@ cache:
 
   
 stages:
-  - name: unittests
+  - name: unit test
     if: type IN (push, pull_request)
-  - name: integtests
+  - name: integ test
     if: type IN (pull_request)
+  - name: image build
+    if: type IN (push)    
     
 jobs:
   include:
-    - stage: unittests
+    - stage: unit test
       script: mvn test
-    - stage: integtests
+    - stage: integ test
       before_script:
         - sudo service postgresql stop
         - cd extras
@@ -30,6 +32,9 @@ jobs:
         - sleep 90
         - cd ../ega-data-api-it
       script:
-        - mvn test -Dtest=!DataedgeIntgTest,!MetadataControllerIntgTest,!eu.elixir.ega.ebi.it.dataedge.FileControllerIntgTest#testGetFile
+        - mvn test -Dtest=!DataedgeIntgTest,!MetadataControllerIntgTest
+    - stage: image build
+      script: ./extras/travis_push_docker_hub.sh
 
-        
+notifications:
+  email: false      
