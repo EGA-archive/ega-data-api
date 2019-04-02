@@ -26,10 +26,10 @@ services:
     environment:
       - SPRING_PROFILES_ACTIVE=no-oss,LocalEGA
       - server.port=9092
-      - ega.ebi.aws.access.key=${AWSACCESSKEY}
-      - ega.ebi.aws.access.secret=${AWSSECRET}
-      - ega.ebi.aws.endpoint.url=${ENDPOINTURL}
-      - ega.ebi.aws.endpoint.region=${ENDPOINTREGION}
+      - ega.ebi.aws.access.key=${MINIO_ACCESSKEY}
+      - ega.ebi.aws.access.secret=${MINIO_SECRET}
+      - ega.ebi.aws.endpoint.url=${MINIO_URL}
+      - ega.ebi.aws.endpoint.region=${MINIO_REGION}
       - ega.sharedpass.path=/src/test/resources/pgp/ega.shared.pass
       - FILEDATABASE.listOfServers=filedatabase:9051
       - RES2.listOfServers=resserver:9092
@@ -67,10 +67,10 @@ services:
     environment:
       - SPRING_PROFILES_ACTIVE=no-oss
       - server.port=9051
-      - DB_SCHEMA=${POSTGRESSCHEMA}
-      - DB_USERNAME=${POSTGRESUSER}
-      - DB_PASSWORD=${POSTGRESPASSWORD}
-      - DB_URL=jdbc:postgresql://postgres:5432/${POSTGRESDB}
+      - DB_SCHEMA=${POSTGRES_SCHEMA}
+      - DB_USERNAME=${POSTGRES_USER}
+      - DB_PASSWORD=${POSTGRES_PASSWORD}
+      - DB_URL=jdbc:postgresql://postgres:5432/${POSTGRES_DB}
     networks:
       - webnet        
       
@@ -79,9 +79,9 @@ services:
     ports:
       - "5432:5432"
     environment:
-      - POSTGRES_USER=${POSTGRESUSER}
-      - POSTGRES_PASSWORD=${POSTGRESPASSWORD}
-      - POSTGRES_DB=${POSTGRESDB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
       - PGDATA=/var/lib/postgresql/data/pgdata
     networks:
       - webnet

@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 
-export AWSACCESSKEY="D0MmGMmrOLwxjEE5"
-export AWSSECRET="PT6hqA1oaW65whte0y4NDMQ88KDCtBp9"
-export ENDPOINTURL="http://130.239.81.206:9000" 
-export ENDPOINTREGION="europe"
+export MINIO_ACCESSKEY="D0MmGMmrOLwxjEE5"
+export MINIO_SECRET="PT6hqA1oaW65whte0y4NDMQ88KDCtBp9"
+export MINIO_URL="http://130.239.81.206:9000" 
+export MINIO_REGION="europe"
 
-export POSTGRESSCHEMA="dev_ega_file"
-export POSTGRESUSER="testuser"
-export POSTGRESPASSWORD="testpassw0rd"
-export POSTGRESDB="lega"
+export POSTGRES_SCHEMA="dev_ega_file"
+export POSTGRES_USER="testuser"
+export POSTGRES_PASSWORD="testpassw0rd"
+export POSTGRES_DB="lega"
 export JWTKEY="-----BEGIN PUBLIC KEY-----
 MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDdlatRjRjogo3WojgGHFHYLugd
 UWAY9iR3fy4arWNA1KoS8kVw33cJibXr8bvwUAUparCwlvdbH6dvEOfou0/gCFQs
