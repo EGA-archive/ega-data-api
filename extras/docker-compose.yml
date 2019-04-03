@@ -56,7 +56,7 @@ services:
       - ega.publickey.url=/src/test/resources/pgp/ega.pub
       - ega.legacy.path=/src/test/resources/pgp/legacy.pass     
     networks:
-      - webnet    
+      - webnet
 
   postgresdb:
     image: ega-data-api/ega-postgres
@@ -82,7 +82,7 @@ services:
       - DB_SCHEMA=${POSTGRES_SCHEMA}
       - DB_USERNAME=${POSTGRES_USER}
       - DB_PASSWORD=${POSTGRES_PASSWORD}
-      - DB_URL=jdbc:postgresql://postgres:5432/${POSTGRES_DB}
+      - DB_URL=jdbc:postgresql://postgresdb:5432/${POSTGRES_DB}
     networks:
       - webnet
 
