@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
-export MINIO_ACCESSKEY="D0MmGMmrOLwxjEE5"
-export MINIO_SECRET="PT6hqA1oaW65whte0y4NDMQ88KDCtBp9"
-export MINIO_URL="http://130.239.81.206:9000" 
+export MINIO_ACCESS_KEY="AKIAIOSFODNN7EXAMPLE"
+export MINIO_SECRET_KEY="wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+export MINIO_URL="http://localhost:9000" 
 export MINIO_REGION="europe"
 
 export POSTGRES_SCHEMA="dev_ega_file"

@@ -26,8 +26,8 @@ services:
     environment:
       - SPRING_PROFILES_ACTIVE=no-oss,LocalEGA
       - server.port=9092
-      - ega.ebi.aws.access.key=${MINIO_ACCESSKEY}
-      - ega.ebi.aws.access.secret=${MINIO_SECRET}
+      - ega.ebi.aws.access.key=${MINIO_ACCESS_KEY}
+      - ega.ebi.aws.access.secret=${MINIO_SECRET_KEY}
       - ega.ebi.aws.endpoint.url=${MINIO_URL}
       - ega.ebi.aws.endpoint.region=${MINIO_REGION}
       - ega.sharedpass.path=/src/test/resources/pgp/ega.shared.pass
@@ -86,5 +86,35 @@ services:
     networks:
       - webnet
 
+  archive:
+    image: minio/minio
+    entrypoint: sh
+    command: -c '/usr/bin/minio server /data'
+    ports:
+      - "9000:9000"
+    environment:
+      - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY}
+      - MINIO_SECRET_KEY=${MINIO_SECRET_KEY} 
+    networks:
+      - webnet
+
+  createbucketminio:
+    image: minio/mc
+    depends_on:
+      - archive
+    entrypoint: >
+      /bin/sh -c "
+      /usr/bin/mc config host add myminio http://archive:9000 ${MINIO_ACCESS_KEY} ${MINIO_SECRET_KEY};
+      /usr/bin/mc mb myminio/lega;
+      /usr/bin/mc cp /14.enc myminio/lega;
+      exit 0;"
+    volumes:
+      - "./14.enc:/14.enc"
+    environment:
+      - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY}
+      - MINIO_SECRET_KEY=${MINIO_SECRET_KEY}       
+    networks:
+      - webnet
+      
 networks:
   webnet:
