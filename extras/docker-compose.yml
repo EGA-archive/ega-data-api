@@ -18,7 +18,7 @@ services:
       - ega.ega.cram.fasta.b=/homes/ega-prod/ngs_dev/hsapiens.GRCh37.fasta
     networks:
       - webnet
-      
+
   resserver:
     image: ega-data-api/ega-res
     ports:
@@ -41,7 +41,7 @@ services:
       - EGA_EBI_FIRE_KEY=""
       - service.archive.class=""
     networks:
-      - webnet  
+      - webnet
 
   keyserver:
     image: ega-data-api/ega-keyserver
@@ -56,12 +56,24 @@ services:
       - ega.publickey.url=/src/test/resources/pgp/ega.pub
       - ega.legacy.path=/src/test/resources/pgp/legacy.pass     
     networks:
-      - webnet       
-      
+      - webnet    
+
+  postgresdb:
+    image: ega-data-api/ega-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    networks:
+      - webnet
+
   filedatabase:
     image: ega-data-api/ega-filedatabase
     depends_on: 
-      - postgres
+      - postgresdb
     ports:
       - "9051:9051"
     environment:
@@ -71,18 +83,6 @@ services:
       - DB_USERNAME=${POSTGRES_USER}
       - DB_PASSWORD=${POSTGRES_PASSWORD}
       - DB_URL=jdbc:postgresql://postgres:5432/${POSTGRES_DB}
-    networks:
-      - webnet        
-      
-  postgres:
-    image: ega-data-api/ega-postgres
-    ports:
-      - "5432:5432"
-    environment:
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_DB=${POSTGRES_DB}
-      - PGDATA=/var/lib/postgresql/data/pgdata
     networks:
       - webnet
 
@@ -115,6 +115,6 @@ services:
       - MINIO_SECRET_KEY=${MINIO_SECRET_KEY}       
     networks:
       - webnet
-      
+
 networks:
   webnet:
