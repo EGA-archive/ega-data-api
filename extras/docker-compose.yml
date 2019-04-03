@@ -28,7 +28,7 @@ services:
       - server.port=9092
       - ega.ebi.aws.access.key=${MINIO_ACCESS_KEY}
       - ega.ebi.aws.access.secret=${MINIO_SECRET_KEY}
-      - ega.ebi.aws.endpoint.url=${MINIO_URL}
+      - ega.ebi.aws.endpoint.url=http://archive:9000
       - ega.ebi.aws.endpoint.region=${MINIO_REGION}
       - ega.sharedpass.path=/src/test/resources/pgp/ega.shared.pass
       - FILEDATABASE.listOfServers=filedatabase:9051
