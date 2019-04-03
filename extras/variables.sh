@@ -2,7 +2,6 @@
 
 export MINIO_ACCESS_KEY="AKIAIOSFODNN7EXAMPLE"
 export MINIO_SECRET_KEY="wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
-export MINIO_URL="http://localhost:9000" 
 export MINIO_REGION="europe"
 
 export POSTGRES_SCHEMA="dev_ega_file"

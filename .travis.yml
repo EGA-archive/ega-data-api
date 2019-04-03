@@ -31,7 +31,7 @@ jobs:
         - docker build -t ega-data-api/ega-postgres .
         - cd ../
         - source ./variables.sh
-        - docker-compose up -d
+        - docker-compose up
         - sleep 90
         - cd ../ega-data-api-it
       script:
