@@ -36,7 +36,7 @@ jobs:
         - cd ../ega-data-api-it
       script:
         - mvn test -Dtest=!DataedgeIntgTest,!MetadataControllerIntgTest
-        - docker-compose logs
+        - cd ../extras && docker-compose logs
     - stage: image build
       script: ./extras/travis_push_docker_hub.sh
 
