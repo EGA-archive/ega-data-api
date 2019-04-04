@@ -160,7 +160,6 @@ public class LocalEGAServiceImpl implements ResService {
         } else if (fileLocation.startsWith("/")) { // absolute file path
             inputStream = new SeekableFileStream(new File(fileLocation));
         } else { // S3 object
-            System.out.println(s3Bucket+"="+fileLocation);
             String presignedObjectUrl = s3Client.getPresignedObjectUrl(Method.GET, s3Bucket, fileLocation, MAX_EXPIRATION_TIME, null);
             inputStream = new SeekableHTTPStream(new URL(presignedObjectUrl));
         }

@@ -66,13 +66,11 @@ public class LocalEGAArchiveServiceImpl implements ArchiveService {
     @Retryable(maxAttempts = 8, backoff = @Backoff(delay = 2000, multiplier = 2))
     @HystrixCommand
     public ArchiveSource getArchiveFile(String id, HttpServletResponse response) {
-        System.out.println("fileId "+id);
         ResponseEntity<EgaFile[]> responseEntity = restTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}", EgaFile[].class, id);
         EgaFile egaFile = responseEntity.getBody()[0];
         String url = egaFile.getFilePath();
         long size = egaFile.getFileSize();
         String header = egaFile.getHeader();
-        System.out.println("url "+url);
         try {
             byte[] headerBytes = Hex.decodeHex(header.toCharArray());
             Collection<String> keyIds = headerFactory.getKeyIds(headerBytes);
