@@ -29,11 +29,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import eu.elixir.ega.ebi.htsget.config.CustomUsernamePasswordAuthenticationToken;
 import eu.elixir.ega.ebi.shared.config.GeneralStreamingException;
 import eu.elixir.ega.ebi.shared.config.NotFoundException;
 import eu.elixir.ega.ebi.shared.config.PermissionDeniedException;
@@ -67,21 +65,15 @@ public class PermissionsServiceImpl implements PermissionsService {
   @Override
   public String getFilePermissionsEntity(String stableId) {
     
-    if (authenticationService.getAuthentication() instanceof OAuth2Authentication) {
-        OAuth2Authentication authentication = (OAuth2Authentication) authenticationService.getAuthentication();
-        if (authentication != null && authentication.getUserAuthentication() instanceof CustomUsernamePasswordAuthenticationToken) {
-            CustomUsernamePasswordAuthenticationToken athenticationToken = (CustomUsernamePasswordAuthenticationToken) authentication.getUserAuthentication();
-            Map<String, List<String>> datasetFileMapping = athenticationToken.getDatasetFileMapping();
-            if (datasetFileMapping != null) {
-                String datasetId = datasetFileMapping.entrySet().parallelStream()
-                        .filter(e -> e.getValue().contains(stableId)).map(Map.Entry::getKey).findFirst()
-                        .orElse(null);
-                if (datasetId != null) {
-                    return datasetId;
-                }
-            }
-        }
-    }
+    // Obtains DatasetId and FileId mapping from AAI Token Introspection result
+    Map<String, List<String>> datasetFileMapping = authenticationService.getDatasetFileMapping();
+    if (datasetFileMapping != null) {
+        String datasetId = datasetFileMapping.entrySet().parallelStream()
+                .filter(e -> e.getValue().contains(stableId)).map(Map.Entry::getKey).findFirst().orElse(null);
+         if (datasetId != null) {
+            return datasetId;
+         }
+     }
     
     // Obtain all Authorised Datasets (Provided by EGA AAI)
     HashSet<String> permissions = new HashSet<>();

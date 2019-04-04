@@ -39,20 +39,14 @@ public class AuthenticationServiceImpl implements AuthenticationService {
   }
 
     @Override
-    public String getDatasetIdByStableId(String stableId) {
+    public Map<String, List<String>> getDatasetFileMapping() {
         if (getAuthentication() instanceof OAuth2Authentication) {
             OAuth2Authentication authentication = (OAuth2Authentication) getAuthentication();
-            if (authentication != null && authentication.getUserAuthentication() instanceof CustomUsernamePasswordAuthenticationToken) {
-                CustomUsernamePasswordAuthenticationToken athenticationToken = (CustomUsernamePasswordAuthenticationToken) authentication.getUserAuthentication();
-                Map<String, List<String>> datasetFileMapping = athenticationToken.getDatasetFileMapping();
-                if (datasetFileMapping != null) {
-                    String datasetId = datasetFileMapping.entrySet().parallelStream()
-                            .filter(e -> e.getValue().contains(stableId)).map(Map.Entry::getKey).findFirst()
-                            .orElse(null);
-                    if (datasetId != null) {
-                        return datasetId;
-                    }
-                }
+            if (authentication != null
+                    && authentication.getUserAuthentication() instanceof CustomUsernamePasswordAuthenticationToken) {
+                CustomUsernamePasswordAuthenticationToken athenticationToken = (CustomUsernamePasswordAuthenticationToken) authentication
+                        .getUserAuthentication();
+                return athenticationToken.getDatasetFileMapping();
             }
         }
         return null;

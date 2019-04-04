@@ -29,11 +29,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import eu.elixir.ega.ebi.dataedge.config.CustomUsernamePasswordAuthenticationToken;
 import eu.elixir.ega.ebi.shared.config.GeneralStreamingException;
 import eu.elixir.ega.ebi.shared.config.NotFoundException;
 import eu.elixir.ega.ebi.shared.config.PermissionDeniedException;
@@ -67,12 +65,17 @@ public class PermissionsServiceImpl implements PermissionsService {
   @Override
   public String getFilePermissionsEntity(String stableId) {
     
-    //Obtains datasetId from AAI Token Introspection result
-    String datasetFromAAI = authenticationService.getDatasetIdByStableId(stableId);
-    if(datasetFromAAI != null) {
-        return datasetFromAAI;
-    }
-        
+    //Obtains DatasetId and FileId mapping from AAI Token Introspection result
+    Map<String, List<String>> datasetFileMapping = authenticationService.getDatasetFileMapping();
+    if (datasetFileMapping != null) {
+        String datasetId = datasetFileMapping.entrySet().parallelStream()
+                .filter(e -> e.getValue().contains(stableId)).map(Map.Entry::getKey).findFirst()
+                .orElse(null);
+        if (datasetId != null) {
+            return datasetId;
+        }
+    } 
+    
     // Obtain all Authorised Datasets (Provided by EGA AAI)
     HashSet<String> permissions = new HashSet<>();
     Collection<? extends GrantedAuthority> authorities = authenticationService.getAuthorities();
