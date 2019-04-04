@@ -103,7 +103,7 @@ services:
     depends_on:
       - archive
     entrypoint: >
-      /bin/sh -c "
+      /bin/sh -c "sleep 10;
       /usr/bin/mc config host add myminio http://archive:9000 ${MINIO_ACCESS_KEY} ${MINIO_SECRET_KEY};
       /usr/bin/mc cp /14.enc myminio/lega;
       exit 0;"
