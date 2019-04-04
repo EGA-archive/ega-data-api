@@ -4,6 +4,8 @@ COPY . .
 RUN cd ega-data-api-res && mvn clean install -DskipTests=true -Dmaven.javadoc.skip=true -B -V -DskipDockerPush -DskipDockerBuild
 
 FROM openjdk:8-jre-alpine
+ARG BUILD_DATE
+ARG SOURCE_COMMIT
 LABEL maintainer "EGA System Developers"
 LABEL org.label-schema.schema-version="1.0"
 LABEL org.label-schema.build-date=$BUILD_DATE
