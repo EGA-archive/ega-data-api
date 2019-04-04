@@ -89,7 +89,7 @@ services:
   archive:
     image: minio/minio
     entrypoint: sh
-    command: -c '/usr/bin/minio server /data'
+    command: -c 'mkdir -p /data/lega && /usr/bin/minio server /data'
     ports:
       - "9000:9000"
     environment:
@@ -105,7 +105,6 @@ services:
     entrypoint: >
       /bin/sh -c "
       /usr/bin/mc config host add myminio http://archive:9000 ${MINIO_ACCESS_KEY} ${MINIO_SECRET_KEY};
-      /usr/bin/mc mb myminio/lega;
       /usr/bin/mc cp /14.enc myminio/lega;
       exit 0;"
     volumes:
