@@ -28,7 +28,7 @@ services:
       - server.port=9092
       - ega.ebi.aws.access.key=${MINIO_ACCESS_KEY}
       - ega.ebi.aws.access.secret=${MINIO_SECRET_KEY}
-      - ega.ebi.aws.endpoint.url=http://archive:9000
+      - ega.ebi.aws.endpoint.url=http://archiveminio:9000
       - ega.ebi.aws.endpoint.region=${MINIO_REGION}
       - ega.sharedpass.path=/src/test/resources/pgp/ega.shared.pass
       - FILEDATABASE.listOfServers=filedatabase:9051
@@ -86,7 +86,7 @@ services:
     networks:
       - webnet
 
-  archive:
+  archiveminio:
     image: minio/minio
     entrypoint: sh
     command: -c 'mkdir -p /data/lega && /usr/bin/minio server /data'
@@ -100,11 +100,11 @@ services:
 
   createbucketminio:
     image: minio/mc
-    depends_on:
-      - archive
+    depends_on: 
+      - archiveminio
     entrypoint: >
-      /bin/sh -c "sleep 10;
-      /usr/bin/mc config host add myminio http://archive:9000 ${MINIO_ACCESS_KEY} ${MINIO_SECRET_KEY};
+      /bin/sh -c "sleep 20;
+      /usr/bin/mc config host add myminio http://archiveminio:9000 ${MINIO_ACCESS_KEY} ${MINIO_SECRET_KEY};
       /usr/bin/mc cp /14.enc myminio/lega;
       exit 0;"
     volumes:
