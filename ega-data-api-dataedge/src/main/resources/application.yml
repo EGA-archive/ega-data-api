@@ -1,15 +1,29 @@
-spring.profiles: no-oss
+spring.profiles.active: no-oss,logger-log,add-user-ip-headers
 
 eureka.client.enabled: false
+
+management.server.port: -1
+endpoints.enabled: false
+endpoints.health.enabled: true
+endpoints.info.enabled: true
+endpoints.refresh.enabled: false
 
 # Used when a custom token is generated and we have an ASCII encoded key
 security.oauth2.resource.jwt.key-value: ${JWTKEY}
 
+
 FILEDATABASE:
-  listOfServers: ${FILEDATABASE_SERVERS:filedatabase}
+  listOfServers: ${FILEDATABASE_SERVERS:localhost:8080}
 
 RES2:
   listOfServers: ${RES_SERVERS:res}
 
 KEYSERVER:
   listOfServers: ${KEYS_SERVERS:keys}
+
+
+ega.ega.external.url:
+ega.ega.cram.fasta.a:
+ega.ega.cram.fasta.b:
+spring.oauth2.resource.preferTokenInfo: false
+spring.oauth2.resource.userInfoUri:

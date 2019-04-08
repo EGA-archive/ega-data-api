@@ -1,6 +1,12 @@
-spring.profiles: no-oss
+spring.profiles.active: no-oss,LocalEGA,log-transfer,repo-logger,db-repo-logger
 
 eureka.client.enabled: false
+
+management.server.port: -1
+endpoints.enabled: false
+endpoints.health.enabled: true
+endpoints.info.enabled: true
+endpoints.refresh.enabled: false
 
 FILEDATABASE:
   listOfServers: ${FILEDATABASE_SERVERS:filedatabase}
@@ -11,4 +17,31 @@ RES2:
 KEYSERVER:
   listOfServers: ${KEYS_SERVERS:keys}
 
+spring.jpa.properties.hibernate.default_schema: ${DB_SCHEMA}
+
+spring.datasource.driverClassName: org.postgresql.Driver
+
+#spring.jpa.show-sql: true
+
+# Format should be: jdbc:postgresql://<ip_or_service>:<port>/<db_name>
+spring.datasource.url: ${DB_URL:jdbc:postgresql://localhost:5432/lega}
+
+spring.datasource.username: ${DB_USERNAME}
+
+spring.datasource.password: ${DB_PASSWORD}
+
 hystrix.command.default.execution.timeout.enabled: false
+spring.jpa.hibernate.ddl-auto: none
+## DataSource common settings
+# Keep the connection alive if idle for a long time (needed in production)
+spring.datasource.hikari.test-while-idle: true
+spring.datasource.hikari.validation-query: SELECT 1
+spring.datasource.hikari.initial-size: 3
+spring.datasource.hikari.maximum-pool-size: 8
+spring.datasource.hikari.minimum-idle: 1
+
+ega.ebi.fire.url:
+ega.ebi.fire.archive:
+ega.ebi.fire.key:
+ega.sharedpass.path: /src/test/resources/testing
+service.archive.class:
