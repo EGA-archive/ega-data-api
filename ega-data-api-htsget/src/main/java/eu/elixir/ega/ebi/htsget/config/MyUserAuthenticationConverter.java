@@ -15,7 +15,6 @@
  */
 package eu.elixir.ega.ebi.htsget.config;
 
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.AuthorityUtils;
@@ -25,7 +24,9 @@ import org.springframework.security.oauth2.provider.token.UserAuthenticationConv
 import org.springframework.util.StringUtils;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -76,12 +77,13 @@ public class MyUserAuthenticationConverter implements UserAuthenticationConverte
         if (map.containsKey(USERNAME)) {
             Object principal = map.get(USERNAME);
             Collection<? extends GrantedAuthority> authorities = getAuthorities(map);
+            Map<String,  List<String>> datasetFileMapping = getdatasetFileMapping(map, authorities);
             if (userDetailsService != null) {
                 UserDetails user = userDetailsService.loadUserByUsername((String) map.get(USERNAME));
                 authorities = user.getAuthorities();
                 principal = user;
             }
-            return new UsernamePasswordAuthenticationToken(principal, "N/A", authorities);
+            return new CustomUsernamePasswordAuthenticationToken(principal, "N/A", authorities, datasetFileMapping);
         }
         return null;
     }
@@ -99,6 +101,20 @@ public class MyUserAuthenticationConverter implements UserAuthenticationConverte
                     .collectionToCommaDelimitedString((Collection<?>) authorities));
         }
         throw new IllegalArgumentException("Authorities must be either a String or a Collection");
+    }
+    
+    private Map<String, List<String>> getdatasetFileMapping(Map<String, ?> map,
+            Collection<? extends GrantedAuthority> authorities) {
+        Map<String, List<String>> datasetFileMappings = new HashMap<>();
+        if (authorities != null && authorities.size() > 0) {
+            for (GrantedAuthority grantedAuthority : authorities) {
+                String dataSetId = grantedAuthority.getAuthority();
+                if (map.containsKey(dataSetId)) {
+                    datasetFileMappings.put(dataSetId, (List<String>) map.get(dataSetId));
+                }
+            }
+        }
+        return datasetFileMappings;
     }
 
 }

@@ -1,27 +1,46 @@
+/*
+ * Copyright 2017 ELIXIR EGA
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package eu.elixir.ega.ebi.shared.service.internal;
 
 import static eu.elixir.ega.ebi.shared.Constants.FILEDATABASE_SERVICE;
 
-import eu.elixir.ega.ebi.shared.config.GeneralStreamingException;
-import eu.elixir.ega.ebi.shared.config.NotFoundException;
-import eu.elixir.ega.ebi.shared.config.PermissionDeniedException;
-import eu.elixir.ega.ebi.shared.config.VerifyMessageNew;
-import eu.elixir.ega.ebi.shared.dto.EventEntry;
-import eu.elixir.ega.ebi.shared.service.AuthenticationService;
-import eu.elixir.ega.ebi.shared.service.DownloaderLogService;
-import eu.elixir.ega.ebi.shared.service.PermissionsService;
-import eu.elixir.ega.ebi.shared.dto.FileDataset;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+
 import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+
+import eu.elixir.ega.ebi.shared.config.GeneralStreamingException;
+import eu.elixir.ega.ebi.shared.config.NotFoundException;
+import eu.elixir.ega.ebi.shared.config.PermissionDeniedException;
+import eu.elixir.ega.ebi.shared.config.VerifyMessageNew;
+import eu.elixir.ega.ebi.shared.dto.EventEntry;
+import eu.elixir.ega.ebi.shared.dto.FileDataset;
+import eu.elixir.ega.ebi.shared.service.AuthenticationService;
+import eu.elixir.ega.ebi.shared.service.DownloaderLogService;
+import eu.elixir.ega.ebi.shared.service.PermissionsService;
 
 @Service
 public class PermissionsServiceImpl implements PermissionsService {
@@ -45,6 +64,18 @@ public class PermissionsServiceImpl implements PermissionsService {
 
   @Override
   public String getFilePermissionsEntity(String stableId) {
+    
+    //Obtains DatasetId and FileId mapping from AAI Token Introspection result
+    Map<String, List<String>> datasetFileMapping = authenticationService.getDatasetFileMapping();
+    if (datasetFileMapping != null) {
+        String datasetId = datasetFileMapping.entrySet().parallelStream()
+                .filter(e -> e.getValue().contains(stableId)).map(Map.Entry::getKey).findFirst()
+                .orElse(null);
+        if (datasetId != null) {
+            return datasetId;
+        }
+    } 
+    
     // Obtain all Authorised Datasets (Provided by EGA AAI)
     HashSet<String> permissions = new HashSet<>();
     Collection<? extends GrantedAuthority> authorities = authenticationService.getAuthorities();
