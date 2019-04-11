@@ -15,6 +15,7 @@
  */
 package eu.elixir.ega.ebi.dataedge.service.internal;
 
+import eu.elixir.ega.ebi.dataedge.config.InternalErrorException;
 import eu.elixir.ega.ebi.dataedge.dto.*;
 import eu.elixir.ega.ebi.shared.service.DownloaderLogService;
 import eu.elixir.ega.ebi.shared.service.FileInfoService;
@@ -167,6 +168,23 @@ public class RemoteFileServiceImplTest {
         }
     }
 
+    /**
+     * Test class for
+     * {@link RemoteFileServiceImpl#getById(Authentication, String, String, String, String, long, long, List, List, List, boolean, String, String, HttpServletRequest, HttpServletResponse)}.
+     * Verify code is throws InternalErrorException.
+     */
+    @Test(expected =  InternalErrorException.class)
+    public void testGetByIdforNullIndexFileId() {
+            final ResponseEntity<FileIndexFile[]> forResponseEntity = mock(ResponseEntity.class);
+            when(forResponseEntity.getBody()).thenReturn(null);
+            when(restTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}/index", FileIndexFile[].class, FILEID))
+            .thenReturn(forResponseEntity);
+            
+            remoteFileServiceImpl.getById("file", FILEID, "plain", "reference", 0, 0, null, null, null,
+                    true, "destinationFormat", "destinationKey", new MockHttpServletRequest(),
+                    new MockHttpServletResponse());
+    }
+    
     /**
      * Test class for
      * {@link RemoteFileServiceImpl#getVCFById(Authentication, String, String, String, String, long, long, List, List, List, boolean, String, String, HttpServletRequest, HttpServletResponse)}.
