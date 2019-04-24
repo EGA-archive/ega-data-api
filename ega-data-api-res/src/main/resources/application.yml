@@ -9,6 +9,8 @@ endpoints.health.enabled: true
 endpoints.info.enabled: true
 endpoints.refresh.enabled: false
 
+hystrix.command.default.execution.timeout.enabled: false
+
 FILEDATABASE:
   listOfServers: ${FILEDATABASE_SERVERS:filedatabase}
 
