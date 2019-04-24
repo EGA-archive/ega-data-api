@@ -1,4 +1,4 @@
-spring.profiles.active: no-oss
+spring.profiles: no-oss
 
 eureka.client.enabled: false
 
