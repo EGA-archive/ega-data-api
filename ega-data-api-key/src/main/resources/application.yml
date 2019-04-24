@@ -5,6 +5,7 @@ eureka.client.enabled: false
 hystrix.command.default.execution.timeout.enabled: false
 
 management.server.port: -1
+management.endpoints.jmx.exposure.include: "*"
 endpoints.enabled: false
 endpoints.health.enabled: true
 endpoints.info.enabled: true

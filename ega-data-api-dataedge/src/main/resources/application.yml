@@ -4,7 +4,7 @@ spring.profiles.include: logger-log,add-user-ip-headers
 eureka.client.enabled: false
 
 management.server.port: -1
-spring.jmx.enabled: false
+management.endpoints.web.exposure.include: "*"
 endpoints.enabled: false
 endpoints.health.enabled: true
 endpoints.info.enabled: true

@@ -3,7 +3,7 @@ spring.profiles: no-oss,LocalEGA,log-transfer,repo-logger,db-repo-logger
 eureka.client.enabled: false
 
 management.server.port: -1
-management.endpoints.web.exposure.include: "*"
+management.endpoints.jmx.exposure.include: "*"
 endpoints.enabled: false
 endpoints.health.enabled: true
 endpoints.info.enabled: true
