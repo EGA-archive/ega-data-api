@@ -1,8 +1,10 @@
-spring.profiles.active: no-oss,logger-log,add-user-ip-headers
+spring.profiles: no-oss
+spring.profiles.include: logger-log,add-user-ip-headers
 
 eureka.client.enabled: false
 
 management.server.port: -1
+spring.jmx.enabled: false
 endpoints.enabled: false
 endpoints.health.enabled: true
 endpoints.info.enabled: true
@@ -13,7 +15,7 @@ security.oauth2.resource.jwt.key-value: ${JWTKEY}
 
 
 FILEDATABASE:
-  listOfServers: ${FILEDATABASE_SERVERS:localhost:8080}
+  listOfServers: ${FILEDATABASE_SERVERS:filedatabase}
 
 RES2:
   listOfServers: ${RES_SERVERS:res}

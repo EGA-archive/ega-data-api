@@ -1,8 +1,9 @@
-spring.profiles.active: no-oss,LocalEGA,log-transfer,repo-logger,db-repo-logger
+spring.profiles: no-oss,LocalEGA,log-transfer,repo-logger,db-repo-logger
 
 eureka.client.enabled: false
 
 management.server.port: -1
+management.endpoints.web.exposure.include: "*"
 endpoints.enabled: false
 endpoints.health.enabled: true
 endpoints.info.enabled: true
