@@ -1,9 +1,8 @@
-spring.profiles: no-oss,LocalEGA,log-transfer,repo-logger,db-repo-logger
+spring.profiles: no-oss,LocalEGA,log-transfer,repo-logger
 
 eureka.client.enabled: false
 
-management.server.port: -1
-management.endpoints.jmx.exposure.include: "*"
+spring.jmx.enabled: false
 endpoints.enabled: false
 endpoints.health.enabled: true
 endpoints.info.enabled: true
@@ -21,8 +20,8 @@ KEYSERVER:
   listOfServers: ${KEYS_SERVERS:keys}
 
 
-ega.ebi.fire.url:
-ega.ebi.fire.archive:
-ega.ebi.fire.key:
+ega.ebi.fire.url: http://test
+ega.ebi.fire.archive: test
+ega.ebi.fire.key: test
 ega.sharedpass.path: /src/test/resources/testing
 service.archive.class:
