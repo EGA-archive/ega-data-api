@@ -43,6 +43,8 @@ import htsjdk.variant.variantcontext.writer.VariantContextWriter;
 import htsjdk.variant.variantcontext.writer.VariantContextWriterBuilder;
 import htsjdk.variant.vcf.MyVCFFileReader;
 import htsjdk.variant.vcf.VCFHeader;
+
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
@@ -376,13 +378,17 @@ public class RemoteFileServiceImpl implements FileService {
                 }
 
                 // BAM/CRAM File
-                URL resURL = new URL(resURL() + "file/archive/" + reqFile.getFileId()); // Just specify file ID
+                URL resURL = new URL(resURL() + "/file/archive/" + reqFile.getFileId()); // Just specify file ID
                 SeekableStream cIn = (new EgaSeekableCachedResStream(resURL, null, null, reqFile.getFileSize())).setExtension(extension); // Deals with coordinates
                 //bIn = new SeekableBufferedStream(cIn);
                 // BAI/CRAI File
                 FileIndexFile fileIndexFile = getFileIndexFile(reqFile.getFileId());
+                if(fileIndexFile == null || StringUtils.isEmpty(fileIndexFile.getIndexFileId())) {
+                    throw new IndexNotFoundException("IndexFileId not found for file", fileId);
+                }
+                
                 File reqIndexFile = fileInfoService.getFileInfo(fileIndexFile.getIndexFileId());
-                URL indexUrl = new URL(resURL() + "file/archive/" + fileIndexFile.getIndexFileId()); // Just specify index ID
+                URL indexUrl = new URL(resURL() + "/file/archive/" + fileIndexFile.getIndexFileId()); // Just specify index ID
                 SeekableStream cIndexIn = (new EgaSeekableCachedResStream(indexUrl, null, null, reqIndexFile.getFileSize()));
 
                 inputResource = SamInputResource.of(cIn).index(cIndexIn);
@@ -523,9 +529,13 @@ public class RemoteFileServiceImpl implements FileService {
                 }
 
                 // VCF File
-                resURL = new URL(resURL() + "file/archive/" + reqFile.getFileId() + vcf_ext[0]); // Just specify file ID
+                resURL = new URL(resURL() + "/file/archive/" + reqFile.getFileId() + vcf_ext[0]); // Just specify file ID
                 FileIndexFile fileIndexFile = getFileIndexFile(reqFile.getFileId());
-                indexURL = new URL(resURL() + "file/archive/" + fileIndexFile.getIndexFileId() + vcf_ext[1]); // Just specify index ID
+                if(fileIndexFile == null || StringUtils.isEmpty(fileIndexFile.getIndexFileId())) {
+                    throw new IndexNotFoundException("IndexFileId not found for file", fileId);
+                }
+                
+                indexURL = new URL(resURL() + "/file/archive/" + fileIndexFile.getIndexFileId() + vcf_ext[1]); // Just specify index ID
 
                 System.out.println("Opening Reader!! ");
                 // VCFFileReader with input stream based on RES URL
