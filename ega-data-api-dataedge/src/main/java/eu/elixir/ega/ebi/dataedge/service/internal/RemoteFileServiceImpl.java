@@ -384,7 +384,7 @@ public class RemoteFileServiceImpl implements FileService {
                 // BAI/CRAI File
                 FileIndexFile fileIndexFile = getFileIndexFile(reqFile.getFileId());
                 if(fileIndexFile == null || StringUtils.isEmpty(fileIndexFile.getIndexFileId())) {
-                    throw new InternalErrorException("IndexFileId not found for file", fileId);
+                    throw new IndexNotFoundException("IndexFileId not found for file", fileId);
                 }
                 
                 File reqIndexFile = fileInfoService.getFileInfo(fileIndexFile.getIndexFileId());
@@ -532,7 +532,7 @@ public class RemoteFileServiceImpl implements FileService {
                 resURL = new URL(resURL() + "/file/archive/" + reqFile.getFileId() + vcf_ext[0]); // Just specify file ID
                 FileIndexFile fileIndexFile = getFileIndexFile(reqFile.getFileId());
                 if(fileIndexFile == null || StringUtils.isEmpty(fileIndexFile.getIndexFileId())) {
-                    throw new InternalErrorException("IndexFileId not found for file", fileId);
+                    throw new IndexNotFoundException("IndexFileId not found for file", fileId);
                 }
                 
                 indexURL = new URL(resURL() + "/file/archive/" + fileIndexFile.getIndexFileId() + vcf_ext[1]); // Just specify index ID
