@@ -17,6 +17,7 @@ package eu.elixir.ega.ebi.dataedge.service.internal;
 
 import eu.elixir.ega.ebi.dataedge.config.InternalErrorException;
 import eu.elixir.ega.ebi.dataedge.dto.*;
+import eu.elixir.ega.ebi.dataedge.service.FileLengthService;
 import eu.elixir.ega.ebi.shared.service.DownloaderLogService;
 import eu.elixir.ega.ebi.shared.service.FileInfoService;
 import eu.elixir.ega.ebi.shared.dto.File;
@@ -102,6 +103,9 @@ public class RemoteFileServiceImplTest {
 
     @Mock
     private FileInfoService fileInfoService;
+    
+    @Mock
+    private FileLengthService fileLengthService;
 
     /**
      * Test class for
