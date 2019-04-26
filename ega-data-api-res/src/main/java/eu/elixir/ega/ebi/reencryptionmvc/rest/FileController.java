@@ -69,7 +69,7 @@ public class FileController {
                         @RequestParam(value = "endCoordinate", required = false, defaultValue = "0") long endCoordinate,
                         @RequestParam(value = "fileSize", required = false, defaultValue = "0") long fileSize,
                         @RequestParam(value = "httpAuth", required = false, defaultValue = "") String httpAuth,
-                        String id,
+                        @RequestParam(value = "id", required = false, defaultValue = "0") String id,
                         HttpServletRequest request,
                         HttpServletResponse response) {
         resService.transfer(sourceFormat,

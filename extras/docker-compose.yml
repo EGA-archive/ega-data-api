@@ -24,7 +24,7 @@ services:
     ports:
       - "9092:9092"
     environment:
-      - SPRING_PROFILES_ACTIVE=no-oss,LocalEGA
+      - SPRING_PROFILES_ACTIVE=no-oss,LocalEGA,log-transfer,repo-logger,db-repo-logger
       - server.port=9092
       - ega.ebi.aws.access.key=${MINIO_ACCESS_KEY}
       - ega.ebi.aws.access.secret=${MINIO_SECRET_KEY}
@@ -33,7 +33,11 @@ services:
       - ega.sharedpass.path=/src/test/resources/pgp/ega.shared.pass
       - FILEDATABASE.listOfServers=filedatabase:9051
       - RES2.listOfServers=resserver:9092
-      - KEYSERVER.listOfServers=keyserver:9095 
+      - KEYSERVER.listOfServers=keyserver:9095
+      - DB_SCHEMA=${POSTGRES_SCHEMA_DOWNLOAD}
+      - DB_USERNAME=${POSTGRES_USER}
+      - DB_PASSWORD=${POSTGRES_PASSWORD}
+      - DB_URL=jdbc:postgresql://postgresdb:5432/${POSTGRES_DB}      
       - EGA_EGA_CRAM_FASTA_A=""
       - EGA_EGA_CRAM_FASTA_B=""
       - EGA_EBI_FIRE_URL=""

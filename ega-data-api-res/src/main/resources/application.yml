@@ -1,4 +1,5 @@
-spring.profiles: no-oss,LocalEGA,log-transfer,repo-logger
+spring.profiles: no-oss,LocalEGA
+spring.profiles.include: log-transfer,repo-logger,db-repo-logger
 
 eureka.client.enabled: false
 
@@ -7,8 +8,6 @@ endpoints.enabled: false
 endpoints.health.enabled: true
 endpoints.info.enabled: true
 endpoints.refresh.enabled: false
-
-hystrix.command.default.execution.timeout.enabled: false
 
 FILEDATABASE:
   listOfServers: ${FILEDATABASE_SERVERS:filedatabase}
@@ -25,3 +24,19 @@ ega.ebi.fire.archive: test
 ega.ebi.fire.key: test
 ega.sharedpass.path: /src/test/resources/testing
 service.archive.class:
+
+spring.jpa.properties.hibernate.default_schema: ${DB_SCHEMA}
+spring.datasource.driverClassName: org.postgresql.Driver
+spring.datasource.url: ${DB_URL:jdbc:postgresql://localhost:5432/lega}
+spring.datasource.username: ${DB_USERNAME}
+spring.datasource.password: ${DB_PASSWORD}
+
+hystrix.command.default.circuitBreaker.enabled: false
+hystrix.command.default.fallback.enabled: false
+hystrix.command.default.execution.timeout.enabled: false
+spring.jpa.hibernate.ddl-auto: none
+spring.datasource.hikari.test-while-idle: true
+spring.datasource.hikari.validation-query: SELECT 1
+spring.datasource.hikari.initial-size: 3
+spring.datasource.hikari.maximum-pool-size: 8
+spring.datasource.hikari.minimum-idle: 1

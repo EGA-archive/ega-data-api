@@ -38,7 +38,7 @@ public class ResControllerIntgTest extends ResBase {
      */
     @Test
     public void testGetFile() throws Exception {
-        final Response response = REQUEST.get(FILE_PATH +"?sourceKey="+sourceKey+"&sourceIV="+sourceIV+"&filePath="+filePath+"&destinationFormat=plain");
+        final Response response = REQUEST.get(FILE_PATH +"?sourceKey="+sourceKey+"&sourceIV="+sourceIV+"&filePath="+filePath+"&destinationFormat=plain"+"&id="+fileId);
         assertTrue(getMd5DigestFromResponse(response).equalsIgnoreCase(unencryptedChecksum));
     }
 }
