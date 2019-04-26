@@ -6,7 +6,7 @@ services:
       - "9058:9058"
       - "5059:5059"
     environment:
-      - SPRING_PROFILES_ACTIVE=no-oss
+      - SPRING_PROFILES_ACTIVE=no-oss,LocalEGA
       - server.port=9058
       - JWTKEY=${JWTKEY}
       - FILEDATABASE.listOfServers=filedatabase:9051
