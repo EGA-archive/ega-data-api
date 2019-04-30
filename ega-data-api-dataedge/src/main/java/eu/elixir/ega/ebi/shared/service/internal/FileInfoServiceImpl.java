@@ -33,7 +33,7 @@ public class FileInfoServiceImpl implements FileInfoService{
     ResponseEntity<File[]> forEntity = restTemplate
         .getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}", File[].class, fileId);
     File[] body = forEntity.getBody();
-    if (body != null) {
+    if (body != null && body.length > 0) {
       reqFile = body[0];
       reqFile.setDatasetId(datasetId);
       // If there's no file size in the database, obtain it from RES
