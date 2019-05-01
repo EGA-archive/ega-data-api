@@ -2,19 +2,36 @@ spring.profiles: no-oss
 
 eureka.client.enabled: false
 
+spring.jmx.enabled: false
+endpoints.enabled: false
+endpoints.health.enabled: true
+endpoints.info.enabled: true
+endpoints.refresh.enabled: false
+
 # By default when integrating with LocaEGA we will use schema `local_ega`
-spring.jpa.properties.hibernate.default_schema: ${DB_SCHEMA:local_ega}
+spring.jpa.properties.hibernate.default_schema: ${DB_SCHEMA}
 
 spring.datasource.driverClassName: org.postgresql.Driver
 
 #spring.jpa.show-sql: true
 
 # Format should be: jdbc:postgresql://<ip_or_service>:<port>/<db_name>
-spring.datasource.url: ${DB_URL}
+spring.datasource.url: ${DB_URL:jdbc:postgresql://localhost:5432/lega}
 
 spring.datasource.username: ${DB_USERNAME}
 
 spring.datasource.password: ${DB_PASSWORD}
 
 
+hystrix.command.default.circuitBreaker.enabled: false
+hystrix.command.default.fallback.enabled: false
 hystrix.command.default.execution.timeout.enabled: false
+spring.jpa.hibernate.ddl-auto: none
+## DataSource common settings
+# Keep the connection alive if idle for a long time (needed in production)
+spring.datasource.hikari.test-while-idle: true
+spring.datasource.hikari.validation-query: SELECT 1
+spring.datasource.hikari.initial-size: 3
+spring.datasource.hikari.maximum-pool-size: 8
+spring.datasource.hikari.minimum-idle: 1
+

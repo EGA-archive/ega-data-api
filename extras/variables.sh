@@ -5,6 +5,7 @@ export MINIO_SECRET_KEY="wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
 export MINIO_REGION="europe"
 
 export POSTGRES_SCHEMA="dev_ega_file"
+export POSTGRES_SCHEMA_DOWNLOAD="local_ega_download"
 export POSTGRES_USER="testuser"
 export POSTGRES_PASSWORD="testpassw0rd"
 export POSTGRES_DB="lega"

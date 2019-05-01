@@ -2,6 +2,12 @@ spring.profiles: no-oss
 
 eureka.client.enabled: false
 
+spring.jmx.enabled: false
+endpoints.enabled: false
+endpoints.health.enabled: true
+endpoints.info.enabled: true
+endpoints.refresh.enabled: false
+
 FILEDATABASE:
   listOfServers: ${FILEDATABASE_SERVERS:filedatabase}
 
