@@ -35,7 +35,7 @@ jobs:
         - sleep 90
         - cd ../ega-data-api-it
       script:
-        - mvn test
+        - mvn test -Dtest=!DataedgeIntgTest,!MetadataControllerIntgTest
     - stage: image build
       script: ./extras/travis_push_docker_hub.sh
 

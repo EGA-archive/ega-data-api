@@ -665,6 +665,7 @@ public class RemoteFileServiceImpl implements FileService {
             builder = UriComponentsBuilder.fromHttpUrl(url)
                     .queryParam("destinationFormat", destFormat)
                     .queryParam("destinationKey", destKey)
+                    .queryParam("destinationIV", destIV)
                     .queryParam("filePath", fileStableIdPath); // TEST!!
         } else if (destFormat.equalsIgnoreCase("plain")) {
             builder = UriComponentsBuilder.fromHttpUrl(url)

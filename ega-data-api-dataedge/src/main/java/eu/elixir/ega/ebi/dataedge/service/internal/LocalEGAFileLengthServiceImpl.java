@@ -35,7 +35,9 @@ public class LocalEGAFileLengthServiceImpl  implements FileLengthService {
         if (startCoordinate > 0 || endCoordinate > 0) {
             length = endCoordinate - startCoordinate;
         } else {
-            length = reqFile.getFileSize();
+            // Removing 32 bytes from the actual file size because when the file is stored in S3, 
+            // the sha256sum is added at the beginning so the length would be -32
+            length = reqFile.getFileSize() - 32;
         }
 
         return length;
