@@ -83,16 +83,6 @@ public class MyConfiguration {
     }
 
     @Bean
-    public Docket swaggerSettings() {
-        return new Docket(DocumentationType.SWAGGER_2)
-                .select()
-                .apis(RequestHandlerSelectors.any())
-                .paths(PathSelectors.any())
-                .build()
-                .pathMapping("/");
-    }
-
-    @Bean
     public CacheManager cacheManager() {
         SimpleCacheManager simpleCacheManager = new SimpleCacheManager();
         GuavaCache tokens = new GuavaCache("tokens", CacheBuilder.newBuilder()
