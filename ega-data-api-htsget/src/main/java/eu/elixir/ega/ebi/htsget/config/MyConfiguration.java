@@ -37,10 +37,6 @@ import com.google.common.cache.CacheBuilder;
 
 import eu.elixir.ega.ebi.shared.config.ClientUserIpInterceptor;
 import eu.elixir.ega.ebi.shared.dto.MyExternalConfig;
-import springfox.documentation.builders.PathSelectors;
-import springfox.documentation.builders.RequestHandlerSelectors;
-import springfox.documentation.spi.DocumentationType;
-import springfox.documentation.spring.web.plugins.Docket;
 
 /**
  * @author asenf
