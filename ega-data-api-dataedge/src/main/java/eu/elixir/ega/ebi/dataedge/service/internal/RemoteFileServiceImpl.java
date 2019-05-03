@@ -25,6 +25,7 @@ import eu.elixir.ega.ebi.shared.dto.DownloadEntry;
 import eu.elixir.ega.ebi.shared.dto.EventEntry;
 import eu.elixir.ega.ebi.shared.service.DownloaderLogService;
 import eu.elixir.ega.ebi.shared.service.FileInfoService;
+import eu.elixir.ega.ebi.dataedge.service.FileLengthService;
 import eu.elixir.ega.ebi.dataedge.service.FileService;
 import eu.elixir.ega.ebi.shared.dto.File;
 import eu.elixir.ega.ebi.shared.dto.FileIndexFile;
@@ -102,6 +103,9 @@ public class RemoteFileServiceImpl implements FileService {
 
     @Autowired
     private FileInfoService fileInfoService;
+    
+    @Autowired
+    private FileLengthService fileLengthService;
 
     @Override
     //@HystrixCommand
@@ -147,12 +151,12 @@ public class RemoteFileServiceImpl implements FileService {
         String headerValue = dlIdentifier.toString();
         response = setHeaders(response, headerValue);
 
+        long fileLength = fileLengthService.getContentLength(reqFile, destinationFormat, startCoordinate, endCoordinate);
+
         // Content Length of response (if available)
-        response.setContentLengthLong(getContentLength(reqFile, destinationFormat, startCoordinate, endCoordinate));
+        response.setContentLengthLong(fileLength);
 
         // If byte range, set response 206
-        long fileLength = reqFile.getFileSize();
-        if (destinationFormat.equalsIgnoreCase("plain")) fileLength -= 16;
         if (startCoordinate > 0 || endCoordinate > 0) {
             response.setStatus(HttpServletResponse.SC_PARTIAL_CONTENT);
             response.addHeader("Content-Range", "bytes " + startCoordinate +
@@ -275,8 +279,8 @@ public class RemoteFileServiceImpl implements FileService {
             response = setHeaders(response, headerValue);
 
             // Content Length of response (if available)
-            response.setContentLengthLong(getContentLength(reqFile, destinationFormat, 0, 0));
-            response.addHeader("X-Content-Length", String.valueOf(getContentLength(reqFile, destinationFormat, 0, 0)));
+            response.setContentLengthLong(fileLengthService.getContentLength(reqFile, destinationFormat, 0, 0));
+            response.addHeader("X-Content-Length", String.valueOf(fileLengthService.getContentLength(reqFile, destinationFormat, 0, 0)));
         }
     }
 
@@ -661,6 +665,7 @@ public class RemoteFileServiceImpl implements FileService {
             builder = UriComponentsBuilder.fromHttpUrl(url)
                     .queryParam("destinationFormat", destFormat)
                     .queryParam("destinationKey", destKey)
+                    .queryParam("destinationIV", destIV)
                     .queryParam("filePath", fileStableIdPath); // TEST!!
         } else if (destFormat.equalsIgnoreCase("plain")) {
             builder = UriComponentsBuilder.fromHttpUrl(url)
@@ -771,24 +776,6 @@ public class RemoteFileServiceImpl implements FileService {
         // TODO  
 
         return context;
-    }
-
-    private long getContentLength(File reqFile, String destinationFormat, long startCoordinate, long endCoordinate) {
-        long length = 0;
-
-        // EncryptionFormat
-        int prefix = 16;
-        if (destinationFormat.equalsIgnoreCase("plain"))
-            prefix = 0;
-
-        // Range specified?
-        if (startCoordinate > 0 || endCoordinate > 0) {
-            length = endCoordinate - startCoordinate;
-        } else {
-            length = reqFile.getFileSize() - 16;
-        }
-
-        return (length + prefix);
     }
 
 }
