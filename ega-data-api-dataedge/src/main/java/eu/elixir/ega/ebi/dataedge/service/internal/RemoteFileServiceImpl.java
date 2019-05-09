@@ -111,17 +111,17 @@ public class RemoteFileServiceImpl implements FileService {
      * Writes a requested file, or part of file from the FileService to the
      * supplied response stream.
      *
-     * @param fileId - ELIXIR id of the requested file
-     * @param destinationFormat - Requested destination format, either 'plain',
+     * @param fileId ELIXIR id of the requested file.
+     * @param destinationFormat Requested destination format, either 'plain',
      *     'aes', or file extension.
-     * @param destinationKey - Encryption key that the result file will be
+     * @param destinationKey Encryption key that the result file will be
      *     encrypted with.
-     * @param destinationIV - Initialization Vector for for destination file,
-     *     used when requesting a partial AES encrypted file.
-     * @param startCoordinate - Start coordinate when requesting a partial file.
-     * @param endCoordinate - End coordinate when requesting a partial file.
-     * @param request - Unused.
-     * @param response - Response stream for the returned data.
+     * @param destinationIV Initialization Vector for for destination file, used
+     *     when requesting a partial AES encrypted file.
+     * @param startCoordinate Start coordinate when requesting a partial file.
+     * @param endCoordinate End coordinate when requesting a partial file.
+     * @param request Unused.
+     * @param response Response stream for the returned data.
      */
     @Override
     //@HystrixCommand
@@ -273,9 +273,9 @@ public class RemoteFileServiceImpl implements FileService {
      * includes the content length, but also a random UUID for statistics.
      *
      * @param fileId ELIXIR id of the requested file
-     * @param destinationFormat - Requested destination format.
-     * @param request - Unused.
-     * @param response - Response stream for the returned data.
+     * @param destinationFormat Requested destination format.
+     * @param request Unused.
+     * @param response Response stream for the returned data.
      */
     @Override
     //@HystrixCommand
@@ -307,12 +307,12 @@ public class RemoteFileServiceImpl implements FileService {
     /**
      * Returns the SAM file header for a file identified by fileId.
      *
-     * @param fileId - ELIXIR id of the requested file
-     * @param destinationFormat - Requested destination format.
-     * @param destinationKey - Encryption key that the result file will be
+     * @param fileId ELIXIR id of the requested file.
+     * @param destinationFormat Requested destination format.
+     * @param destinationKey Encryption key that the result file will be
      *     encrypted with.
-     * @param x - optional CRAM reference source to be used with the
-     *     SamReaderFactory
+     * @param x optional CRAM reference source to be used with the
+     *     SamReaderFactory.
      * @return The SAM file header for the file.
      */
     @Override
@@ -362,22 +362,22 @@ public class RemoteFileServiceImpl implements FileService {
      * Writes a requested file (or part of file), selected by accession, from
      * the FileService to the supplied response stream.
      *
-     * @param fileId - Should be set to 'file'.
-     * @param accession - Local accession ID of the requested file.
-     * @param format - Requested file format. Either 'bam' or 'cram' (case
+     * @param fileId Should be set to 'file'.
+     * @param accession Local accession ID of the requested file.
+     * @param format Requested file format. Either 'bam' or 'cram' (case
      *     insensitive).
-     * @param reference - FASTA reference name, required for selecting a region
+     * @param reference FASTA reference name, required for selecting a region
      *     with start and end.
-     * @param start - Start coordinate when requesting a partial file.
-     * @param end - End coordinate when requesting a partial file.
-     * @param fields - Data fields to include in the output file.
-     * @param tags - Data tags to include in the output file.
-     * @param notags - Data tags to exclude from the output file.
-     * @param header - Unused.
-     * @param destinationFormat - Requested destination format.
-     * @param destinationKey - Unused.
-     * @param request - Unused.
-     * @param response - Response stream for the returned data.
+     * @param start Start coordinate when requesting a partial file.
+     * @param end End coordinate when requesting a partial file.
+     * @param fields Data fields to include in the output file.
+     * @param tags Data tags to include in the output file.
+     * @param notags Data tags to exclude from the output file.
+     * @param header Unused.
+     * @param destinationFormat Requested destination format.
+     * @param destinationKey Unused.
+     * @param request Unused.
+     * @param response Response stream for the returned data.
      */
     @Override
     //@HystrixCommand
@@ -542,21 +542,21 @@ public class RemoteFileServiceImpl implements FileService {
      * Writes a requested file (or part of file), selected by accession, from
      * the FileService to the supplied response stream.
      *
-     * @param fileId - Should be set to 'file'.
-     * @param accession - Local accession ID of the requested file.
-     * @param format - Unused.
-     * @param reference - FASTA reference name, required for selecting a region
+     * @param fileId Should be set to 'file'.
+     * @param accession Local accession ID of the requested file.
+     * @param format Unused.
+     * @param reference FASTA reference name, required for selecting a region
      *     with start and end.
-     * @param start - Start coordinate when requesting a partial file.
-     * @param end - End coordinate when requesting a partial file.
-     * @param fields - Data fields to include in the output file.
-     * @param tags - Data tags to include in the output file.
-     * @param notags - Data tags to exclude from the output file.
-     * @param header - Unused.
-     * @param destinationFormat - Requested destination format.
-     * @param destinationKey - Unused.
-     * @param request - Unused.
-     * @param response - Response stream for the returned data.
+     * @param start Start coordinate when requesting a partial file.
+     * @param end End coordinate when requesting a partial file.
+     * @param fields Data fields to include in the output file.
+     * @param tags Data tags to include in the output file.
+     * @param notags Data tags to exclude from the output file.
+     * @param header Unused.
+     * @param destinationFormat Requested destination format.
+     * @param destinationKey Unused.
+     * @param request Unused.
+     * @param response Response stream for the returned data.
      */
     @Override
     //@HystrixCommand
@@ -687,8 +687,8 @@ public class RemoteFileServiceImpl implements FileService {
      /**
       * Returns the integer digest as a zero-padded length 32 string.
       *
-      * @param inDigest - input digest to convert
-      * @return integer digest of the input
+      * @param inDigest input digest to convert.
+      * @return integer digest of the input.
       */
     //@HystrixCommand
     private String getDigestText(byte[] inDigest) {
@@ -703,8 +703,8 @@ public class RemoteFileServiceImpl implements FileService {
     /**
      * Sets the given headerValue as an 'X-session' value in the response.
      *
-     * @param response - response object to set the header value in.
-     * @param headerValue - header value to set as an 'X-session' value.
+     * @param response response object to set the header value in.
+     * @param headerValue header value to set as an 'X-session' value.
      * @return The response parameter with the header value set.
      */
     //@HystrixCommand
@@ -726,15 +726,15 @@ public class RemoteFileServiceImpl implements FileService {
     /**
      * Create a formatted URI to request a resource from the RES micro-service.
      *
-     * @param fileStableIdPath - Path to the file.
-     * @param destFormat - Requested format (encryption type, 'plain', or
+     * @param fileStableIdPath Path to the file.
+     * @param destFormat Requested format (encryption type, 'plain', or
      *     'publicgpg').
-     * @param destKey - Encryption key that the result file will be encrypted
+     * @param destKey Encryption key that the result file will be encrypted
      *     with.
-     * @param destIV - Destination Initialization Vector. Needed to request part
+     * @param destIV Destination Initialization Vector. Needed to request part
      *     of an AES encrypted file, as the IV is otherwise part of the header.
-     * @param startCoord - Start coordinate of the requested file area, or 0.
-     * @param endCoord - End coordinate of the requested file area, or 0.
+     * @param startCoord Start coordinate of the requested file area, or 0.
+     * @param endCoord End coordinate of the requested file area, or 0.
      * @return Formatted URI for the resource.
      */
     //@HystrixCommand
@@ -813,7 +813,7 @@ public class RemoteFileServiceImpl implements FileService {
     /**
      * Returns the index file for a given fileId.
      *
-     * @param fileId - ELIXIR id of the requested file.
+     * @param fileId ELIXIR id of the requested file.
      * @return The content of the index file.
      */
     //@HystrixCommand
@@ -833,10 +833,10 @@ public class RemoteFileServiceImpl implements FileService {
      * and returns OK or UNAUTHORIZED wheather the file exists and can be
      * accessible.
      *
-     * @param fileId - should be "file".
-     * @param accession - accession id of the requested file.
-     * @param request - Unused.
-     * @param response - reponse object which will be modified with the content
+     * @param fileId should be "file".
+     * @param accession accession id of the requested file.
+     * @param request Unused.
+     * @param response reponse object which will be modified with the content
      *     length of the requested file head.
      * @return httpStatus OK if the file info was accessible, and the reponse
      *     was modified, otherwise UNAUTHORIZED.
@@ -867,11 +867,11 @@ public class RemoteFileServiceImpl implements FileService {
      * Filters a SAM record based on fields, tags, and excluded tags, if no
      * fields, tags or notags are provided, the original context is returned.
      *
-     * @param record - SAM format record to be filtered
-     * @param fields - Fields to include after filtering.
-     * @param tags - Tags to include after filtering.
-     * @param notags - Tags to exclude after filtering.
-     * @return The modified record
+     * @param record SAM format record to be filtered.
+     * @param fields Fields to include after filtering.
+     * @param tags Tags to include after filtering.
+     * @param notags Tags to exclude after filtering.
+     * @return The modified record.
      */
     private SAMRecord filterMe(SAMRecord record, List<String> fields, List<String> tags, List<String> notags) {
         // Default - leave record as it is
@@ -906,11 +906,11 @@ public class RemoteFileServiceImpl implements FileService {
      * Filters a variant context based on fields, tags, and excluded tags, if no
      * fields, tags or notags are provided, the original context is returned.
      *
-     * @param context - The context to be filtered
-     * @param fields - Fields to include after filtering
-     * @param tags - Tags to include after filtering.
-     * @param notags - Tags to exclude after filtering.
-     * @return The modified context
+     * @param context The context to be filtered.
+     * @param fields Fields to include after filtering.
+     * @param tags Tags to include after filtering.
+     * @param notags Tags to exclude after filtering.
+     * @return The modified context.
      */
     private VariantContext filterMe(VariantContext context, List<String> fields, List<String> tags, List<String> notags) {
         // Default - leave record as it is
