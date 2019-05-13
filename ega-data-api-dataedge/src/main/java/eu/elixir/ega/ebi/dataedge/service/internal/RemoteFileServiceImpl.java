@@ -103,10 +103,26 @@ public class RemoteFileServiceImpl implements FileService {
 
     @Autowired
     private FileInfoService fileInfoService;
-    
+
     @Autowired
     private FileLengthService fileLengthService;
 
+    /**
+     * Writes a requested file, or part of file from the FileService to the
+     * supplied response stream.
+     *
+     * @param fileId ELIXIR id of the requested file.
+     * @param destinationFormat Requested destination format, either 'plain',
+     *     'aes', or file extension.
+     * @param destinationKey Encryption key that the result file will be
+     *     encrypted with.
+     * @param destinationIV Initialization Vector for for destination file, used
+     *     when requesting a partial AES encrypted file.
+     * @param startCoordinate Start coordinate when requesting a partial file.
+     * @param endCoordinate End coordinate when requesting a partial file.
+     * @param request Unused.
+     * @param response Response stream for the returned data.
+     */
     @Override
     //@HystrixCommand
     public void getFile(String fileId,
@@ -140,12 +156,6 @@ public class RemoteFileServiceImpl implements FileService {
         HttpResult xferResult = null;
         MessageDigest outDigest = null;
 
-        // Log request in Event
-        //    EventEntry eev_received = createEventEntry(file_id + ":" + destinationFormat + ":" + startCoordinate + ":" + endCoordinate,
-        //            ipAddress, "http_request", user_email);
-        //    eev_received.setEventType("request_log");
-        //    downloaderLogService.logEvent(eev_received);
-
         // Build Header - Specify UUID (Allow later stats query regarding this transfer)
         UUID dlIdentifier = UUID.randomUUID();
         String headerValue = dlIdentifier.toString();
@@ -161,9 +171,6 @@ public class RemoteFileServiceImpl implements FileService {
             response.setStatus(HttpServletResponse.SC_PARTIAL_CONTENT);
             response.addHeader("Content-Range", "bytes " + startCoordinate +
                     "-" + (endCoordinate - 1) + "/" + fileLength);
-//System.out.println(" ^^^^^^^^^^^ setting buffer: " + (endCoordinate - startCoordinate));
-//                if (endCoordinate - startCoordinate < Integer.MAX_VALUE)
-//                    response.setBufferSize((int) (endCoordinate - startCoordinate));
             response.setBufferSize(DEFAULT_BUFFER_SIZE);
         }
 
@@ -176,8 +183,10 @@ public class RemoteFileServiceImpl implements FileService {
             RequestCallback requestCallback = request_ -> request_.getHeaders()
                     .setAccept(Arrays.asList(MediaType.APPLICATION_OCTET_STREAM, MediaType.ALL));
 
-            // ----------------------------------------------------------------- Callback Function for Resttemplate
-            // Get Data Stream from RES ReEncryptionService --------------------
+            // -----------------------------------------------------------------
+            // Callback Function for Resttemplate
+            // Get Data Stream from RES ReEncryptionService
+            // -----------------------------------------------------------------
             ResponseExtractor<HttpResult> responseExtractor = response_ -> {
                 List<String> get = response_.getHeaders().get("X-Session"); // RES session UUID
                 long b = 0;
@@ -197,7 +206,6 @@ public class RemoteFileServiceImpl implements FileService {
 
                     // Input stream from RES, wrap in DigestStream
                     MessageDigest inDigest = MessageDigest.getInstance("MD5");
-                    //DigestInputStream inDigestStream = new DigestInputStream(response_.getBody(), inDigest);
                     DigestInputStream inDigestStream = new DigestInputStream(inOrig, inDigest);
 
                     // The actual Data Transfer - copy bytes from RES to Http connection to client
@@ -260,6 +268,15 @@ public class RemoteFileServiceImpl implements FileService {
         }
     }
 
+    /**
+     * Returns the http header for a file identified by fileId. This mainly
+     * includes the content length, but also a random UUID for statistics.
+     *
+     * @param fileId ELIXIR id of the requested file
+     * @param destinationFormat Requested destination format.
+     * @param request Unused.
+     * @param response Response stream for the returned data.
+     */
     @Override
     //@HystrixCommand
     @Cacheable(cacheNames = "fileHead", key="T(org.springframework.security.core.context.SecurityContextHolder).getContext().getAuthentication() + #p0 + #p1 + #p2 + #p3")
@@ -287,7 +304,17 @@ public class RemoteFileServiceImpl implements FileService {
     /*
      * GA4GH / Semantic Functionality: Use SAMTools to access a File in Cleversafe
      */
-
+    /**
+     * Returns the SAM file header for a file identified by fileId.
+     *
+     * @param fileId ELIXIR id of the requested file.
+     * @param destinationFormat Requested destination format.
+     * @param destinationKey Encryption key that the result file will be
+     *     encrypted with.
+     * @param x optional CRAM reference source to be used with the
+     *     SamReaderFactory.
+     * @return The SAM file header for the file.
+     */
     @Override
     //@HystrixCommand
     @Cacheable(cacheNames = "headerFile", key="T(org.springframework.security.core.context.SecurityContextHolder).getContext().getAuthentication() + #p0 + #p1 + #p2 + #p3")
@@ -331,6 +358,27 @@ public class RemoteFileServiceImpl implements FileService {
         return reqFile.getDatasetId().equalsIgnoreCase("EGAD00001003952");
     }
 
+    /**
+     * Writes a requested file (or part of file), selected by accession, from
+     * the FileService to the supplied response stream.
+     *
+     * @param fileId Should be set to 'file'.
+     * @param accession Local accession ID of the requested file.
+     * @param format Requested file format. Either 'bam' or 'cram' (case
+     *     insensitive).
+     * @param reference FASTA reference name, required for selecting a region
+     *     with start and end.
+     * @param start Start coordinate when requesting a partial file.
+     * @param end End coordinate when requesting a partial file.
+     * @param fields Data fields to include in the output file.
+     * @param tags Data tags to include in the output file.
+     * @param notags Data tags to exclude from the output file.
+     * @param header Unused.
+     * @param destinationFormat Requested destination format.
+     * @param destinationKey Unused.
+     * @param request Unused.
+     * @param response Response stream for the returned data.
+     */
     @Override
     //@HystrixCommand
     public void getById(String fileId,
@@ -365,7 +413,7 @@ public class RemoteFileServiceImpl implements FileService {
             // SeekableStream on top of RES (using Eureka to obtain RES Base URL)
             SamInputResource inputResource;
             CRAMReferenceSource x = null;
-            //SeekableBufferedStream bIn = null, 
+            //SeekableBufferedStream bIn = null,
             //                       bIndexIn = null;
             try {
                 String extension = "";
@@ -390,7 +438,7 @@ public class RemoteFileServiceImpl implements FileService {
                 if(fileIndexFile == null || StringUtils.isEmpty(fileIndexFile.getIndexFileId())) {
                     throw new IndexNotFoundException("IndexFileId not found for file", fileId);
                 }
-                
+
                 File reqIndexFile = fileInfoService.getFileInfo(fileIndexFile.getIndexFileId());
                 URL indexUrl = new URL(resURL() + "/file/archive/" + fileIndexFile.getIndexFileId()); // Just specify index ID
                 SeekableStream cIndexIn = (new EgaSeekableCachedResStream(indexUrl, null, null, reqIndexFile.getFileSize()));
@@ -490,6 +538,26 @@ public class RemoteFileServiceImpl implements FileService {
         }
     }
 
+    /**
+     * Writes a requested file (or part of file), selected by accession, from
+     * the FileService to the supplied response stream.
+     *
+     * @param fileId Should be set to 'file'.
+     * @param accession Local accession ID of the requested file.
+     * @param format Unused.
+     * @param reference FASTA reference name, required for selecting a region
+     *     with start and end.
+     * @param start Start coordinate when requesting a partial file.
+     * @param end End coordinate when requesting a partial file.
+     * @param fields Data fields to include in the output file.
+     * @param tags Data tags to include in the output file.
+     * @param notags Data tags to exclude from the output file.
+     * @param header Unused.
+     * @param destinationFormat Requested destination format.
+     * @param destinationKey Unused.
+     * @param request Unused.
+     * @param response Response stream for the returned data.
+     */
     @Override
     //@HystrixCommand
     public void getVCFById(String fileId,
@@ -538,7 +606,7 @@ public class RemoteFileServiceImpl implements FileService {
                 if(fileIndexFile == null || StringUtils.isEmpty(fileIndexFile.getIndexFileId())) {
                     throw new IndexNotFoundException("IndexFileId not found for file", fileId);
                 }
-                
+
                 indexURL = new URL(resURL() + "/file/archive/" + fileIndexFile.getIndexFileId() + vcf_ext[1]); // Just specify index ID
 
                 System.out.println("Opening Reader!! ");
@@ -615,6 +683,13 @@ public class RemoteFileServiceImpl implements FileService {
     /*
      * Helper Functions
      */
+
+     /**
+      * Returns the integer digest as a zero-padded length 32 string.
+      *
+      * @param inDigest input digest to convert.
+      * @return integer digest of the input.
+      */
     //@HystrixCommand
     private String getDigestText(byte[] inDigest) {
         BigInteger bigIntIn = new BigInteger(1, inDigest);
@@ -625,6 +700,13 @@ public class RemoteFileServiceImpl implements FileService {
         return hashtext;
     }
 
+    /**
+     * Sets the given headerValue as an 'X-session' value in the response.
+     *
+     * @param response response object to set the header value in.
+     * @param headerValue header value to set as an 'X-session' value.
+     * @return The response parameter with the header value set.
+     */
     //@HystrixCommand
     private HttpServletResponse setHeaders(HttpServletResponse response, String headerValue) {
         // Set headers for the response
@@ -641,6 +723,20 @@ public class RemoteFileServiceImpl implements FileService {
         return response;
     }
 
+    /**
+     * Create a formatted URI to request a resource from the RES micro-service.
+     *
+     * @param fileStableIdPath Path to the file.
+     * @param destFormat Requested format (encryption type, 'plain', or
+     *     'publicgpg').
+     * @param destKey Encryption key that the result file will be encrypted
+     *     with.
+     * @param destIV Destination Initialization Vector. Needed to request part
+     *     of an AES encrypted file, as the IV is otherwise part of the header.
+     * @param startCoord Start coordinate of the requested file area, or 0.
+     * @param endCoord End coordinate of the requested file area, or 0.
+     * @return Formatted URI for the resource.
+     */
     //@HystrixCommand
     private URI getResUri(String fileStableIdPath,
                           String destFormat,
@@ -694,16 +790,32 @@ public class RemoteFileServiceImpl implements FileService {
         return "";
     }
 
+    /**
+     * Asks the load balancer for a RES (Re-Encryption Service) URL.
+     *
+     * @return RES service URL.
+     */
     //@HystrixCommand
     public String resURL() {
         return loadBalancer.choose("RES2").getUri().toString();
     }
 
+    /**
+     * Asks the load balancer for a file database URL.
+     *
+     * @return file database URL.
+     */
     //@HystrixCommand
     public String fileDatabaseURL() {
         return loadBalancer.choose("FILEDATABASE").getUri().toString();
     }
 
+    /**
+     * Returns the index file for a given fileId.
+     *
+     * @param fileId ELIXIR id of the requested file.
+     * @return The content of the index file.
+     */
     //@HystrixCommand
     @Cacheable(cacheNames = "indexFile", key="T(org.springframework.security.core.context.SecurityContextHolder).getContext().getAuthentication() + #p0")
     private FileIndexFile getFileIndexFile(String fileId) {
@@ -716,6 +828,19 @@ public class RemoteFileServiceImpl implements FileService {
         return indexFile;
     }
 
+    /**
+     * Writes the content length of a selected file to the reponse parameter,
+     * and returns OK or UNAUTHORIZED wheather the file exists and can be
+     * accessible.
+     *
+     * @param fileId should be "file".
+     * @param accession accession id of the requested file.
+     * @param request Unused.
+     * @param response reponse object which will be modified with the content
+     *     length of the requested file head.
+     * @return httpStatus OK if the file info was accessible, and the reponse
+     *     was modified, otherwise UNAUTHORIZED.
+     */
     @Override
     //@HystrixCommand
     @Cacheable(cacheNames = "fileSize", key="T(org.springframework.security.core.context.SecurityContextHolder).getContext().getAuthentication() + #p0 + #p1 + #p2 +#p3")
@@ -738,6 +863,16 @@ public class RemoteFileServiceImpl implements FileService {
         return new ResponseEntity(HttpStatus.UNAUTHORIZED);
     }
 
+    /**
+     * Filters a SAM record based on fields, tags, and excluded tags, if no
+     * fields, tags or notags are provided, the original context is returned.
+     *
+     * @param record SAM format record to be filtered.
+     * @param fields Fields to include after filtering.
+     * @param tags Tags to include after filtering.
+     * @param notags Tags to exclude after filtering.
+     * @return The modified record.
+     */
     private SAMRecord filterMe(SAMRecord record, List<String> fields, List<String> tags, List<String> notags) {
         // Default - leave record as it is
         if (fields == null && tags == null && notags == null) return record;
@@ -767,13 +902,23 @@ public class RemoteFileServiceImpl implements FileService {
         return record;
     }
 
+    /**
+     * Filters a variant context based on fields, tags, and excluded tags, if no
+     * fields, tags or notags are provided, the original context is returned.
+     *
+     * @param context The context to be filtered.
+     * @param fields Fields to include after filtering.
+     * @param tags Tags to include after filtering.
+     * @param notags Tags to exclude after filtering.
+     * @return The modified context.
+     */
     private VariantContext filterMe(VariantContext context, List<String> fields, List<String> tags, List<String> notags) {
         // Default - leave record as it is
         if (fields == null && tags == null && notags == null) return context;
 
         Map<String, Object> attributes = context.getAttributes();
 
-        // TODO  
+        // TODO
 
         return context;
     }
