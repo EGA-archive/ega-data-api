@@ -212,7 +212,7 @@ public class RemoteFileServiceImplTest {
     @Test
     public void testResURL() {
         final String resURL = remoteFileServiceImpl.resURL();
-        assertThat(resURL, equalTo("http://res/"));
+        assertThat(resURL, equalTo("https://res2/"));
     }
 
     /**
@@ -222,7 +222,7 @@ public class RemoteFileServiceImplTest {
     @Test
     public void testFileDatabaseURL() {
         final String downloadURL = remoteFileServiceImpl.fileDatabaseURL();
-        assertThat(downloadURL, equalTo("http://filedatabase/"));
+        assertThat(downloadURL, equalTo("https://filedatabase/"));
     }
 
     /**
@@ -295,9 +295,9 @@ public class RemoteFileServiceImplTest {
         when(samReaderFactory.open(any(SamInputResource.class))).thenReturn(samReader);
         when(samReader.getFileHeader()).thenReturn(samFileHeader);
 
-        SimpleDiscoveryProperties.SimpleServiceInstance fileDatabaseServiceInstance = new SimpleDiscoveryProperties.SimpleServiceInstance(new URL("http://filedatabase/").toURI());
+        SimpleDiscoveryProperties.SimpleServiceInstance fileDatabaseServiceInstance = new SimpleDiscoveryProperties.SimpleServiceInstance(new URL("https://filedatabase/").toURI());
         when(loadBalancer.choose("FILEDATABASE")).thenReturn(fileDatabaseServiceInstance);
-        SimpleDiscoveryProperties.SimpleServiceInstance resServiceInstance = new SimpleDiscoveryProperties.SimpleServiceInstance(new URL("http://res/").toURI());
+        SimpleDiscoveryProperties.SimpleServiceInstance resServiceInstance = new SimpleDiscoveryProperties.SimpleServiceInstance(new URL("https://res2/").toURI());
         when(loadBalancer.choose("RES2")).thenReturn(resServiceInstance);
 
         when(restTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}/datasets", FileDataset[].class, FILEID))

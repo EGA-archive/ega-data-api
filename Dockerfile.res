@@ -12,6 +12,7 @@ LABEL org.label-schema.build-date=$BUILD_DATE
 LABEL org.label-schema.vcs-url="https://github.com/EGA-archive/ega-data-api"
 LABEL org.label-schema.vcs-ref=$SOURCE_COMMIT
 COPY --from=builder ega-data-api-res/target/ega-data-api-res-0.0.1-SNAPSHOT.jar .
+COPY ega-data-api-res/src/test/resources .
 COPY entrypoint.sh .
 RUN chmod +x entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]

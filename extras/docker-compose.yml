@@ -16,6 +16,9 @@ services:
       - ega.ega.cram.fasta=/homes/ega-prod/ngs_dev/Homo_sapiens_assembly38.fasta
       - ega.ega.cram.fasta.a=/homes/ega-prod/ngs_dev/Homo_sapiens_assembly38.fasta 
       - ega.ega.cram.fasta.b=/homes/ega-prod/ngs_dev/hsapiens.GRCh37.fasta
+    volumes:
+      - "$HOME/ega-data-api/extras/certificate/ca/CA.cert:/etc/ssl/certs/ca-certificates.crt"   
+      - "$HOME/ega-data-api/extras/certificate/dataedge.p12:/dataedge.p12"               
     networks:
       - webnet
 
@@ -30,7 +33,7 @@ services:
       - ega.ebi.aws.access.secret=${MINIO_SECRET_KEY}
       - ega.ebi.aws.endpoint.url=http://archiveminio:9000
       - ega.ebi.aws.endpoint.region=${MINIO_REGION}
-      - ega.sharedpass.path=/src/test/resources/pgp/ega.shared.pass
+      - ega.sharedpass.path=/pgp/ega.shared.pass
       - FILEDATABASE.listOfServers=filedatabase:9051
       - RES2.listOfServers=resserver:9092
       - KEYSERVER.listOfServers=keyserver:9095
@@ -44,6 +47,9 @@ services:
       - EGA_EBI_FIRE_ARCHIVE=""
       - EGA_EBI_FIRE_KEY=""
       - service.archive.class=""
+    volumes:
+      - "$HOME/ega-data-api/extras/certificate/ca/CA.cert:/etc/ssl/certs/ca-certificates.crt"   
+      - "$HOME/ega-data-api/extras/certificate/resserver.p12:/resserver.p12"    
     networks:
       - webnet
 
@@ -54,11 +60,14 @@ services:
     environment:
       - SPRING_PROFILES_ACTIVE=no-oss
       - server.port=9095        
-      - ega.key.path=/src/test/resources/pgp/ega.sec
-      - ega.keypass.path=/src/test/resources/pgp/ega.sec.pass
-      - ega.sharedpass.path=/src/test/resources/pgp/ega.shared.pass
-      - ega.publickey.url=/src/test/resources/pgp/ega.pub
-      - ega.legacy.path=/src/test/resources/pgp/legacy.pass     
+      - ega.key.path=/pgp/ega.sec
+      - ega.keypass.path=/pgp/ega.sec.pass
+      - ega.sharedpass.path=/pgp/ega.shared.pass
+      - ega.publickey.url=/pgp/ega.pub
+      - ega.legacy.path=/pgp/legacy.pass
+    volumes:
+      - "$HOME/ega-data-api/extras/certificate/ca/CA.cert:/etc/ssl/certs/ca-certificates.crt"   
+      - "$HOME/ega-data-api/extras/certificate/keyserver.p12:/keyserver.p12"         
     networks:
       - webnet
 
@@ -87,6 +96,9 @@ services:
       - DB_USERNAME=${POSTGRES_USER}
       - DB_PASSWORD=${POSTGRES_PASSWORD}
       - DB_URL=jdbc:postgresql://postgresdb:5432/${POSTGRES_DB}
+    volumes:
+      - "$HOME/ega-data-api/extras/certificate/ca/CA.cert:/etc/ssl/certs/ca-certificates.crt"   
+      - "$HOME/ega-data-api/extras/certificate/filedatabase.p12:/filedatabase.p12"      
     networks:
       - webnet
 
@@ -115,7 +127,7 @@ services:
       - "./14.enc:/14.enc"
     environment:
       - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY}
-      - MINIO_SECRET_KEY=${MINIO_SECRET_KEY}       
+      - MINIO_SECRET_KEY=${MINIO_SECRET_KEY}     
     networks:
       - webnet
 
