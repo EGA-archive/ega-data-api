@@ -26,11 +26,13 @@ jobs:
       script: mvn test
     - stage: integ test
       before_script:
-        - sudo service postgresql stop
-        - cd extras/postgresdb
-        - docker build -t ega-data-api/ega-postgres .
-        - cd ../
-        - source ./variables.sh
+        - sudo service postgresql stop      
+        - docker build -t ega-data-api/ega-dataedge  --file Dockerfile.dataedge .
+        - docker build -t ega-data-api/ega-res  --file Dockerfile.res .
+        - docker build -t ega-data-api/ega-keyserver  --file Dockerfile.keyserver .
+        - docker build -t ega-data-api/ega-filedatabase  --file Dockerfile.filedatabase .        
+        - docker build -t ega-data-api/ega-postgres --file extras/postgresdb/Dockerfile .
+        - cd extras && source ./variables.sh
         - docker-compose up -d
         - sleep 90
         - cd ../ega-data-api-it

@@ -17,8 +17,8 @@ services:
       - ega.ega.cram.fasta.a=/homes/ega-prod/ngs_dev/Homo_sapiens_assembly38.fasta 
       - ega.ega.cram.fasta.b=/homes/ega-prod/ngs_dev/hsapiens.GRCh37.fasta
     volumes:
-      - "$HOME/ega-data-api/extras/certificate/ca/CA.cert:/etc/ssl/certs/ca-certificates.crt"   
-      - "$HOME/ega-data-api/extras/certificate/dataedge.p12:/dataedge.p12"               
+      - "$TRAVIS_BUILD_DIR/extras/certificate/ca/CA.cert:/etc/ssl/certs/ca-certificates.crt"   
+      - "$TRAVIS_BUILD_DIR/extras/certificate/dataedge.p12:/dataedge.p12"               
     networks:
       - webnet
 
@@ -48,8 +48,9 @@ services:
       - EGA_EBI_FIRE_KEY=""
       - service.archive.class=""
     volumes:
-      - "$HOME/ega-data-api/extras/certificate/ca/CA.cert:/etc/ssl/certs/ca-certificates.crt"   
-      - "$HOME/ega-data-api/extras/certificate/resserver.p12:/resserver.p12"    
+      - "$TRAVIS_BUILD_DIR/extras/certificate/ca/CA.cert:/etc/ssl/certs/ca-certificates.crt"   
+      - "$TRAVIS_BUILD_DIR/extras/certificate/resserver.p12:/resserver.p12"    
+      - "$TRAVIS_BUILD_DIR/ega-data-api-res/src/test/resources/pgp:/pgp"                        
     networks:
       - webnet
 
@@ -66,8 +67,9 @@ services:
       - ega.publickey.url=/pgp/ega.pub
       - ega.legacy.path=/pgp/legacy.pass
     volumes:
-      - "$HOME/ega-data-api/extras/certificate/ca/CA.cert:/etc/ssl/certs/ca-certificates.crt"   
-      - "$HOME/ega-data-api/extras/certificate/keyserver.p12:/keyserver.p12"         
+      - "$TRAVIS_BUILD_DIR/extras/certificate/ca/CA.cert:/etc/ssl/certs/ca-certificates.crt"   
+      - "$TRAVIS_BUILD_DIR/extras/certificate/keyserver.p12:/keyserver.p12"
+      - "$TRAVIS_BUILD_DIR/ega-data-api-key/src/test/resources/pgp:/pgp"
     networks:
       - webnet
 
@@ -97,8 +99,8 @@ services:
       - DB_PASSWORD=${POSTGRES_PASSWORD}
       - DB_URL=jdbc:postgresql://postgresdb:5432/${POSTGRES_DB}
     volumes:
-      - "$HOME/ega-data-api/extras/certificate/ca/CA.cert:/etc/ssl/certs/ca-certificates.crt"   
-      - "$HOME/ega-data-api/extras/certificate/filedatabase.p12:/filedatabase.p12"      
+      - "$TRAVIS_BUILD_DIR/extras/certificate/ca/CA.cert:/etc/ssl/certs/ca-certificates.crt"   
+      - "$TRAVIS_BUILD_DIR/extras/certificate/filedatabase.p12:/filedatabase.p12"      
     networks:
       - webnet
 
