@@ -9,3 +9,7 @@ endpoints.enabled: false
 endpoints.health.enabled: true
 endpoints.info.enabled: true
 endpoints.refresh.enabled: false
+
+server.ssl.key-store-type: ${KEY_STORE_TYPE:PKCS12}
+server.ssl.key-store: ${KEY_STORE:/keyserver.p12}
+server.ssl.key-store-password: ${KEY_STORE_PASSWORD:changeit}
