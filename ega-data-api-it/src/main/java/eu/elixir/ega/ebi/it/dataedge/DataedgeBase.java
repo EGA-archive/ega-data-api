@@ -38,7 +38,6 @@ public class DataedgeBase {
         unencryptedChecksum = System.getProperty("res.file.checksum");
         fileId = System.getProperty("fileId");
         datasetId = System.getProperty("datasetId");
-        RestAssured.useRelaxedHTTPSValidation();
 
         REQUEST = RestAssured.given().header("Authorization", "Bearer " + System.getProperty("EGAD00010000919.token"))
                 .contentType(ContentType.JSON);

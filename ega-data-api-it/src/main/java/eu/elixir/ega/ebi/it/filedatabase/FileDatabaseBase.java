@@ -31,7 +31,6 @@ public class FileDatabaseBase {
         datasetId = System.getProperty("datasetId");
         fileId = System.getProperty("fileId");
         indexId = System.getProperty("indexId");
-        RestAssured.useRelaxedHTTPSValidation();
 
         REQUEST = RestAssured.given().contentType(ContentType.JSON);
     }

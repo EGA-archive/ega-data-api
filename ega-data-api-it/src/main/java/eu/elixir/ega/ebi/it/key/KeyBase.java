@@ -25,7 +25,6 @@ public class KeyBase {
         RestAssured.port = Integer.parseInt(System.getProperty("key.port"));
         fileId = System.getProperty("fileId");
         keyId = System.getProperty("keyId");
-        RestAssured.useRelaxedHTTPSValidation();
 
         REQUEST = RestAssured.given().contentType(ContentType.JSON);
     }

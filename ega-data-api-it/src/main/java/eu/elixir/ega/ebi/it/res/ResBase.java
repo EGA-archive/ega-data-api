@@ -38,7 +38,6 @@ public class ResBase {
         sourceKey = System.getProperty("res.sourceKey");
         sourceIV = System.getProperty("res.sourceIV");
         filePath = System.getProperty("res.filePath");
-        RestAssured.useRelaxedHTTPSValidation();
 
         REQUEST = RestAssured.given().contentType(ContentType.JSON);
     }
