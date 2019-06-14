@@ -25,26 +25,51 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
- * Created by vadim on 17/05/2016.
+ * @author vadim
  */
 public class Converter {
     CRAMReferenceSource referenceSource = new ReferenceSource((Path) null);
     ExecutorService es = Executors.newFixedThreadPool(10);
 
+    /**
+	 * Create a new {@code Converter} with the given reference source.
+     *
+     * @param referenceSource A {@code CRAMReferenceSource} to use as data
+     *     souce for this.
+     */
     public Converter(CRAMReferenceSource referenceSource) {
         this.referenceSource = referenceSource;
     }
 
+    /**
+     * Closes the thread pool executor service.
+     */
     public void close() {
         es.shutdown();
     }
 
+    /**
+     * Creates a new {@code BAMFileWriter} using the given output stream, writes
+     * the file header to it and returns the writer.
+     *
+     * @param os An {@code OutputStream} to write data to.
+     * @param fileHeader A {@code SAMFileHeader} to write to the output stream
+     * @return A {@code BAMFileWriter} with the given file header.
+     */
     public static SAMFileWriter createBAMwriter(OutputStream os, SAMFileHeader fileHeader) {
         final BAMFileWriter writer = new BAMFileWriter(os, null);
         writer.setHeader(fileHeader);
         return writer;
     }
 
+    /**
+     * Returns a stream writing the given header and records in BAM format.
+     *
+     * @param header Header of the output stream.
+     * @param records Records for the output stream
+     * @return A BAM file stream
+     * @throws IOException
+     */
     public InputStream asBAM(SAMFileHeader header, CloseableIterator<SAMRecord> records) throws IOException {
         PipedInputStream is = new PipedInputStream();
         PipedOutputStream pos = new PipedOutputStream(is);
@@ -82,6 +107,14 @@ public class Converter {
         return is;
     }
 
+    /**
+     * Returns a stream writing the given header and records in SAM format.
+     *
+     * @param header Header of the output stream.
+     * @param records Records for the output stream
+     * @return A SAM file stream
+     * @throws IOException
+     */
     public InputStream asSAM(SAMFileHeader header, CloseableIterator<SAMRecord> records) throws IOException {
         PipedInputStream is = new PipedInputStream();
         PipedOutputStream pos = new PipedOutputStream(is);
@@ -117,6 +150,14 @@ public class Converter {
         return is;
     }
 
+    /**
+     * Returns a stream writing the given header and records in CRAM format.
+     *
+     * @param header Header of the output stream.
+     * @param records Records for the output stream
+     * @return A CRAM file stream
+     * @throws IOException
+     */
     public InputStream asCRAM(SAMFileHeader header, CloseableIterator<SAMRecord> records) throws IOException {
         PipedInputStream is = new PipedInputStream();
         PipedOutputStream pos = new PipedOutputStream(is);

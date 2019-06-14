@@ -23,8 +23,23 @@ import org.springframework.security.core.Authentication;
  */
 public interface FileMetaService {
 
+    /**
+     * Returns a {@link File} descriptor for the requested file, if the correct
+     * permissions are available in @{code auth}.
+     *
+     * @param auth   An authentication token for the file.
+     * @param fileId The stable ID of the file to request.
+     * @return The requested file descriptor, otherwise an empty {@link File}
+     *         object.
+     */
     File getFile(Authentication auth, String fileId);
 
+    /**
+     * Returns the list of files for a given dataset from the file database service.
+     *
+     * @param datasetId Stable ID of the dataset to request
+     * @return List of files for the given dataset
+     */
     Iterable<File> getDatasetFiles(String datasetId);
 
 }

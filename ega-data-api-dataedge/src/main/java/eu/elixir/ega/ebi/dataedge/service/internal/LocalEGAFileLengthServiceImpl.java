@@ -28,6 +28,16 @@ import eu.elixir.ega.ebi.shared.dto.File;
 @Profile("LocalEGA")
 public class LocalEGAFileLengthServiceImpl  implements FileLengthService {
 
+    /**
+     * Calculates the content length of a file or part of a file.
+     *
+     * @param reqFile           file whose content is requested
+     * @param destinationFormat (unused) file format of reqFile
+     * @param startCoordinate   start coordinate of the requested file part.
+     * @param endCoordinate     end coordinate of the requested file part, or -1 if
+     *                          the entire file is used.
+     * @return length of the requested content
+     */
     @Override
     public long getContentLength(File reqFile, String destinationFormat, long startCoordinate, long endCoordinate) {
         long length = 0;
@@ -35,7 +45,7 @@ public class LocalEGAFileLengthServiceImpl  implements FileLengthService {
         if (startCoordinate > 0 || endCoordinate > 0) {
             length = endCoordinate - startCoordinate;
         } else {
-            // Removing 32 bytes from the actual file size because when the file is stored in S3, 
+            // Removing 32 bytes from the actual file size because when the file is stored in S3,
             // the sha256sum is added at the beginning so the length would be -32
             length = reqFile.getFileSize() - 32;
         }

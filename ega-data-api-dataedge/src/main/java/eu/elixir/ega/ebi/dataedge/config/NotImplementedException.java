@@ -26,6 +26,11 @@ public class NotImplementedException extends RuntimeException {
 
     private static final long serialVersionUID = 1L;
 
+    /**
+     * Thrown when a .gpg file is requested.
+     *
+     * @param code Exception description.
+     */
     public NotImplementedException(String code) {
         super("Legacy GPG Archive Format not Supported : " + code);
     }

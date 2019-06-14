@@ -21,6 +21,18 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
+ * Data transfer object class for files in the data API.
+ *
+ * @param fileId Stable ID of this file
+ * @param datasetId ID of the dataset that gives permission to access this
+ *     fileId
+ * @param displayFileName filename to display inside the system
+ * @param fileName original filename when the file was ingested
+ * @param fileSize size of this file
+ * @param unencryptedChecksum checksum of the unencrypted target file
+ * @param unencryptedChecksumType checksum algorithm
+ * @param fileStatus file status description
+ *
  * @author asenf
  */
 @NoArgsConstructor

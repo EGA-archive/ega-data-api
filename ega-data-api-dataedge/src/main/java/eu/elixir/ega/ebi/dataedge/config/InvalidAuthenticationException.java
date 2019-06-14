@@ -26,6 +26,11 @@ public class InvalidAuthenticationException extends RuntimeException {
 
     private static final long serialVersionUID = 1L;
 
+    /**
+     * Exception thrown when authentication fails for a requested resource.
+     *
+     * @param code Accession number or id of the requested resource
+     */
     public InvalidAuthenticationException(String code) {
         super("Invalid Authentication : " + code);
     }

@@ -21,6 +21,11 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
+ * Data transfer object class that connects a fileId to an indexFileId
+ *
+ * @param fileId a file id
+ * @param indexFileId an index file id
+ *
  * @author asenf
  */
 @NoArgsConstructor

@@ -23,6 +23,9 @@ import lombok.Setter;
 import java.util.List;
 
 /**
+ * Http result descriptor including byte content, md5 checksum, and a list of
+ * session identifiers.
+ *
  * @author asenf
  */
 @NoArgsConstructor

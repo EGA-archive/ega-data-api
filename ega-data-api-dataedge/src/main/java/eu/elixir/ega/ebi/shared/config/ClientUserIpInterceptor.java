@@ -22,6 +22,14 @@ public class ClientUserIpInterceptor implements ClientHttpRequestInterceptor {
   @Autowired
   private AuthenticationService authenticationService;
 
+  /**
+   * Http response interceptor which injects the X-FORWARDED_FOR and X-USER-NAME
+   * headers.
+   *
+   * @param request The intercepted request.
+   * @param body The body of the intercepted request.
+   * @return An http response with the modifier request.
+   */
   @Override
   public ClientHttpResponse intercept(HttpRequest request, byte[] body,
       ClientHttpRequestExecution execution) throws IOException {

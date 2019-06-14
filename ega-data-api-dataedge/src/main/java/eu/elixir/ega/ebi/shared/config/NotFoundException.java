@@ -26,6 +26,12 @@ public class NotFoundException extends RuntimeException {
 
     private static final long serialVersionUID = 1L;
 
+    /**
+     * Exception thrown when an piece of data is not found.
+     *
+     * @param error Error description
+     * @param id ID of the data that could not be found
+     */
     public NotFoundException(String error, String id) {
         super(error + ": " + id);
     }

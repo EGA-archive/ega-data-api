@@ -55,6 +55,15 @@ public class MyAccessTokenConverter implements AccessTokenConverter {
         this.includeGrantType = includeGrantType;
     }
 
+    /**
+     * Extracts authentication information from the authentication object as
+     * well as the the given authentication token, and returns a formatted,
+     * combined authentication object.
+     *
+     * @param token The authentication token to convert
+     * @param authentication Authentication object to extract information from.
+     * @return A {@link HashMap} of authentication tokens
+     */
     public Map<String, ?> convertAccessToken(OAuth2AccessToken token, OAuth2Authentication authentication) {
         Map<String, Object> response = new HashMap<>();
         OAuth2Request clientToken = authentication.getOAuth2Request();
@@ -92,6 +101,15 @@ public class MyAccessTokenConverter implements AccessTokenConverter {
         return response;
     }
 
+    /**
+     * Creates an authentication token with the value given in 'value', and the
+     * information from 'map'.
+     *
+     * @param value Value to set in the return authentication token
+     * @param map   An authentication map, such as returned from
+     *              {@link convertAccessToken}
+     * @return Access token containing the combined information
+     */
     public OAuth2AccessToken extractAccessToken(String value, Map<String, ?> map) {
         DefaultOAuth2AccessToken token = new DefaultOAuth2AccessToken(value);
         Map<String, Object> info = new HashMap<>(map);
@@ -110,6 +128,14 @@ public class MyAccessTokenConverter implements AccessTokenConverter {
         return token;
     }
 
+    /**
+     * Uses the information in the given authentication map to create an
+     * authentication request.
+     *
+     * @param map An authentication map, such as returned from
+     *            {@link convertAccessToken}
+     * @return An OAuth2 authentication object
+     */
     @Override
     public OAuth2Authentication extractAuthentication(Map<String, ?> map) {
 
@@ -141,6 +167,14 @@ public class MyAccessTokenConverter implements AccessTokenConverter {
         return new OAuth2Authentication(request, user);
     }
 
+    /**
+     * Extracts the authentication audience (held in the 'AUD' key) from the
+     * given authentication map.
+     *
+     * @param map An authentication map, such as returned from
+     *            {@link convertAccessToken}
+     * @return The extracted authentication audience
+     */
     private Collection<String> getAudience(Map<String, ?> map) {
         Object auds = map.get(AUD);
         if (auds instanceof Collection) {
@@ -151,6 +185,14 @@ public class MyAccessTokenConverter implements AccessTokenConverter {
         return Collections.singleton((String) auds);
     }
 
+    /**
+     * Extracts the authentication scope (held in the 'SCOPE' key) from the
+     * given authentication map.
+     *
+     * @param map An authentication map, such as returned from
+     *            {@link convertAccessToken}
+     * @return The extracted authentication scope
+     */
     private Set<String> extractScope(Map<String, ?> map) {
         Set<String> scope = Collections.emptySet();
         if (map.containsKey(SCOPE)) {

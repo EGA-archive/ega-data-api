@@ -21,6 +21,11 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication(scanBasePackages = "eu.elixir.ega.ebi")
 public class DataEdgeServiceApplication {
 
+    /**
+     * Runs the DataEge micro service as a spring application.
+     *
+     * @param args Arguments to the application
+     */
     public static void main(String[] args) {
         SpringApplication.run(DataEdgeServiceApplication.class, args);
     }

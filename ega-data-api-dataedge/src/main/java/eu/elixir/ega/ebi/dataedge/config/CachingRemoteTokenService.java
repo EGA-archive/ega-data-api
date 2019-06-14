@@ -32,6 +32,12 @@ public class CachingRemoteTokenService extends RemoteTokenServices {
 
     private static Log log = LogFactory.getLog(CachingRemoteTokenService.class);
 
+    /**
+     * Load the credentials for the specified access token.
+     *
+     * @param accessToken access token string to authenticate.
+     * @return The authentication for the access token.
+     */
     @Override
     @Cacheable(cacheNames = "tokens", key = "#root.methodName + #accessToken")
     public OAuth2Authentication loadAuthentication(String accessToken)
@@ -43,6 +49,12 @@ public class CachingRemoteTokenService extends RemoteTokenServices {
         return super.loadAuthentication(accessToken);
     }
 
+    /**
+     * Reads the access token string and returns a full access token object.
+     *
+     * @param accessToken Access token to verify.
+     * @return The full access token.
+     */
     @Override
     @Cacheable(cacheNames = "tokens", key = "#root.methodName + #accessToken")
     public OAuth2AccessToken readAccessToken(String accessToken) {

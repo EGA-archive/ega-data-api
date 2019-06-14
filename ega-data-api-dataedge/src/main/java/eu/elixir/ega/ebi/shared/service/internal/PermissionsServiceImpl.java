@@ -55,6 +55,13 @@ public class PermissionsServiceImpl implements PermissionsService {
   @Autowired
   private HttpServletRequest request;
 
+  /**
+   * Initializes the permission service with an authentication service and a
+   * download log service.
+   *
+   * @param authenticationService Authentication service to use for permissions
+   * @param downloaderLogService Downloader log service to use for logging
+   */
   @Autowired
   public PermissionsServiceImpl(AuthenticationService authenticationService,
       DownloaderLogService downloaderLogService) {
@@ -62,9 +69,15 @@ public class PermissionsServiceImpl implements PermissionsService {
     this.downloaderLogService = downloaderLogService;
   }
 
+  /**
+   * Returns the dataset that gives permissions for a provided stable ID.
+   *
+   * @param stableId The stable ID to get permissions for.
+   * @return The ID of the dataset that gives permissions for the stable ID.
+   */
   @Override
   public String getFilePermissionsEntity(String stableId) {
-    
+
     //Obtains DatasetId and FileId mapping from AAI Token Introspection result
     Map<String, List<String>> datasetFileMapping = authenticationService.getDatasetFileMapping();
     if (datasetFileMapping != null) {
@@ -74,8 +87,8 @@ public class PermissionsServiceImpl implements PermissionsService {
         if (datasetId != null) {
             return datasetId;
         }
-    } 
-    
+    }
+
     // Obtain all Authorised Datasets (Provided by EGA AAI)
     HashSet<String> permissions = new HashSet<>();
     Collection<? extends GrantedAuthority> authorities = authenticationService.getAuthorities();
@@ -85,7 +98,7 @@ public class PermissionsServiceImpl implements PermissionsService {
         GrantedAuthority next = iterator.next();
         permissions.add(next.getAuthority());
       }
-    } else if (request != null) { // ELIXIR User Case: Obtain Permmissions from X-Permissions Header
+    } else if (request != null) { // ELIXIR User Case: Obtain Permissions from X-Permissions Header
       //String permissions = request.getHeader("X-Permissions");
       try {
         List<String> permissions_ = (new VerifyMessageNew(request.getHeader("X-Permissions")))
@@ -101,18 +114,6 @@ public class PermissionsServiceImpl implements PermissionsService {
           }
         }
       } catch (Exception ex) {
-        //}
-        //
-        //try {
-        //    List<String> permissions_ = (new VerifyMessage(request.getHeader("X-Permissions"))).getPermissions();
-        //    if (permissions_ != null && permissions_.size() > 0) {
-        //        for (String ds : permissions_) {
-        //            if (ds != null) {
-        //                permissions.add(ds);
-        //            }
-        //        }
-        //    }
-        //} catch (Exception ex) {
 
         System.out.println("getReqFile Error 0: " + ex.toString());
         EventEntry eev = downloaderLogService

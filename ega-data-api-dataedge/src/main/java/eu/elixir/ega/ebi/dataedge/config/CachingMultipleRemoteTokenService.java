@@ -35,6 +35,12 @@ public class CachingMultipleRemoteTokenService extends RemoteTokenServices {
      */
     ArrayList<CachingRemoteTokenService> remoteServices;
 
+    /**
+     * Adds a new remote token service to the list of remote services, and
+     * creates the remoteServices list if it's not yet initialized.
+     *
+     * @param service A remote token service to add.
+     */
     public void addRemoteTokenService(CachingRemoteTokenService service) {
         if (remoteServices == null)
             remoteServices = new ArrayList<>();
@@ -43,8 +49,12 @@ public class CachingMultipleRemoteTokenService extends RemoteTokenServices {
         System.out.println("-- service " + service.toString());
     }
 
-    /*
-     * Code adjusted to handle a list of remote services
+    /**
+     * Tests the given accessToken against the list of remote token services.
+     *
+     * @param accessToken Token to test against the remote token services.
+     * @return The authenticated token, or null if the token could not be
+     *     authenticated.
      */
     @Override
     @Cacheable(cacheNames = "tokens", key = "#root.methodName + #accessToken")
@@ -63,10 +73,16 @@ public class CachingMultipleRemoteTokenService extends RemoteTokenServices {
             if (loadAuthentication != null && loadAuthentication.isAuthenticated()) break;
         }
         return loadAuthentication;
-
-        //return super.loadAuthentication(accessToken);
     }
 
+    /**
+     * Tests the given accessToken against the list of remote token services to
+     * see if the token grants read access.
+     *
+     * @param accessToken Token to test against the remote token services.
+     * @return The read access token, or null if the token could not be
+     *     authenticated.
+     */
     @Override
     @Cacheable(cacheNames = "tokens", key = "#root.methodName + #accessToken")
     public OAuth2AccessToken readAccessToken(String accessToken) {
@@ -78,8 +94,6 @@ public class CachingMultipleRemoteTokenService extends RemoteTokenServices {
             if (!readAccess.isExpired()) break;
         }
         return readAccess;
-
-        //return super.readAccessToken(accessToken);
     }
 
 }

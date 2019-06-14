@@ -23,6 +23,8 @@ import lombok.Setter;
 import java.sql.Timestamp;
 
 /**
+ * Request ticket used to request a file.
+ *
  * @author asenf
  */
 @NoArgsConstructor
@@ -43,8 +45,13 @@ public class RequestTicket {
     private long startCoordinate;
     private long endCoordinate;
 
+    /**
+     * @return The formatted request ticket string.
+     */
     public String toString() {
-        return email + ":" + downloadTicket + ":" + clientIp + ":" + fileId + ":" + encryptionKey + ":" + encryptionType + ":" + ticketStatus + ":" + label + ":" + startCoordinate + ":" + endCoordinate;
+        return email + ":" + downloadTicket + ":" + clientIp + ":" + fileId +
+               ":" + encryptionKey + ":" + encryptionType + ":" + ticketStatus +
+               ":" + label + ":" + startCoordinate + ":" + endCoordinate;
     }
 
 }

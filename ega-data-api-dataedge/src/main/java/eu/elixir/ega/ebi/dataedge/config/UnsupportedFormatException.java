@@ -26,6 +26,11 @@ public class UnsupportedFormatException extends RuntimeException {
 
     private static final long serialVersionUID = 1L;
 
+    /**
+     * Constructs a new unsupported format exception with the given message.
+     *
+     * @param code the detail message.
+     */
     public UnsupportedFormatException(String code) {
         super("Unsupported Format : " + code);
     }

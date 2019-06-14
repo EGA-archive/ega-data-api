@@ -26,6 +26,11 @@ public class PermissionDeniedException extends RuntimeException {
 
     private static final long serialVersionUID = 1L;
 
+    /**
+     * Thrown when a resource is requested with insufficient permissions.
+     *
+     * @param code ID of the requested resource.
+     */
     public PermissionDeniedException(String code) {
         super("Permission Denied : " + code);
     }

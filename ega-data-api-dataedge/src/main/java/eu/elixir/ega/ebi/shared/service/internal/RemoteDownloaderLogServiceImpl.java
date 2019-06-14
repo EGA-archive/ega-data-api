@@ -43,10 +43,16 @@ public class RemoteDownloaderLogServiceImpl extends
 
     @Autowired
     private RestTemplate restTemplate;
-    
+
     @Autowired
     private ObjectMapper objectMapper;
-    
+
+    /**
+     * Converts a download entry to JSON and sends a POST request to the file
+     * database service to store the event.
+     *
+     * @param downloadEntry The download entry to log.
+     */
     @Override
     @Async
     public void logDownload(DownloadEntry downloadEntry) {
@@ -65,6 +71,12 @@ public class RemoteDownloaderLogServiceImpl extends
         restTemplate.postForEntity(FILEDATABASE_SERVICE + "/log/download/", new HttpEntity<>(json, headers), String.class);
     }
 
+    /**
+     * Converts an event entry to JSON and sends a POST request to the file
+     * database service to store the event.
+     *
+     * @param eventEntry The event to log.
+     */
     @Override
     @Async
     public void logEvent(EventEntry eventEntry) {

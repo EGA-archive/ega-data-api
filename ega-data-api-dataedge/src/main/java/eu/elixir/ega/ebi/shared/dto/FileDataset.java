@@ -21,6 +21,12 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
+ * Data transfer object class  that connects a file to a dataset in the file
+ * database.
+ *
+ * @param fileId    a file id
+ * @param datasetId a dataset id
+ *
  * @author asenf
  */
 @NoArgsConstructor

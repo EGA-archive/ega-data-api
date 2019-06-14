@@ -1,5 +1,8 @@
 package eu.elixir.ega.ebi.shared;
 
+/**
+ * Shared constants for the dataedge systems
+ */
 public interface Constants {
 
     String FILEDATABASE_SERVICE = "https://FILEDATABASE";

@@ -29,10 +29,16 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 @Configuration
 public class SwaggerConfig {
 
+    /**
+     * Returns a swagger 2 docket with all paths and request handlers.
+     *
+     * @return Swagger 2 docket.
+     */
     @Bean
     public Docket swaggerSettings() {
-        return new Docket(DocumentationType.SWAGGER_2).select().apis(RequestHandlerSelectors.any())
-                .paths(PathSelectors.any()).build().pathMapping("/");
+        return new Docket(DocumentationType.SWAGGER_2).select()
+                   .apis(RequestHandlerSelectors.any())
+                   .paths(PathSelectors.any()).build().pathMapping("/");
     }
 
 }

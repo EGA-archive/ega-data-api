@@ -26,6 +26,12 @@ public class IndexNotFoundException extends RuntimeException {
 
     private static final long serialVersionUID = 1L;
 
+    /**
+     * Exception thrown when an index file is not found.
+     *
+     * @param error Error description.
+     * @param id file ID of the index file.
+     */
     public IndexNotFoundException(String error, String id) {
         super(error + ": " + id);
     }
