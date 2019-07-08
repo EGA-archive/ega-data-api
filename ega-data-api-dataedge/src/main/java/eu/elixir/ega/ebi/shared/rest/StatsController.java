@@ -40,7 +40,11 @@ import static org.springframework.web.bind.annotation.RequestMethod.*;
 @RequestMapping("/stats")
 public class StatsController {
 
-    // Obtain local CPU Load (used by EBI Load Balancer as Heartbeat)
+    /**
+     * Obtain local CPU Load (used by EBI Load Balancer as Heartbeat)
+     *
+     * @return the current CPU load (in percent) as an integer
+     */
     private static double getProcessCpuLoad() throws Exception {
         MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
         ObjectName name = ObjectName.getInstance("java.lang:type=OperatingSystem");
@@ -55,12 +59,22 @@ public class StatsController {
         return ((int) (value * 1000) / 10.0);
     }
 
+    /**
+     * OPTIONS endpoint for /load
+     *
+     * @param response http response to modify
+     */
     @RequestMapping(value = "/load", method = OPTIONS)
     public void getLoadOptions(HttpServletResponse response) {
         response.addHeader("Access-Control-Request-Method", "GET");
         System.out.println("Adding Header load");
     }
 
+    /**
+     * Returns the string result of getProcessCpuLoad() to GET requests.
+     *
+     * @return the current CPU load in string format.
+     */
     @RequestMapping(value = "/load", method = GET)
     @ResponseBody
     public String get() {
@@ -75,8 +89,10 @@ public class StatsController {
         return load;
     }
 
-    /*
-     * TEST ONLY: Test responses with calls using various tokens and routes
+    /**
+     * Test endpoint for OPTIONS requests
+     *
+     * @param response http response to modify
      */
     @RequestMapping(value = "/testme", method = OPTIONS)
     public void getTestOptions(HttpServletResponse response) {
@@ -84,6 +100,14 @@ public class StatsController {
         System.out.println("Adding Header testme");
     }
 
+    /**
+     * Test endpoint for checking headers and permissions for GET and POST
+     * requests.
+     *
+     * @param servletRequest the http request
+     * @param headers headers for the request
+     * @return A test page listing headers, Permissions, and request origin
+     */
     @RequestMapping(value = "/testme", method = {GET, POST})
     @ResponseBody
     public String testme(HttpServletRequest servletRequest, @RequestHeader HttpHeaders headers) {

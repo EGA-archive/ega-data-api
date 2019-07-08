@@ -24,6 +24,15 @@ import java.io.Serializable;
 import java.sql.Timestamp;
 
 /**
+ * Data transfer object for inserting event entries in the file database.
+ *
+ * @param downloadLogId Database id of the log entry
+ * @param clientIp IP of the client that triggered the event
+ * @param event event description text
+ * @param eventType event type
+ * @param email email of the user that triggered the event
+ * @param created timestamp of the event
+ *
  * @author asenf
  */
 @NoArgsConstructor
@@ -39,6 +48,9 @@ public class EventEntry implements Serializable {
     private String email;
     private Timestamp created;
 
+    /**
+     * @return The formatted event entry string.
+     */
     @Override
     public String toString() {
         return "EventEntry [eventId=" + eventId +

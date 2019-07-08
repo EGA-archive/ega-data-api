@@ -20,6 +20,13 @@ import org.springframework.boot.web.support.SpringBootServletInitializer;
 
 public class ServletInitializer extends SpringBootServletInitializer {
 
+    /**
+     * Adds the DataEdge service to the given application's sources in order to
+     * allow it to run sprint servlets.
+     *
+     * @param application the application to configure
+     * @return the application with DataEdgeServiceApplication as a source
+     */
     @Override
     protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
         return application.sources(DataEdgeServiceApplication.class);

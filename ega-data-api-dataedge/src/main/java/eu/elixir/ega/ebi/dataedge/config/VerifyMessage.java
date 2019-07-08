@@ -34,8 +34,14 @@ public class VerifyMessage {
 
     private ArrayList<String> messages = new ArrayList<>();
 
+    /**
+     * The constructor of VerifyMessage class retrieves the byte arrays from the
+     * File and prints the message only if the signature is verified.
+     *
+     * @param message the message to verify.
+     * @throws Exception
+     */
     @SuppressWarnings("unchecked")
-    //The constructor of VerifyMessage class retrieves the byte arrays from the File and prints the message only if the signature is verified.
     public VerifyMessage(String message) throws Exception {
         ByteArrayInputStream bais = new ByteArrayInputStream(Base64.getDecoder().decode(message));
         ObjectInputStream in = new ObjectInputStream(bais);
@@ -53,16 +59,24 @@ public class VerifyMessage {
                 dataset = token.nextToken();
             }
 
-            // Check timestamp; if too old, wipe permissions (10 minutes) - has t be tested.... (different machines, different timezones...)
+            // Check timestamp; if too old, wipe permissions (10 minutes) - has to be tested.... (different machines, different timezones...)
             long timestamp_delta = System.currentTimeMillis() - Long.parseLong(dataset);
             if (timestamp_delta > 600000)
                 messages = new ArrayList<>();
         }
+   }
 
-        //System.out.println(verifySignature(list.get(0), list.get(1), keyFile) ? "VERIFIED MESSAGE" + "\n----------------\n" + new String(list.get(0)) : "Could not verify the signature.");
-    }
-
-    //Method for signature verification that initializes with the Public Key, updates the data to be verified and then verifies them using the signature
+    /**
+     * Method for signature verification that initializes with the Public Key,
+     * updates the data to be verified and then verifies them using the
+     * signature.
+     *
+     * @param data      The data to verify
+     * @param signature The expected signature
+     * @param keyFile   string description of the keyfile to use.
+     * @return true if the signature was verified, false if not.
+     * @throws Exception
+     */
     private boolean verifySignature(byte[] data, byte[] signature, String keyFile) throws Exception {
         Signature sig = Signature.getInstance("SHA1withRSA");
         sig.initVerify(getPublic(keyFile));
@@ -71,7 +85,13 @@ public class VerifyMessage {
         return sig.verify(signature);
     }
 
-    //Method to retrieve the Public Key from a file
+    /**
+     * Method to retrieve the Public Key from a file
+     *
+     * @param filename Filename of the file to load the public key from.
+     * @return the public key for the filename.
+     * @throws Exception
+     */
     private PublicKey getPublic(String filename) throws Exception {
         ClassPathResource cpr = new ClassPathResource(filename);
         byte[] keyBytes = FileCopyUtils.copyToByteArray(cpr.getInputStream());
@@ -80,6 +100,11 @@ public class VerifyMessage {
         return kf.generatePublic(spec);
     }
 
+    /**
+     * Returns the list of currently held permissions
+     *
+     * @return the permission list
+     */
     public ArrayList<String> getPermissions() {
         return this.messages;
     }

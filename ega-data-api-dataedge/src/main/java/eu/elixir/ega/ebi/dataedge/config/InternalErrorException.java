@@ -26,6 +26,13 @@ public class InternalErrorException extends RuntimeException {
 
     private static final long serialVersionUID = 1L;
 
+    /**
+     * Generic internal error to use for situations where no specified error is
+     * applicable.
+     *
+     * @param error Error detail message.
+     * @param id Identifier of the exception.
+     */
     public InternalErrorException(String error, String id) {
         super(error + ": " + id);
     }

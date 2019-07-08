@@ -20,6 +20,12 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 /**
+ * Configures a connection to an external EGA instance.
+ *
+ * @param egaExternalUrl      URL to the external EGA instance to connect to
+ * @param cramFastaReferenceA
+ * @param cramFastaReferenceB
+ *
  * @author asenf
  */
 @NoArgsConstructor

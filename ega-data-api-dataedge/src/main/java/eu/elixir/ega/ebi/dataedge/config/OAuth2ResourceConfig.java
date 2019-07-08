@@ -54,6 +54,22 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
 
     private TokenExtractor tokenExtractor = new BearerTokenExtractor();
 
+    /**
+     * Configures the given http security object with the proper security settings,
+     * and the following endpoints:
+     * <ul>
+     * <li>/files/**
+     * <li>/metadata/**
+     * <li>/demo/**
+     * <li>/download/file/**
+     * </ul>
+     *
+     * OPTIONS requests will be permitted on all enpoints, and CSRF tokens will
+     * be disabled.
+     *
+     * @param http
+     * @return
+     */
     @Override
     public void configure(HttpSecurity http) throws Exception {
         http.addFilterAfter(new OncePerRequestFilter() {
@@ -77,7 +93,6 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
                 .antMatchers("/metadata/**")
                 .antMatchers("/demo/**")
                 .antMatchers("/download/file/**")
-                //.antMatchers("/stats/testme")
                 .and()
                 .authorizeRequests()
                 .antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
@@ -86,22 +101,37 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
                 .csrf().disable();
     }
 
-    // This is a bit of a Hack! MitreID doesn't return 'user_name' but 'user_id', The
-    // customized User Authentication Converter simply changes the field name for extraction
+    /**
+     * This is a bit of a Hack! MitreID doesn't return 'user_name' but 'user_id',
+     * The customized User Authentication Converter simply changes the field name
+     * for extraction.
+     *
+     * @return The converted access token
+     */
     @Bean
     public AccessTokenConverter accessTokenConverter() {
-        //DefaultAccessTokenConverter myAccessTokenConverter = new DefaultAccessTokenConverter();
         MyAccessTokenConverter myAccessTokenConverter = new MyAccessTokenConverter();
         myAccessTokenConverter.setUserTokenConverter(new MyUserAuthenticationConverter());
         return myAccessTokenConverter;
-        //return new DefaultAccessTokenConverter();
     }
 
+    /**
+     * Creates a combined token service including both EGA AAI and Elixir AAI
+     * authentication.
+     *
+     * @param request Unused
+     * @param checkTokenUrl EGA AAI token endpoint url
+     * @param clientId Client id for the EGA AAI
+     * @param clientSecret Client secret for the EGA AAI
+     * @param zuulCheckTokenUrl Elixir token endpoint url
+     * @param zuulClientId Elixir AAI ID
+     * @param zuulClientSecret Elixir AAI client
+     * @return A combined authentication token service
+     */
     @Profile("enable-aai")
     @Primary
     @Bean
     public RemoteTokenServices remoteTokenServices(HttpServletRequest request,
-                                                   //public RemoteTokenServices combinedTokenServices(HttpServletRequest request,
                                                    final @Value("${auth.server.url}") String checkTokenUrl,
                                                    final @Value("${auth.server.clientId}") String clientId,
                                                    final @Value("${auth.server.clientsecret}") String clientSecret,
@@ -129,6 +159,11 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
         return remoteTokenServices;
     }
 
+    /**
+     * Sets CORS headers to allow all methods and all hosts.
+     *
+     * @return CORSfilter
+     */
     @Bean
     @Order(0)
     public CorsFilter corsFilter() {

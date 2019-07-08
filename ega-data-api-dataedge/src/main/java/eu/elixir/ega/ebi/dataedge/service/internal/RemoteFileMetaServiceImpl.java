@@ -46,14 +46,21 @@ public class RemoteFileMetaServiceImpl implements FileMetaService {
     @Autowired
     private RestTemplate restTemplate;
 
+    /**
+     * Returns a {@link File} descriptor for the requested file, if the correct
+     * permissions are available in @{code auth}.
+     *
+     * @param auth An authentication token for the file.
+     * @param fileId The stable ID of the file to request.
+     * @return The requested file descriptor, otherwise an empty {@link File}
+     *     object.
+     */
     @Override
     //@HystrixCommand
     @Cacheable(cacheNames = "fileFile")
     public File getFile(Authentication auth, String fileId) {
         ResponseEntity<FileDataset[]> forEntityDataset = restTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}/datasets", FileDataset[].class, fileId);
         FileDataset[] bodyDataset = forEntityDataset.getBody();
-//for (int i=0; i<bodyDataset.length; i++)
-//    System.out.println("(1) ["+i+"] " + bodyDataset[i].getFileId() + ", " + bodyDataset[i].getDatasetId());
 
         // Obtain all Authorised Datasets
         HashSet<String> permissions = new HashSet<>();
@@ -73,7 +80,6 @@ public class RemoteFileMetaServiceImpl implements FileMetaService {
                 if (permissions.contains(datasetId) && body.length >= 1) {
                     File ff = body[0];
                     ff.setDatasetId(datasetId);
-                    //ff.setFileName(ff.getFileId()); // Hiding Filename from Outside
                     return ff;
                 }
             }
@@ -82,6 +88,13 @@ public class RemoteFileMetaServiceImpl implements FileMetaService {
         return (new File());
     }
 
+    /**
+     * Returns the list of files for a given dataset from the file database
+     * service.
+     *
+     * @param datasetId Stable ID of the dataset to request
+     * @return List of files for the given dataset
+     */
     @Override
     //@HystrixCommand
     @Cacheable(cacheNames = "fileDatasetFile")

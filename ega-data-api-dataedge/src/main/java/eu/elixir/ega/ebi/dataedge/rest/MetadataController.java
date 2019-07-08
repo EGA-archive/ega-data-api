@@ -46,6 +46,12 @@ public class MetadataController {
     @Autowired
     private FileMetaService fileService;
 
+    /**
+     * Returns the list of datasets that are authorized for the requesting user.
+     *
+     * @param request An http request
+     * @return List of datasets authorized for this user
+     */
     @RequestMapping(value = "/datasets", method = GET)
     public @ResponseBody
     Iterable<String> list(HttpServletRequest request) {
@@ -60,15 +66,11 @@ public class MetadataController {
                 GrantedAuthority next = iterator.next();
                 result.add(next.getAuthority());
             }
-        } else { // ELIXIR User Case: Obtain Permmissions from X-Permissions Header
-            //String permissions = request.getHeader("X-Permissions");
+        } else { // ELIXIR User Case: Obtain Permissions from X-Permissions Header
             try {
                 List<String> permissions = (new VerifyMessageNew(request.getHeader("X-Permissions"))).getPermissions();
                 if (permissions != null && permissions.size() > 0) {
-                    //StringTokenizer t = new StringTokenizer(permissions, ",");
-                    //while (t!=null && t.hasMoreTokens()) {
                     for (String ds : permissions) {
-                        //String ds = t.nextToken();
                         if (ds != null && ds.length() > 0) result.add(ds);
                     }
                 }
@@ -78,12 +80,20 @@ public class MetadataController {
         return result; // List of datasets authorized for this user
     }
 
+    /**
+     * Returns a list of files for the given dataset if the current user has
+     * permission to view them.
+     *
+     * @param datasetId Stable ID of the target dataset.
+     * @param request Request holding
+     * @return The list of files for this dataset id, or an empty list if the
+     *     user doesn't have permission to the dataset.
+     */
     @RequestMapping(value = "/datasets/{datasetId}/files", method = GET)
     public @ResponseBody
     Iterable<File> getDatasetFiles(@PathVariable String datasetId,
                                    HttpServletRequest request) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        //Map<String, String[]> parameters = request.getParameterMap();
 
         // Validate Dataset Access
         boolean permission = false;
@@ -100,14 +110,10 @@ public class MetadataController {
                 }
             }
         } else { // ELIXIR User Case: Obtain Permmissions from X-Permissions Header
-            //String permissions = request.getHeader("X-Permissions");
             try {
                 List<String> permissions = (new VerifyMessage(request.getHeader("X-Permissions"))).getPermissions();
                 if (permissions != null && permissions.size() > 0) {
-                    //StringTokenizer t = new StringTokenizer(permissions, ",");
-                    //while (t!=null && t.hasMoreTokens()) {
                     for (String ds : permissions) {
-                        //String ds = t.nextToken();
                         if (datasetId.equalsIgnoreCase(ds)) {
                             permission = true;
                             break;
@@ -121,6 +127,12 @@ public class MetadataController {
         return permission ? (fileService.getDatasetFiles(datasetId)) : (new ArrayList<>());
     }
 
+    /**
+     * Returns a file from the configured file service given a file stable ID.
+     *
+     * @param fileId Stable ID for the file to retrieve.
+     * @return The requested file.
+     */
     @RequestMapping(value = "/files/{fileId}", method = GET)
     @ResponseBody
     public File getFile(@PathVariable String fileId) {

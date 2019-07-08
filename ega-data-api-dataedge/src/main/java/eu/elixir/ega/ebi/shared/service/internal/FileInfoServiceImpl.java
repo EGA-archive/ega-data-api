@@ -22,6 +22,13 @@ public class FileInfoServiceImpl implements FileInfoService{
   @Autowired
   private RestTemplate restTemplate;
 
+  /**
+   * Fetches the file information for a given stable ID.
+   *
+   * @param fileId stable ID of the requested file
+   * @return {@link File} description of the file with the requested
+   *     {@code fileId}
+   */
   @Override
   @Cacheable(cacheNames = "reqFile", key="T(org.springframework.security.core.context.SecurityContextHolder).getContext().getAuthentication() + #p0")
   public File getFileInfo(String fileId) {

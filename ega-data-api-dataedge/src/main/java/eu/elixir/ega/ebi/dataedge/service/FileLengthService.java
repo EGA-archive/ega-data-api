@@ -22,6 +22,16 @@ import eu.elixir.ega.ebi.shared.dto.File;
  */
 public interface FileLengthService {
 
+    /**
+     * Calculates the content length of a file or part of a file.
+     *
+     * @param reqFile file whose content is requested
+     * @param destinationFormat file format of reqFile
+     * @param startCoordinate start coordinate of the requested file part.
+     * @param endCoordinate end coordinate of the requested file part, or -1 if
+     *     the entire file is used.
+     * @return length of the requested content
+     */
     long getContentLength(File reqFile, String destinationFormat, long startCoordinate, long endCoordinate);
 
 }
