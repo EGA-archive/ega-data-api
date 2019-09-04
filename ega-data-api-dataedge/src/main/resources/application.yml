@@ -1,5 +1,5 @@
 spring.profiles: no-oss
-spring.profiles.include: logger-log,add-user-ip-headers
+spring.profiles.include: logger-log,add-user-ip-headers,error
 
 eureka.client.enabled: false
 
