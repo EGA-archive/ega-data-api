@@ -1,5 +1,5 @@
 spring.profiles: no-oss,LocalEGA
-spring.profiles.include: log-transfer,repo-logger,db-repo-logger
+spring.profiles.include: log-transfer,repo-logger,db-repo-logger,error
 
 eureka.client.enabled: false
 

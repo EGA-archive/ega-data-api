@@ -1,4 +1,5 @@
 spring.profiles: no-oss
+spring.profiles.include: error
 
 eureka.client.enabled: false
 
