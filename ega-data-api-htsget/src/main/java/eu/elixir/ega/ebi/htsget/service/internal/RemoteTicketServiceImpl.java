@@ -18,6 +18,7 @@ package eu.elixir.ega.ebi.htsget.service.internal;
 import eu.elixir.ega.ebi.shared.config.NotFoundException;
 import eu.elixir.ega.ebi.shared.dto.File;
 import eu.elixir.ega.ebi.shared.dto.FileIndexFile;
+import eu.elixir.ega.ebi.htsget.config.IndexNotFoundException;
 import eu.elixir.ega.ebi.htsget.dto.HtsgetContainer;
 import eu.elixir.ega.ebi.htsget.dto.HtsgetErrorResponse;
 import eu.elixir.ega.ebi.htsget.dto.HtsgetHeader;
@@ -29,6 +30,8 @@ import eu.elixir.ega.ebi.shared.service.FileInfoService;
 import htsjdk.samtools.BAMFileSpan;
 import htsjdk.samtools.BAMIndex;
 import htsjdk.samtools.QueryInterval;
+
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
@@ -119,6 +122,11 @@ public class RemoteTicketServiceImpl implements TicketService {
                     .body(new HtsgetContainer(new HtsgetErrorResponse("NotFound", "No such accession '" + fileId + "'")));
         }
 
+        FileIndexFile fileIndexFile = getFileIndexFile(reqFile.getFileId());
+        if(fileIndexFile == null || StringUtils.isEmpty(fileIndexFile.getIndexFileId())) {
+            throw new IndexNotFoundException("IndexFileId not found for file", fileId);
+        }
+        
         boolean reference;
         reference = (referenceIndex > -1 || (referenceName != null && referenceName.length() > 0) || (referenceMD5 != null && referenceMD5.length() > 0));
         if (!reference && ((start != null && start.length() > 0) || (end != null && end.length() > 0))) {
@@ -205,6 +213,11 @@ public class RemoteTicketServiceImpl implements TicketService {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .contentType(MediaType.valueOf("application/vnd.ga4gh.htsget.v1.0+json; charset=utf-8"))
                     .body(new HtsgetContainer(new HtsgetErrorResponse("NotFound", "No such accession '" + fileId + "'")));
+        }
+        
+        FileIndexFile fileIndexFile = getFileIndexFile(reqFile.getFileId());
+        if(fileIndexFile == null || StringUtils.isEmpty(fileIndexFile.getIndexFileId())) {
+            throw new IndexNotFoundException("IndexFileId not found for file", fileId);
         }
 
         boolean reference;
