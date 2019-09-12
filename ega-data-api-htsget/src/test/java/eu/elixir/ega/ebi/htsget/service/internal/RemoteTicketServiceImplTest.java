@@ -25,6 +25,7 @@ import static org.powermock.api.mockito.PowerMockito.when;
 
 import eu.elixir.ega.ebi.shared.dto.File;
 import eu.elixir.ega.ebi.shared.dto.FileDataset;
+import eu.elixir.ega.ebi.shared.dto.FileIndexFile;
 import eu.elixir.ega.ebi.htsget.dto.HtsgetContainer;
 import eu.elixir.ega.ebi.htsget.dto.HtsgetResponse;
 import eu.elixir.ega.ebi.shared.dto.MyExternalConfig;
@@ -156,6 +157,12 @@ public class RemoteTicketServiceImplTest {
         final FileDataset[] datasets = {new FileDataset(FILEID, DATASET1)};
         when(forEntityDataset.getBody()).thenReturn(datasets);
 
+        final FileIndexFile fi = new FileIndexFile();
+        fi.setFileId(FILEID);
+        fi.setIndexFileId("indexFileId");
+        final FileIndexFile[] fileIndexFiles = {fi};
+        
+        final ResponseEntity<FileIndexFile[]> forResponseEntity = mock(ResponseEntity.class);
         final ResponseEntity<File[]> forEntity = mock(ResponseEntity.class);
         final File file = new File();
         file.setFileId(FILEID);
@@ -166,12 +173,16 @@ public class RemoteTicketServiceImplTest {
 
         when(fileInfoService.getFileInfo(FILEID)).thenReturn(file);
         when(fileInfoService.getFileInfo("indexFileId")).thenReturn(file);
+        when(forResponseEntity.getBody()).thenReturn(fileIndexFiles);
 
         when(externalConfig.getEgaExternalUrl()).thenReturn("egaExternalUrl");
         when(authentication.getAuthorities()).thenReturn(authorities);
         when(httpServletRequest.getHeader(any())).thenReturn("token");
         when(restTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}/datasets", FileDataset[].class, FILEID))
                 .thenReturn(forEntityDataset);
+        when(restTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}/index", FileIndexFile[].class, FILEID))
+        .thenReturn(forResponseEntity);
+
         when(restTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}", File[].class, FILEID)).thenReturn(forEntity);
     }
 
