@@ -411,7 +411,6 @@ public class My2KCachePageFactory implements FactoryBean<Cache<String, CachePage
     }
 
     // Return Unencrypted Seekable Stream from Source
-//    @HystrixCommand
     private SeekableStream getSource(String sourceFormat,
                                      String sourceKey,
                                      String fileLocation,

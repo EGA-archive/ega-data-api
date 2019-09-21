@@ -15,7 +15,6 @@
  */
 package eu.elixir.ega.ebi.reencryptionmvc.service.internal;
 
-import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import eu.elixir.ega.ebi.reencryptionmvc.domain.Format;
 import eu.elixir.ega.ebi.reencryptionmvc.service.KeyService;
 import eu.elixir.ega.ebi.reencryptionmvc.service.ResService;
@@ -96,7 +95,6 @@ public class LocalEGAServiceImpl implements ResService {
     }
 
     @Override
-    @HystrixCommand
     public long transfer(String sourceFormat,
                          String sourceKey,
                          String sourceIV,
@@ -143,7 +141,6 @@ public class LocalEGAServiceImpl implements ResService {
         }
     }
 
-    @HystrixCommand
     protected InputStream getInputStream(byte[] key,
                                          byte[] iv,
                                          String fileLocation,
@@ -172,7 +169,6 @@ public class LocalEGAServiceImpl implements ResService {
                 positionedStream;
     }
 
-    @HystrixCommand
     protected OutputStream getOutputStream(OutputStream outputStream, Format targetFormat, String targetKey, String targetIV) throws IOException,
             PGPException {
         switch (targetFormat) {

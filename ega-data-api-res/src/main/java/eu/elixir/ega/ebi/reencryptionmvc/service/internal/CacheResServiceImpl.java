@@ -30,7 +30,6 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
 import com.google.common.io.ByteStreams;
-import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import eu.elixir.ega.ebi.reencryptionmvc.config.GeneralStreamingException;
 import eu.elixir.ega.ebi.reencryptionmvc.config.ServerErrorException;
 import eu.elixir.ega.ebi.reencryptionmvc.dto.CachePage;
@@ -200,7 +199,6 @@ public class CacheResServiceImpl implements ResService {
     }
 
     @Override
-    @HystrixCommand
     public long transfer(String sourceFormat,
                          String sourceKey,
                          String sourceIV,
@@ -552,7 +550,6 @@ public class CacheResServiceImpl implements ResService {
 
     // *************************************************************************
     // ** Get Public Key fo Encryption
-    @HystrixCommand
     public PGPPublicKey getPublicGPGKey(String destinationFormat) throws IOException {
         PGPPublicKey pgKey = null;
         Security.addProvider(new BouncyCastleProvider());

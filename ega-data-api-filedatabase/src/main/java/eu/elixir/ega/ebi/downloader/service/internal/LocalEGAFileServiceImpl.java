@@ -16,7 +16,6 @@
 package eu.elixir.ega.ebi.downloader.service.internal;
 
 import com.google.gson.Gson;
-import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import eu.elixir.ega.ebi.downloader.domain.entity.File;
 import eu.elixir.ega.ebi.downloader.domain.entity.FileDataset;
 import eu.elixir.ega.ebi.downloader.domain.entity.FileIndexFile;
@@ -52,7 +51,6 @@ public class LocalEGAFileServiceImpl implements FileService {
 
     @Override
     @Cacheable(cacheNames = "fileById")
-    @HystrixCommand
     public Iterable<File> getFileByStableId(String fileIDs) {
         // TODO: bring that back after LocalEGA key server becomes able to register itself against Eureka
         // ResponseEntity<Resource> responseEntity =
