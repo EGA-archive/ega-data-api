@@ -41,6 +41,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import eu.elixir.ega.ebi.shared.dto.DownloadEntry;
 import eu.elixir.ega.ebi.shared.dto.EventEntry;
+import eu.elixir.ega.ebi.shared.service.AuthenticationService;
 import eu.elixir.ega.ebi.shared.service.internal.RemoteDownloaderLogServiceImpl;
 
 /**
@@ -60,6 +61,9 @@ public class RemoteDownloaderLogServiceImplTest {
     private RestTemplate restTemplate;
     
     @Mock
+    private AuthenticationService authenticationService;
+    
+    @Mock
     private ObjectMapper objectMapper;
 
     @Before
@@ -72,6 +76,7 @@ public class RemoteDownloaderLogServiceImplTest {
         whenNew(URI.class).withAnyArguments().thenReturn(uriMock);
         when(restTemplate.postForEntity(eq(FILEDATABASE_SERVICE + "/log/download/"), any(), eq(String.class))).thenReturn(responseString);
         when(restTemplate.postForEntity(eq(FILEDATABASE_SERVICE + "/log/event/"), any(), eq(String.class))).thenReturn(responseString);
+        when(authenticationService.getName()).thenReturn("user");
     }
 
     /**

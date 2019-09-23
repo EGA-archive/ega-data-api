@@ -13,7 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public abstract class AbstractDownloaderLogService implements DownloaderLogService {
 
   @Autowired
-  private AuthenticationService authenticationService;
+  protected AuthenticationService authenticationService;
 
   @Autowired
   private HttpServletRequest request;
@@ -25,7 +25,7 @@ public abstract class AbstractDownloaderLogService implements DownloaderLogServi
    */
   @Override
   public void logDownload(DownloadEntry downloadEntry) {
-    log.info(downloadEntry.toString());
+    logFileDownload(downloadEntry);
   }
 
   /**
@@ -35,7 +35,7 @@ public abstract class AbstractDownloaderLogService implements DownloaderLogServi
    */
   @Override
   public void logEvent(EventEntry eventEntry) {
-    log.info(eventEntry.toString());
+    logFileDownload(eventEntry);
   }
 
   /**
@@ -104,4 +104,14 @@ public abstract class AbstractDownloaderLogService implements DownloaderLogServi
 
     return dle;
   }
+
+	protected void logFileDownload(EventEntry eventEntry) {
+		String loggedinUser = authenticationService.getName();
+		log.info(String.format("User %s attempted to download file with error %s", loggedinUser, eventEntry));
+	}
+
+	protected void logFileDownload(DownloadEntry downloadEntry) {
+		String loggedinUser = authenticationService.getName();
+		log.info(String.format("User %s attempt successfully to download file %s", loggedinUser, downloadEntry));
+	}
 }

@@ -32,10 +32,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.elixir.ega.ebi.shared.dto.DownloadEntry;
 import eu.elixir.ega.ebi.shared.dto.EventEntry;
 import eu.elixir.ega.ebi.shared.service.DownloaderLogService;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author asenf
  */
+@Slf4j
 @Service
 @EnableDiscoveryClient
 public class RemoteDownloaderLogServiceImpl extends
@@ -47,52 +49,57 @@ public class RemoteDownloaderLogServiceImpl extends
     @Autowired
     private ObjectMapper objectMapper;
 
-    /**
-     * Converts a download entry to JSON and sends a POST request to the file
-     * database service to store the event.
-     *
-     * @param downloadEntry The download entry to log.
-     */
-    @Override
-    @Async
-    public void logDownload(DownloadEntry downloadEntry) {
+	/**
+	 * Converts a download entry to JSON and sends a POST request to the file
+	 * database service to store the event.
+	 *
+	 * @param downloadEntry The download entry to log.
+	 */
+	@Override
+	@Async
+	public void logDownload(DownloadEntry downloadEntry) {
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_JSON);
+		
+		logFileDownload(downloadEntry);
 
-        // Jackson ObjectMapper to convert requestBody to JSON
-        String json = null;
-        try {
-            json = objectMapper.writeValueAsString(downloadEntry);
-        } catch (JsonProcessingException jsonProcessingException) {
-            throw new RuntimeException(jsonProcessingException);
-        }
+		// Jackson ObjectMapper to convert requestBody to JSON
+		String json = null;
+		try {
+			json = objectMapper.writeValueAsString(downloadEntry);
+		} catch (JsonProcessingException jsonProcessingException) {
+			throw new RuntimeException(jsonProcessingException);
+		}
+		
+		restTemplate.postForEntity(FILEDATABASE_SERVICE + "/log/download/", new HttpEntity<>(json, headers),
+				String.class);
+	}
 
-        restTemplate.postForEntity(FILEDATABASE_SERVICE + "/log/download/", new HttpEntity<>(json, headers), String.class);
-    }
-
-    /**
+	/**
      * Converts an event entry to JSON and sends a POST request to the file
      * database service to store the event.
-     *
-     * @param eventEntry The event to log.
-     */
-    @Override
-    @Async
-    public void logEvent(EventEntry eventEntry) {
+	 *
+	 * @param eventEntry The event to log.
+	 */
+	@Override
+	@Async
+	public void logEvent(EventEntry eventEntry) {
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_JSON);
 
-        // Jackson ObjectMapper to convert requestBody to JSON
-        String json = null;
-        try {
-            json = objectMapper.writeValueAsString(eventEntry);
-        } catch (JsonProcessingException jsonProcessingException) {
-            throw new RuntimeException(jsonProcessingException);
-        }
+		logFileDownload(eventEntry);
+		
+		// Jackson ObjectMapper to convert requestBody to JSON
+		String json = null;
+		try {
+			json = objectMapper.writeValueAsString(eventEntry);
+		} catch (JsonProcessingException jsonProcessingException) {
+			throw new RuntimeException(jsonProcessingException);
+		}
 
-        restTemplate.postForEntity(FILEDATABASE_SERVICE + "/log/event/", new HttpEntity<>(json, headers), String.class);
-    }
+		restTemplate.postForEntity(FILEDATABASE_SERVICE + "/log/event/", new HttpEntity<>(json, headers), String.class);
+	}
 
 }

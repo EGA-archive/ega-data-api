@@ -42,6 +42,8 @@ jobs:
         - cd ../ega-data-api-it
       script:
         - mvn test
+        - cd ../extras && source ./variables.sh
+        - docker-compose logs
 
 notifications:
   email: false      
