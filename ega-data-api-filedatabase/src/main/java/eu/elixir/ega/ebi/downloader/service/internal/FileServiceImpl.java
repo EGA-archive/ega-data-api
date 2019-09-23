@@ -24,6 +24,8 @@ import eu.elixir.ega.ebi.downloader.domain.repository.FileIndexFileRepository;
 import eu.elixir.ega.ebi.downloader.domain.repository.FileRepository;
 import eu.elixir.ega.ebi.downloader.dto.DownloaderFile;
 import eu.elixir.ega.ebi.downloader.service.FileService;
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.annotation.Profile;
@@ -38,6 +40,7 @@ import java.util.Iterator;
  */
 @Profile("!LocalEGA")
 @Service
+@Slf4j
 @Transactional
 public class FileServiceImpl implements FileService {
 
@@ -66,7 +69,7 @@ public class FileServiceImpl implements FileService {
         if (findByFileId != null) {
             for (String aFindByFileId : findByFileId) {
                 FileDataset fd = new FileDataset(fileID, aFindByFileId);
-                System.out.println(" (--) " + fd.getFileId() + ", " + fd.getDatasetId());
+                log.info(" (--) " + fd.getFileId() + ", " + fd.getDatasetId());
                 result.add(fd);
             }
         }

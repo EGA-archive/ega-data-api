@@ -37,6 +37,8 @@ import htsjdk.samtools.seekablestream.cipher.ebi.Glue;
 import htsjdk.samtools.seekablestream.cipher.ebi.RemoteSeekableCipherStream;
 import htsjdk.samtools.seekablestream.cipher.ebi.SeekableCipherStream;
 import htsjdk.samtools.seekablestream.ebi.AsyncBufferedSeekableHTTPStream;
+import lombok.extern.slf4j.Slf4j;
+
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
@@ -62,14 +64,13 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import static com.amazonaws.HttpMethod.GET;
 
 /**
  * @author asenf
  */
+@Slf4j
 public class My2KCachePageFactory implements FactoryBean<Cache<String, CachePage>> { //extends SimpleJdbcDaoSupport
 
     private Cache<String, EgaAESFileHeader> myHeaderCache;
@@ -240,7 +241,7 @@ public class My2KCachePageFactory implements FactoryBean<Cache<String, CachePage
 
             // Obtain Signed S3 URL, place in Header Cache
             loadHeaderCleversafe(id, fileLocation, httpAuth, fileSize, sourceKey);
-            System.out.println(" --- " + id + " size: " + fileSize + " time to load: " + 0); //dt);
+            log.info(" --- " + id + " size: " + fileSize + " time to load: " + 0); //dt);
         } // Get Header - Complete
 
         // **
@@ -292,7 +293,7 @@ public class My2KCachePageFactory implements FactoryBean<Cache<String, CachePage
                     pageSuccess = true;
                 } catch (Throwable th) {
                     pageSuccess = false;
-                    System.out.println("Error page " + key + " attempt " + pageCnt + ": " + th.toString());
+                    log.error("Error page " + key + " attempt " + pageCnt + ": " + th.toString());
                 }
             } while (!pageSuccess && pageCnt++ < 3);
 
@@ -302,19 +303,19 @@ public class My2KCachePageFactory implements FactoryBean<Cache<String, CachePage
             if (startCoordinate > 0) byteIncrementFast(newIV, startCoordinate);
             decrypted = decrypt(buffer, sourceKey, newIV);
         } catch (UnsupportedOperationException th) {
-            System.out.println("HTTP GET ERROR -1 " + th.toString() + "   -- " + byteRange + "\n" + url);
+            log.error("HTTP GET ERROR -1 " + th.toString() + "   -- " + byteRange + "\n" + url);
             throw new ServerErrorException("Error Loading Cache Page -1 " + th.toString() + " for ", key);
         } catch (IOException th) {
-            System.out.println("HTTP GET ERROR 0 " + th.toString() + "   -- " + byteRange + "\n" + url);
+            log.error("HTTP GET ERROR 0 " + th.toString() + "   -- " + byteRange + "\n" + url);
             throw new ServerErrorException("Error Loading Cache Page 0 " + th.toString() + " for ", key);
         } catch (IllegalBlockSizeException ex) {
-            System.out.println("HTTP GET ERROR 1 " + ex.toString() + "   -- " + byteRange + "\n" + url);
+            log.error("HTTP GET ERROR 1 " + ex.toString() + "   -- " + byteRange + "\n" + url);
             throw new ServerErrorException("Error Loading Cache Page 1 " + ex.toString() + " for ", key);
         } catch (BadPaddingException ex) {
-            System.out.println("HTTP GET ERROR 2 " + ex.toString() + "   -- " + byteRange + "\n" + url);
+            log.error("HTTP GET ERROR 2 " + ex.toString() + "   -- " + byteRange + "\n" + url);
             throw new ServerErrorException("Error Loading Cache Page 2 " + ex.toString() + " for ", key);
         } catch (Exception ex) {
-            System.out.println("HTTP GET ERROR 3 " + ex.toString() + "   -- " + byteRange + "\n" + url);
+            log.error("HTTP GET ERROR 3 " + ex.toString() + "   -- " + byteRange + "\n" + url);
             throw new ServerErrorException("Error Loading Cache Page 3 " + ex.toString() + " for ", key);
         } finally {
             request.releaseConnection();
@@ -368,12 +369,12 @@ public class My2KCachePageFactory implements FactoryBean<Cache<String, CachePage
             EgaAESFileHeader header = new EgaAESFileHeader(IV, "aes256", fileSize, url, sourceKey);
             myHeaderCache.put(id, header);
         } catch (IOException ex) {
-            Logger.getLogger(CacheResServiceImpl.class.getName()).log(Level.SEVERE, null, ex);
+            log.error(ex.getMessage(), ex);
         }
     }
 
     private String getS3ObjectUrl(String id, String fileLocation, String httpAuth, long fileSize, String sourceKey) {
-        System.out.println("Inside load loadHeaders3 - 2" + awsEndpointUrl + "==" + awsRegion);
+        log.info("Inside load loadHeaders3 - 2" + awsEndpointUrl + "==" + awsRegion);
         // Load first 16 bytes; set stats
         final String bucket = fileLocation.substring(5, fileLocation.indexOf("/", 5));
         final String awsPath = fileLocation.substring(fileLocation.indexOf("/", 5) + 1);
@@ -459,7 +460,7 @@ public class My2KCachePageFactory implements FactoryBean<Cache<String, CachePage
                 //    plainIn = getAsymmetricGPGDecryptingInputStream(fileIn, sourceKey, sourceFormat);
             }
         } catch (IOException | URISyntaxException ex) {
-            System.out.println(" ** " + ex.toString());
+            log.error(" ** " + ex.toString());
         }
 
         return plainIn;
@@ -491,7 +492,7 @@ public class My2KCachePageFactory implements FactoryBean<Cache<String, CachePage
                     responseCode = connection.getResponseCode();
                     //System.out.println("Response Code " + responseCode);
                 } catch (Throwable th) {
-                    System.out.println("FIRE error: " + th.toString());
+                    log.error("FIRE error: " + th.getMessage(), th);
                 }
                 if (responseCode != 200) {
                     connection = null;
@@ -544,11 +545,8 @@ public class My2KCachePageFactory implements FactoryBean<Cache<String, CachePage
 
             return result;
         } catch (Exception e) {
-            System.out.println("Path = " + path);
-            System.out.println(e.toString());
-            //e.printStackTrace();
+            log.error(e.getMessage() + " Path = " + path, e);
         }
-
         return null;
     }
 

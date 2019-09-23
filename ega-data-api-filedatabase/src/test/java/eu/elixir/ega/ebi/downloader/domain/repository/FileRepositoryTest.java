@@ -62,7 +62,7 @@ public class FileRepositoryTest {
 		file = new File();
 		file.setFileId("fileId");
 		file.setFileName("fileName");
-		System.out.println(entityManager.persist(file));
+		entityManager.persist(file);
 	}
 
 	private void whenFindByFileIdRequested() {

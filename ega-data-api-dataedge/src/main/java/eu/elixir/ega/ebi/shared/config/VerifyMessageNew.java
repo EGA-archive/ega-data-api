@@ -18,6 +18,8 @@ package eu.elixir.ega.ebi.shared.config;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.util.FileCopyUtils;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.security.KeyFactory;
 import java.security.PublicKey;
 import java.security.Signature;
@@ -26,7 +28,7 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Collections;
 
-
+@Slf4j
 public class VerifyMessageNew {
 
     private ArrayList<String> messages = new ArrayList<>();
@@ -53,7 +55,7 @@ public class VerifyMessageNew {
             this.messages = new ArrayList<String>(Collections.singletonList(sigString.substring(0, message.lastIndexOf(","))));
 
         } else {
-            System.out.println("NO!!");
+            log.info("NO!!");
         }
 
     }

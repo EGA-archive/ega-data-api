@@ -25,6 +25,7 @@ import htsjdk.samtools.seekablestream.SeekableHTTPStream;
 import io.minio.MinioClient;
 import io.minio.errors.*;
 import io.minio.http.Method;
+import lombok.extern.slf4j.Slf4j;
 import no.uio.ifi.crypt4gh.stream.Crypt4GHOutputStream;
 import no.uio.ifi.crypt4gh.stream.SeekableStreamInput;
 import org.apache.commons.crypto.stream.CtrCryptoOutputStream;
@@ -56,13 +57,12 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.Security;
 import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * @author asenf
  */
 @Service
+@Slf4j
 @Profile("LocalEGA")
 @EnableDiscoveryClient
 public class LocalEGAServiceImpl implements ResService {
@@ -126,7 +126,7 @@ public class LocalEGAServiceImpl implements ResService {
                     destinationKey,
                     destinationIV);
         } catch (Exception e) {
-            Logger.getLogger(LocalEGAServiceImpl.class.getName()).log(Level.SEVERE, null, e);
+            log.error(e.getMessage(), e);
             throw new RuntimeException(e);
         }
 
@@ -138,7 +138,7 @@ public class LocalEGAServiceImpl implements ResService {
             outputStream.flush();
             return transferSize;
         } catch (IOException e) {
-            Logger.getLogger(LocalEGAServiceImpl.class.getName()).log(Level.SEVERE, null, e);
+            log.error(e.getMessage(), e);
             throw new RuntimeException(e);
         }
     }
