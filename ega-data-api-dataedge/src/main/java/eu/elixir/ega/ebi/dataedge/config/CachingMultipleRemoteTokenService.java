@@ -22,11 +22,14 @@ import org.springframework.security.oauth2.common.exceptions.InvalidTokenExcepti
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.token.RemoteTokenServices;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.util.ArrayList;
 
 /**
  * @author asenf
  */
+@Slf4j
 @EnableCaching
 public class CachingMultipleRemoteTokenService extends RemoteTokenServices {
 
@@ -46,7 +49,7 @@ public class CachingMultipleRemoteTokenService extends RemoteTokenServices {
             remoteServices = new ArrayList<>();
 
         remoteServices.add(service);
-        System.out.println("-- service " + service.toString());
+        log.info("-- service " + service.toString());
     }
 
     /**
@@ -61,14 +64,14 @@ public class CachingMultipleRemoteTokenService extends RemoteTokenServices {
     public OAuth2Authentication loadAuthentication(String accessToken)
             throws org.springframework.security.core.AuthenticationException,
             InvalidTokenException {
-        System.out.println("1 -- " + accessToken);
+        log.info("1 -- " + accessToken);
 
         OAuth2Authentication loadAuthentication = null;
         for (CachingRemoteTokenService remoteService : remoteServices) {
             try {
                 loadAuthentication = remoteService.loadAuthentication(accessToken);
             } catch (IllegalStateException ex) {
-                System.out.println(ex.toString());
+                log.error(ex.toString());
             }
             if (loadAuthentication != null && loadAuthentication.isAuthenticated()) break;
         }
@@ -86,7 +89,7 @@ public class CachingMultipleRemoteTokenService extends RemoteTokenServices {
     @Override
     @Cacheable(cacheNames = "tokens", key = "#root.methodName + #accessToken")
     public OAuth2AccessToken readAccessToken(String accessToken) {
-        System.out.println("2 -- " + accessToken);
+        log.info("2 -- " + accessToken);
 
         OAuth2AccessToken readAccess = null;
         for (int i = 0; i < remoteServices.size(); i++) {

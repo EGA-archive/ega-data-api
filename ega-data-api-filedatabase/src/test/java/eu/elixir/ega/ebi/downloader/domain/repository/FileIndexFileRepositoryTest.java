@@ -60,7 +60,7 @@ public class FileIndexFileRepositoryTest {
 
 	private void givenIndexFile() {
 		fileIndexFile = new FileIndexFile("f", "if");
-		System.out.println(entityManager.persist(fileIndexFile));
+		entityManager.persist(fileIndexFile);
 	}
 
 	private void whenFindByFileIdRequested() {

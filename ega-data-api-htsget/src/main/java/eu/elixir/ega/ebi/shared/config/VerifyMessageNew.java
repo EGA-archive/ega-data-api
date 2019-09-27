@@ -18,6 +18,8 @@ package eu.elixir.ega.ebi.shared.config;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.util.FileCopyUtils;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.security.KeyFactory;
 import java.security.PublicKey;
 import java.security.Signature;
@@ -26,7 +28,7 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Collections;
 
-
+@Slf4j
 public class VerifyMessageNew {
 
     private ArrayList<String> messages = new ArrayList<>();
@@ -51,7 +53,7 @@ public class VerifyMessageNew {
             //if (timestamp_delta > 600000)
             //    messages = new ArrayList<>();
         } else {
-            System.out.println("NO!!");
+            log.info("NO!!");
         }
 
         //System.out.println(verifySignature(list.get(0), list.get(1), keyFile) ? "VERIFIED MESSAGE" + "\n----------------\n" + new String(list.get(0)) : "Could not verify the signature.");
