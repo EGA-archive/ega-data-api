@@ -15,8 +15,6 @@
  */
 package eu.elixir.ega.ebi.dataedge.service.internal;
 
-//import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
-
 import eu.elixir.ega.ebi.shared.dto.File;
 import eu.elixir.ega.ebi.shared.dto.FileDataset;
 import eu.elixir.ega.ebi.dataedge.service.FileMetaService;
@@ -56,7 +54,6 @@ public class RemoteFileMetaServiceImpl implements FileMetaService {
      *     object.
      */
     @Override
-    //@HystrixCommand
     @Cacheable(cacheNames = "fileFile")
     public File getFile(Authentication auth, String fileId) {
         ResponseEntity<FileDataset[]> forEntityDataset = restTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}/datasets", FileDataset[].class, fileId);
@@ -96,7 +93,6 @@ public class RemoteFileMetaServiceImpl implements FileMetaService {
      * @return List of files for the given dataset
      */
     @Override
-    //@HystrixCommand
     @Cacheable(cacheNames = "fileDatasetFile")
     public Iterable<File> getDatasetFiles(String datasetId) {
         File[] response = restTemplate.getForObject(FILEDATABASE_SERVICE + "/datasets/{datasetId}/files", File[].class, datasetId);

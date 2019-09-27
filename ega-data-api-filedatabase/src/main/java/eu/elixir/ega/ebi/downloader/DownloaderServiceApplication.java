@@ -27,8 +27,6 @@ import org.springframework.cache.support.SimpleCacheManager;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.context.annotation.Bean;
-import org.springframework.cloud.netflix.hystrix.EnableHystrix;
-import org.springframework.cloud.netflix.hystrix.dashboard.EnableHystrixDashboard;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Arrays;
@@ -36,8 +34,6 @@ import java.util.concurrent.TimeUnit;
 
 @SpringBootApplication
 @EnableCaching
-@EnableHystrix
-@EnableHystrixDashboard
 @EnableDiscoveryClient
 public class DownloaderServiceApplication extends SpringBootServletInitializer {
 

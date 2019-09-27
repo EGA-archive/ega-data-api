@@ -125,7 +125,6 @@ public class RemoteFileServiceImpl implements FileService {
      * @param response Response stream for the returned data.
      */
     @Override
-    //@HystrixCommand
     public void getFile(String fileId,
                         String destinationFormat,
                         String destinationKey,
@@ -279,7 +278,6 @@ public class RemoteFileServiceImpl implements FileService {
      * @param response Response stream for the returned data.
      */
     @Override
-    //@HystrixCommand
     @Cacheable(cacheNames = "fileHead", key="T(org.springframework.security.core.context.SecurityContextHolder).getContext().getAuthentication() + #p0 + #p1 + #p2 + #p3")
     public void getFileHead(String fileId,
                             String destinationFormat,
@@ -317,7 +315,6 @@ public class RemoteFileServiceImpl implements FileService {
      * @return The SAM file header for the file.
      */
     @Override
-    //@HystrixCommand
     @Cacheable(cacheNames = "headerFile", key="T(org.springframework.security.core.context.SecurityContextHolder).getContext().getAuthentication() + #p0 + #p1 + #p2 + #p3")
     public Object getFileHeader(String fileId,
                                 String destinationFormat,
@@ -381,7 +378,6 @@ public class RemoteFileServiceImpl implements FileService {
      * @param response Response stream for the returned data.
      */
     @Override
-    //@HystrixCommand
     public void getById(String fileId,
                         String accession,
                         String format,
@@ -560,7 +556,6 @@ public class RemoteFileServiceImpl implements FileService {
      * @param response Response stream for the returned data.
      */
     @Override
-    //@HystrixCommand
     public void getVCFById(String fileId,
                            String accession,
                            String format,
@@ -691,7 +686,6 @@ public class RemoteFileServiceImpl implements FileService {
       * @param inDigest input digest to convert.
       * @return integer digest of the input.
       */
-    //@HystrixCommand
     private String getDigestText(byte[] inDigest) {
         BigInteger bigIntIn = new BigInteger(1, inDigest);
         String hashtext = bigIntIn.toString(16);
@@ -708,7 +702,6 @@ public class RemoteFileServiceImpl implements FileService {
      * @param headerValue header value to set as an 'X-session' value.
      * @return The response parameter with the header value set.
      */
-    //@HystrixCommand
     private HttpServletResponse setHeaders(HttpServletResponse response, String headerValue) {
         // Set headers for the response
         String headerKey = "X-Session";
@@ -738,7 +731,6 @@ public class RemoteFileServiceImpl implements FileService {
      * @param endCoord End coordinate of the requested file area, or 0.
      * @return Formatted URI for the resource.
      */
-    //@HystrixCommand
     private URI getResUri(String fileStableIdPath,
                           String destFormat,
                           String destKey,
@@ -783,7 +775,6 @@ public class RemoteFileServiceImpl implements FileService {
         return builder.build().encode().toUri();
     }
 
-    //@HystrixCommand
     private String mapRunToFile(String runId) {
 
         // Can't access Runs yet... TODO
@@ -796,7 +787,6 @@ public class RemoteFileServiceImpl implements FileService {
      *
      * @return RES service URL.
      */
-    //@HystrixCommand
     public String resURL() {
         return loadBalancer.choose("RES2").getUri().toString();
     }
@@ -806,7 +796,6 @@ public class RemoteFileServiceImpl implements FileService {
      *
      * @return file database URL.
      */
-    //@HystrixCommand
     public String fileDatabaseURL() {
         return loadBalancer.choose("FILEDATABASE").getUri().toString();
     }
@@ -817,7 +806,6 @@ public class RemoteFileServiceImpl implements FileService {
      * @param fileId ELIXIR id of the requested file.
      * @return The content of the index file.
      */
-    //@HystrixCommand
     @Cacheable(cacheNames = "indexFile", key="T(org.springframework.security.core.context.SecurityContextHolder).getContext().getAuthentication() + #p0")
     private FileIndexFile getFileIndexFile(String fileId) {
         FileIndexFile indexFile = null;
@@ -843,7 +831,6 @@ public class RemoteFileServiceImpl implements FileService {
      *     was modified, otherwise UNAUTHORIZED.
      */
     @Override
-    //@HystrixCommand
     @Cacheable(cacheNames = "fileSize", key="T(org.springframework.security.core.context.SecurityContextHolder).getContext().getAuthentication() + #p0 + #p1 + #p2 +#p3")
     public ResponseEntity getHeadById(String fileId,
                                       String accession,

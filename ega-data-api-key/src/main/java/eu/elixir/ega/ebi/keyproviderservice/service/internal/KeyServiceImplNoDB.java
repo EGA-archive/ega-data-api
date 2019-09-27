@@ -15,7 +15,6 @@
  */
 package eu.elixir.ega.ebi.keyproviderservice.service.internal;
 
-import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import eu.elixir.ega.ebi.keyproviderservice.config.MyCipherConfig;
 import eu.elixir.ega.ebi.keyproviderservice.dto.KeyPath;
 import eu.elixir.ega.ebi.keyproviderservice.service.KeyService;
@@ -41,14 +40,12 @@ public class KeyServiceImplNoDB implements KeyService {
     private MyCipherConfig myCipherConfig; // Private GPG Key(s)
 
     @Override
-    @HystrixCommand
     @ResponseBody
     public String getFileKey(String id) {
         return myCipherConfig.getFileKey(id);
     }
 
     @Override
-    @HystrixCommand
     @ResponseBody
     public PGPPrivateKey getPrivateKey(String keyId) {
         long lKeyId = Long.parseLong(keyId);
@@ -56,7 +53,6 @@ public class KeyServiceImplNoDB implements KeyService {
     }
 
     @Override
-    @HystrixCommand
     @ResponseBody
     public KeyPath getPrivateKeyPath(String keyId) {
         long lKeyId = Long.parseLong(keyId);
@@ -64,7 +60,6 @@ public class KeyServiceImplNoDB implements KeyService {
     }
 
     @Override
-    @HystrixCommand
     @ResponseBody
     public byte[] getPrivateKeyByte(String keyId) {
         long lKeyId = Long.parseLong(keyId);
@@ -72,7 +67,6 @@ public class KeyServiceImplNoDB implements KeyService {
     }
 
     @Override
-    @HystrixCommand
     @ResponseBody
     public String getPrivateKeyString(String keyId) {
         long lKeyId = Long.parseLong(keyId);
@@ -80,7 +74,6 @@ public class KeyServiceImplNoDB implements KeyService {
     }
 
     @Override
-    @HystrixCommand
     @ResponseBody
     public String getPublicKey(String keyType, String keyId) {
         if (keyType.equalsIgnoreCase("id")) {
@@ -92,14 +85,12 @@ public class KeyServiceImplNoDB implements KeyService {
     }
 
     @Override
-    @HystrixCommand
     @ResponseBody
     public PGPPublicKey getPublicKeyFromPrivate(String keyId) {
         return myCipherConfig.getPublicKey(Long.parseLong(keyId));
     }
 
     @Override
-    @HystrixCommand
     @ResponseBody
     public Set<Long> getKeyIDs(String keyType) {
         return this.myCipherConfig.getKeyIDs();

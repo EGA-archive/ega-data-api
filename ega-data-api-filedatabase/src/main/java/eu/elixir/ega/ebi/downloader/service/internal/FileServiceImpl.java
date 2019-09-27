@@ -15,7 +15,6 @@
  */
 package eu.elixir.ega.ebi.downloader.service.internal;
 
-import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import eu.elixir.ega.ebi.downloader.domain.entity.File;
 import eu.elixir.ega.ebi.downloader.domain.entity.FileDataset;
 import eu.elixir.ega.ebi.downloader.domain.entity.FileIndexFile;
@@ -55,14 +54,12 @@ public class FileServiceImpl implements FileService {
 
     @Override
     @Cacheable(cacheNames = "fileById")
-    @HystrixCommand
     public Iterable<File> getFileByStableId(String fileIds) {
         return fileRepository.findByFileId(fileIds);
     }
 
     @Override
     @Cacheable(cacheNames = "datasetByFile")
-    @HystrixCommand
     public Iterable<FileDataset> getFileDatasetByFileId(String fileID) {
         ArrayList<FileDataset> result = new ArrayList<>();
         Iterable<String> findByFileId = fileDatasetRepository.findCustom(fileID);
@@ -79,7 +76,6 @@ public class FileServiceImpl implements FileService {
 
     @Override
     @Cacheable(cacheNames = "datasetFiles")
-    @HystrixCommand
     public Iterable<DownloaderFile> getDatasetFiles(String datasetId) {
         // Get File IDs
         Iterable<FileDataset> fileIds = fileDatasetRepository.findByDatasetId(datasetId);
@@ -109,7 +105,6 @@ public class FileServiceImpl implements FileService {
 
     @Override
     @Cacheable(cacheNames = "fileIndexFile")
-    @HystrixCommand
     public Iterable<FileIndexFile> getFileIndexByFileId(String fileId) {
         return fileIndexFileRepository.findByFileId(fileId);
     }

@@ -15,7 +15,6 @@
  */
 package eu.elixir.ega.ebi.reencryptionmvc.service.internal;
 
-import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import eu.elixir.ega.ebi.reencryptionmvc.dto.MyFireConfig;
 import eu.elixir.ega.ebi.reencryptionmvc.service.ArchiveAdapterService;
 import lombok.extern.slf4j.Slf4j;
@@ -44,7 +43,6 @@ public class ArchiveAdapterServiceImpl implements ArchiveAdapterService {
 
     @Override
     @Cacheable(cacheNames = "path")
-    @HystrixCommand
     public String[] getPath(String path) {
         log.info("path=" + path);
         if (path.equalsIgnoreCase("Virtual File")) return new String[]{"Virtual File"};

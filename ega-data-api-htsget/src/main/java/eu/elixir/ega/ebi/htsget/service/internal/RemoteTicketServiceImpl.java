@@ -49,8 +49,6 @@ import java.util.*;
 import static eu.elixir.ega.ebi.shared.Constants.FILEDATABASE_SERVICE;
 import static eu.elixir.ega.ebi.shared.Constants.RES_SERVICE;
 
-//import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
-
 /**
  * @author asenf
  */
@@ -92,7 +90,6 @@ public class RemoteTicketServiceImpl implements TicketService {
     }
 
     @Override
-    //@HystrixCommand
     public Object getTicket(String fileId,
                             String format,
                             int referenceIndex,
@@ -185,7 +182,6 @@ public class RemoteTicketServiceImpl implements TicketService {
     }
 
     @Override
-    //@HystrixCommand
     public Object getVariantTicket(String fileId,
                                    String format,
                                    int referenceIndex,
@@ -277,7 +273,6 @@ public class RemoteTicketServiceImpl implements TicketService {
                 .body(new HtsgetContainer(new HtsgetErrorResponse("UnAuthorized", "No authorization for accession '" + fileId + "'")));
     }
 
-    //@HystrixCommand
     @Cacheable(cacheNames = "indexFile")
     private FileIndexFile getFileIndexFile(String fileId) {
         FileIndexFile indexFile = null;
@@ -289,7 +284,6 @@ public class RemoteTicketServiceImpl implements TicketService {
         return indexFile;
     }
 
-    //@HystrixCommand
     public String resUrl() {
         return RES_SERVICE;
     }

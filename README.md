@@ -17,7 +17,6 @@ Ega Data API is divided into several microservices:
 | Filedatabase  | This service is an abstraction layer to the local database, which keeps information about files and datasets, as well as some basic logging tables |
 | Key  | Handles encryption keys |
 | Netflix config  | Stores the configuration files(`application.properties`) for other services |
-| Netflix hystrix  | This is a dashboard for monitoring services using [Hystrix](https://github.com/Netflix/Hystrix) |
 | Netflix eureka  | Netflix's service discovery system |
 | Res(Re-encryption)  | Reads archived data and produce output stream |
 

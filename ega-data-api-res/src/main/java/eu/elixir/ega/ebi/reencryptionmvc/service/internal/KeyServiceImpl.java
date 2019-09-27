@@ -20,7 +20,6 @@ import eu.elixir.ega.ebi.reencryptionmvc.service.KeyService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
-import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -40,7 +39,6 @@ public class KeyServiceImpl implements KeyService {
     @Override
     //@Retryable(maxAttempts = 4, backoff = @Backoff(delay = 5000))
     @Cacheable(cacheNames = "key")
-    @HystrixCommand
     public String getFileKey(String fileId) {
         ResponseEntity<String> forEntity = restTemplate.getForEntity(KEYS_SERVICE + "/keys/filekeys/{fileId}", String.class, fileId);
         return forEntity.getBody();
@@ -48,7 +46,6 @@ public class KeyServiceImpl implements KeyService {
 
     @Override
     //@Retryable(maxAttempts = 4, backoff = @Backoff(delay = 5000))
-    @HystrixCommand
     public KeyPath getKeyPath(String key) {
         ResponseEntity<KeyPath> forEntity = restTemplate.getForEntity(KEYS_SERVICE + "/keys/retrieve/{keyId}/private/path", KeyPath.class, key);
         return forEntity.getBody();
@@ -61,7 +58,6 @@ public class KeyServiceImpl implements KeyService {
      * @return ASCII-armored public key.
      */
     @Override
-    @HystrixCommand
     public String getPublicKey(String id) {
         return restTemplate.getForEntity(KEYS_SERVICE + "/keys/retrieve/{keyId}/public", String.class, id).getBody();
     }
@@ -73,7 +69,6 @@ public class KeyServiceImpl implements KeyService {
      * @return ASCII-armored private key.
      */
     @Override
-    @HystrixCommand
     public String getPrivateKey(String id) {
         return restTemplate.getForEntity(KEYS_SERVICE + "/keys/retrieve/{keyId}/private/key", String.class, id).getBody();
     }

@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 
 OSS_MODULES=( ega-data-api-netflix/ega-data-api-config
-              ega-data-api-netflix/ega-data-api-eureka
-              ega-data-api-netflix/ega-data-api-hystrix )
+              ega-data-api-netflix/ega-data-api-eureka )
 
 EGA_API_MODULES=( ega-data-api-dataedge
                   ega-data-api-filedatabase
