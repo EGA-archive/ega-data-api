@@ -72,9 +72,9 @@ public class FileController {
      */
     @RequestMapping(value = "/{fileId}", method = GET)
     public void getFile(@PathVariable String fileId,
-                        @RequestParam(value = "destinationFormat", required = false, defaultValue = "aes128") String destinationFormat,
+                        @RequestParam(value = "destinationFormat", required = false, defaultValue = "plain") String destinationFormat,
                         @RequestParam(value = "destinationKey", required = false, defaultValue = "") String destinationKey,
-                        @RequestParam(value = "destinationIV", required = false, defaultValue = "RANDOM") String destinationIV,
+                        @RequestParam(value = "destinationIV", required = false) String destinationIV,
                         @RequestParam(value = "startCoordinate", required = false, defaultValue = "0") long startCoordinate,
                         @RequestParam(value = "endCoordinate", required = false, defaultValue = "0") long endCoordinate,
                         @RequestHeader(value = "Range", required = false, defaultValue = "") String range,
