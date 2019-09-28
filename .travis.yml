@@ -16,9 +16,7 @@ stages:
   - name: unit test
     if: type IN (push, pull_request)
   - name: integ test
-    if: type IN (push, pull_request)
-  - name: image build
-    if: type = push AND branch = master       
+    if: type IN (push, pull_request)      
     
 jobs:
   include:
