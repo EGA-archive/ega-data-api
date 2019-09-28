@@ -16,7 +16,9 @@ stages:
   - name: unit test
     if: type IN (push, pull_request)
   - name: integ test
-    if: type IN (push, pull_request)      
+    if: type IN (push, pull_request)
+  - name: image build
+    if: type = push AND branch = master       
     
 jobs:
   include:
@@ -40,6 +42,8 @@ jobs:
         - cd ../ega-data-api-it
       script:
         - mvn test
+    - stage: image build
+      script: ./extras/travis_push_docker_hub.sh
 
 notifications:
   email: false      
