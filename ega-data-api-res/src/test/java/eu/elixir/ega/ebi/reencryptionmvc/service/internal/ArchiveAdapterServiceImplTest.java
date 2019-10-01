@@ -92,7 +92,7 @@ public class ArchiveAdapterServiceImplTest {
                 .thenReturn("OBJECT_URL_EXPIRE 2018-03-20T09:34:46.040868")
                 .thenReturn("OBJECT_STORAGE_CLASS " + object_storage_class).thenReturn("END").thenReturn(null);
 
-        final String[] ouput = archiveAdapterServiceImpl.getPath(pathInput);
+        final String[] ouput = archiveAdapterServiceImpl.getPath(pathInput, "");
 
         assertThat(ouput.length, equalTo(4));
         assertThat(ouput[0], equalTo(object_get));

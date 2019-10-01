@@ -28,12 +28,13 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.web.client.RestTemplate;
 
 import javax.servlet.http.HttpServletResponse;
 
-import static eu.elixir.ega.ebi.shared.Constants.FILEDATABASE_SERVICE;
+import static eu.elixir.ega.ebi.reencryptionmvc.config.Constants.FILEDATABASE_SERVICE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.Matchers.anyString;
@@ -81,7 +82,7 @@ public class GenericArchiveServiceImplTest {
         when(mockResponseEntity.getBody()).thenReturn(body);
         when(keyService.getFileKey(anyString())).thenReturn(encryptionKey);
 
-        final ArchiveSource archiveSource = genericArchiveServiceImpl.getArchiveFile("id", new MockHttpServletResponse());
+        final ArchiveSource archiveSource = genericArchiveServiceImpl.getArchiveFile("id", new MockHttpServletRequest(), new MockHttpServletResponse());
 
         assertThat(archiveSource.getFileUrl(), equalTo(body[0].getFileName()));
         assertThat(archiveSource.getSize(), equalTo(body[0].getFileSize()));

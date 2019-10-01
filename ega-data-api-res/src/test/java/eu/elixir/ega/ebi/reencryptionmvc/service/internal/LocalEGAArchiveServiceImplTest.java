@@ -33,6 +33,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.client.RestTemplate;
@@ -41,7 +42,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Collections;
 
-import static eu.elixir.ega.ebi.shared.Constants.FILEDATABASE_SERVICE;
+import static eu.elixir.ega.ebi.reencryptionmvc.config.Constants.FILEDATABASE_SERVICE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.Matchers.anyString;
@@ -95,7 +96,7 @@ public class LocalEGAArchiveServiceImplTest {
      */
     @Test
     public void testGetArchiveFile() {
-        final ArchiveSource archiveSource = localEGAArchiveService.getArchiveFile("id", new MockHttpServletResponse());
+        final ArchiveSource archiveSource = localEGAArchiveService.getArchiveFile("id", new MockHttpServletRequest(), new MockHttpServletResponse());
 
         assertThat(archiveSource.getFileUrl(), equalTo("/path/test.enc"));
         assertThat(archiveSource.getSize(), equalTo(100L));

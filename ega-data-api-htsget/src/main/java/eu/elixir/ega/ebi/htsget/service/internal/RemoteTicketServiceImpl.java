@@ -43,10 +43,11 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.*;
 
-import static eu.elixir.ega.ebi.shared.Constants.FILEDATABASE_SERVICE;
-import static eu.elixir.ega.ebi.shared.Constants.RES_SERVICE;
+import static eu.elixir.ega.ebi.htsget.config.Constants.FILEDATABASE_SERVICE;
+import static eu.elixir.ega.ebi.htsget.config.Constants.RES_SERVICE;
+
+import java.util.*;
 
 /**
  * @author asenf

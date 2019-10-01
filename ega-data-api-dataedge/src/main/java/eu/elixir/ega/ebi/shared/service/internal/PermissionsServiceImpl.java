@@ -15,7 +15,7 @@
  */
 package eu.elixir.ega.ebi.shared.service.internal;
 
-import static eu.elixir.ega.ebi.shared.Constants.FILEDATABASE_SERVICE;
+import static eu.elixir.ega.ebi.dataedge.config.Constants.FILEDATABASE_SERVICE;
 
 import java.util.Collection;
 import java.util.HashSet;

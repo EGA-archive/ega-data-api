@@ -1,6 +1,9 @@
 spring.cloud.config.uri: ${CONFIG_SERVICE:http://localhost}:8888
 spring.application.name: res2
 logging.file: log/res.application.log
+ega.internal.filedatabase.url: http://FILEDATABASE
+ega.internal.res.url: http://RES2
+ega.internal.key.url: http://KEYSERVER
 
 ---
 spring.profiles: no-oss

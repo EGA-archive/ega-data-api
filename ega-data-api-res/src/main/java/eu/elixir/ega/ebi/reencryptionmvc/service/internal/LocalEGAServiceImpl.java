@@ -15,6 +15,7 @@
  */
 package eu.elixir.ega.ebi.reencryptionmvc.service.internal;
 
+import com.google.common.base.Strings;
 import eu.elixir.ega.ebi.reencryptionmvc.domain.Format;
 import eu.elixir.ega.ebi.reencryptionmvc.service.KeyService;
 import eu.elixir.ega.ebi.reencryptionmvc.service.ResService;
@@ -112,6 +113,7 @@ public class LocalEGAServiceImpl implements ResService {
         long transferSize = 0;
         InputStream inputStream;
         OutputStream outputStream;
+        String sessionId= Strings.isNullOrEmpty(request.getHeader("Session-Id"))? "" : request.getHeader("Session-Id") + " ";
         try {
             inputStream = getInputStream(Hex.decode(sourceKey),
                     Hex.decode(sourceIV),
@@ -124,7 +126,7 @@ public class LocalEGAServiceImpl implements ResService {
                     destinationKey,
                     destinationIV);
         } catch (Exception e) {
-            log.error(e.getMessage(), e);
+            log.error(sessionId + e.getMessage(), e);
             throw new RuntimeException(e);
         }
 
@@ -136,7 +138,7 @@ public class LocalEGAServiceImpl implements ResService {
             outputStream.flush();
             return transferSize;
         } catch (IOException e) {
-            log.error(e.getMessage(), e);
+            log.error(sessionId + e.getMessage(), e);
             throw new RuntimeException(e);
         }
     }

@@ -43,8 +43,8 @@ public class ArchiveAdapterServiceImpl implements ArchiveAdapterService {
 
     @Override
     @Cacheable(cacheNames = "path")
-    public String[] getPath(String path) {
-        log.info("path=" + path);
+    public String[] getPath(String path, String sessionId) {
+        log.info(sessionId + "path=" + path);
         if (path.equalsIgnoreCase("Virtual File")) return new String[]{"Virtual File"};
 
         try {
@@ -67,9 +67,9 @@ public class ArchiveAdapterServiceImpl implements ArchiveAdapterService {
 
                     // Reading Response - with Retries
                     responseCode = connection.getResponseCode();
-                    log.info("Response Code " + responseCode);
+                    log.info(sessionId + "Response Code " + responseCode);
                 } catch (Throwable th) {
-                    log.error("FIRE error: " + th.getMessage(), th);
+                    log.error(sessionId + "FIRE error: " + th.getMessage(), th);
                 }
                 if (responseCode != 200) {
                     connection = null;
@@ -124,7 +124,7 @@ public class ArchiveAdapterServiceImpl implements ArchiveAdapterService {
 
             return result;
         } catch (Exception e) {
-            log.error(e.getMessage() + " Path = " + path, e);
+            log.error(sessionId + e.getMessage() + " Path = " + path, e);
         }
 
         return null;

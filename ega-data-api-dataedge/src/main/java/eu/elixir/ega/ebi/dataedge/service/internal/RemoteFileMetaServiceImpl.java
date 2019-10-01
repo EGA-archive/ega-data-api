@@ -27,12 +27,12 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import static eu.elixir.ega.ebi.dataedge.config.Constants.FILEDATABASE_SERVICE;
+
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
-
-import static eu.elixir.ega.ebi.shared.Constants.FILEDATABASE_SERVICE;
 
 /**
  * @author asenf

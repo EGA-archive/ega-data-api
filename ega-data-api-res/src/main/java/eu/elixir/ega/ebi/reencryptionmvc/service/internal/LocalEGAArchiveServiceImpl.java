@@ -37,15 +37,17 @@ import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import static eu.elixir.ega.ebi.reencryptionmvc.config.Constants.FILEDATABASE_SERVICE;
+
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.AbstractMap;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
-
-import static eu.elixir.ega.ebi.shared.Constants.FILEDATABASE_SERVICE;
 
 /**
  * @author asenf
@@ -63,7 +65,7 @@ public class LocalEGAArchiveServiceImpl implements ArchiveService {
 
     @Override
     @Retryable(maxAttempts = 8, backoff = @Backoff(delay = 2000, multiplier = 2))
-    public ArchiveSource getArchiveFile(String id, HttpServletResponse response) {
+    public ArchiveSource getArchiveFile(String id,  HttpServletRequest request, HttpServletResponse response) {
         ResponseEntity<EgaFile[]> responseEntity = restTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}", EgaFile[].class, id);
         EgaFile egaFile = responseEntity.getBody()[0];
         String url = egaFile.getFilePath();

@@ -29,7 +29,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
-import static eu.elixir.ega.ebi.shared.Constants.KEYS_SERVICE;
+import static eu.elixir.ega.ebi.reencryptionmvc.config.Constants.KEYS_SERVICE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.powermock.api.mockito.PowerMockito.mock;

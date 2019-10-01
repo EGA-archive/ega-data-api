@@ -15,7 +15,7 @@
  */
 package eu.elixir.ega.ebi.dataedge.service.internal;
 
-import static eu.elixir.ega.ebi.shared.Constants.FILEDATABASE_SERVICE;
+import static eu.elixir.ega.ebi.dataedge.config.Constants.FILEDATABASE_SERVICE;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;

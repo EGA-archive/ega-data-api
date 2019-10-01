@@ -61,8 +61,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import static eu.elixir.ega.ebi.shared.Constants.FILEDATABASE_SERVICE;
-import static eu.elixir.ega.ebi.shared.Constants.RES_SERVICE;
+import static eu.elixir.ega.ebi.dataedge.config.Constants.FILEDATABASE_SERVICE;
+import static eu.elixir.ega.ebi.dataedge.config.Constants.RES_SERVICE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.fail;
@@ -212,7 +212,7 @@ public class RemoteFileServiceImplTest {
     @Test
     public void testResURL() {
         final String resURL = remoteFileServiceImpl.resURL();
-        assertThat(resURL, equalTo("https://res2/"));
+        assertThat(resURL, equalTo(RES_SERVICE));
     }
 
     /**
@@ -222,7 +222,7 @@ public class RemoteFileServiceImplTest {
     @Test
     public void testFileDatabaseURL() {
         final String downloadURL = remoteFileServiceImpl.fileDatabaseURL();
-        assertThat(downloadURL, equalTo("https://filedatabase/"));
+        assertThat(downloadURL, equalTo(FILEDATABASE_SERVICE));
     }
 
     /**
@@ -294,10 +294,12 @@ public class RemoteFileServiceImplTest {
         when(samReaderFactory.samRecordFactory(any())).thenReturn(samReaderFactory);
         when(samReaderFactory.open(any(SamInputResource.class))).thenReturn(samReader);
         when(samReader.getFileHeader()).thenReturn(samFileHeader);
+        FILEDATABASE_SERVICE = "http://filedatabase/";
+        RES_SERVICE = "http://res2/";
 
-        SimpleDiscoveryProperties.SimpleServiceInstance fileDatabaseServiceInstance = new SimpleDiscoveryProperties.SimpleServiceInstance(new URL("https://filedatabase/").toURI());
+        SimpleDiscoveryProperties.SimpleServiceInstance fileDatabaseServiceInstance = new SimpleDiscoveryProperties.SimpleServiceInstance(new URL(FILEDATABASE_SERVICE).toURI());
         when(loadBalancer.choose("FILEDATABASE")).thenReturn(fileDatabaseServiceInstance);
-        SimpleDiscoveryProperties.SimpleServiceInstance resServiceInstance = new SimpleDiscoveryProperties.SimpleServiceInstance(new URL("https://res2/").toURI());
+        SimpleDiscoveryProperties.SimpleServiceInstance resServiceInstance = new SimpleDiscoveryProperties.SimpleServiceInstance(new URL(RES_SERVICE).toURI());
         when(loadBalancer.choose("RES2")).thenReturn(resServiceInstance);
 
         when(restTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}/datasets", FileDataset[].class, FILEID))
