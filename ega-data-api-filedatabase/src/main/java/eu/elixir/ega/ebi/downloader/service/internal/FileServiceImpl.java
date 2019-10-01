@@ -30,7 +30,6 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
-import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.Iterator;
 
@@ -40,7 +39,6 @@ import java.util.Iterator;
 @Profile("!LocalEGA")
 @Service
 @Slf4j
-@Transactional
 public class FileServiceImpl implements FileService {
 
     @Autowired
