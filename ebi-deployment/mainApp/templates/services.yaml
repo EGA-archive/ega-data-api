@@ -118,23 +118,3 @@ spec:
         name: htsget-debug-port          
     selector:
         app: {{ .Values.image.metadata.htsget }}
----
-apiVersion: v1
-kind: Service
-metadata:
-    name: hystrix
-    labels:
-        app: {{ .Values.image.metadata.hystrix }}
-spec:
-    type: NodePort
-    ports:
-    -   port: {{ .Values.image.repository.hystrix.port }}
-        nodePort: {{ .Values.image.repository.hystrix.nodeport }} 
-        protocol: TCP
-        name: hystrix-app-port
-    -   port: {{ .Values.image.repository.hystrix.debug }} 
-        nodePort: {{ .Values.image.repository.hystrix.debugNodePort }}
-        protocol: TCP 
-        name: hystrix-debug-port          
-    selector:
-        app: {{ .Values.image.metadata.hystrix }}          

@@ -41,8 +41,10 @@ import eu.elixir.ega.ebi.shared.dto.FileDataset;
 import eu.elixir.ega.ebi.shared.service.AuthenticationService;
 import eu.elixir.ega.ebi.shared.service.DownloaderLogService;
 import eu.elixir.ega.ebi.shared.service.PermissionsService;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
+@Slf4j
 public class PermissionsServiceImpl implements PermissionsService {
 
   private AuthenticationService authenticationService;
@@ -113,7 +115,7 @@ public class PermissionsServiceImpl implements PermissionsService {
         //    }
         //} catch (Exception ex) {
 
-        System.out.println("getReqFile Error 0: " + ex.toString());
+        log.error("getReqFile Error 0: " + ex.toString());
         EventEntry eev = downloaderLogService
             .createEventEntry(ex.toString(),  "file");
         downloaderLogService.logEvent(eev);

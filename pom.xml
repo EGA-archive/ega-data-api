@@ -31,7 +31,6 @@
 		<debug.dataedge.htsget.port>5060</debug.dataedge.htsget.port>
 		<debug.eureka.port>5061</debug.eureka.port>
 		<debug.config.port>5088</debug.config.port>
-		<debug.hystrix.port>5089</debug.hystrix.port>
 		<debug.res.port>5090</debug.res.port>
 		<debug.key.port>5094</debug.key.port>
 		<image.version>1.0</image.version>

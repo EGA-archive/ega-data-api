@@ -18,8 +18,6 @@ package eu.elixir.ega.ebi.reencryptionmvc;
 import org.springframework.boot.SpringApplication;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
-import org.springframework.cloud.netflix.hystrix.EnableHystrix;
-import org.springframework.cloud.netflix.hystrix.dashboard.EnableHystrixDashboard;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
@@ -27,8 +25,6 @@ import org.springframework.context.annotation.Configuration;
 @ComponentScan
 @EnableCaching
 @EnableEurekaClient
-@EnableHystrix
-@EnableHystrixDashboard
 public class ReEncryptionMvcApplication {
 
     public static void main(String[] args) {

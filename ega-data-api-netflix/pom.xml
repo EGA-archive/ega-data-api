@@ -14,7 +14,6 @@
 	<modules>
 		<module>ega-data-api-eureka</module>
 		<module>ega-data-api-config</module>
-		<module>ega-data-api-hystrix</module>
 	</modules>
 
 </project>

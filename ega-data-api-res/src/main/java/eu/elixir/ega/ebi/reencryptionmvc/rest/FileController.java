@@ -21,6 +21,8 @@ import eu.elixir.ega.ebi.reencryptionmvc.service.ArchiveService;
 import eu.elixir.ega.ebi.reencryptionmvc.service.ResService;
 import htsjdk.samtools.seekablestream.RandomInputStream;
 import htsjdk.samtools.seekablestream.ebi.BufferedBackgroundInputStream;
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.web.bind.annotation.*;
@@ -45,6 +47,7 @@ import java.util.stream.StreamSupport;
  */
 @RestController
 @EnableDiscoveryClient
+@Slf4j
 @RequestMapping("/file")
 public class FileController {
 
@@ -166,7 +169,7 @@ public class FileController {
         // get absolute path of the application
         ServletContext context = request.getServletContext();
         String appPath = context.getRealPath("");
-        System.out.println("appPath = " + appPath);
+        log.info("appPath = " + appPath);
 
         //String size = "1024";
         InputStream inputStream = new RandomInputStream(Integer.parseInt(size));
@@ -176,7 +179,6 @@ public class FileController {
 
         // get MIME type of the file
         String mimeType = "application/octet-stream";
-        System.out.println("MIME type: " + mimeType);
 
         // set content attributes for the response
         response.setContentType(mimeType);

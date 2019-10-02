@@ -15,7 +15,6 @@
  */
 package eu.elixir.ega.ebi.reencryptionmvc.service.internal;
 
-import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import eu.elixir.ega.ebi.reencryptionmvc.domain.Format;
 import eu.elixir.ega.ebi.reencryptionmvc.service.KeyService;
 import eu.elixir.ega.ebi.reencryptionmvc.service.ResService;
@@ -25,6 +24,7 @@ import htsjdk.samtools.seekablestream.SeekableHTTPStream;
 import io.minio.MinioClient;
 import io.minio.errors.*;
 import io.minio.http.Method;
+import lombok.extern.slf4j.Slf4j;
 import no.uio.ifi.crypt4gh.stream.Crypt4GHOutputStream;
 import no.uio.ifi.crypt4gh.stream.SeekableStreamInput;
 import org.apache.commons.crypto.stream.CtrCryptoOutputStream;
@@ -56,13 +56,12 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.Security;
 import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * @author asenf
  */
 @Service
+@Slf4j
 @Profile("LocalEGA")
 @EnableDiscoveryClient
 public class LocalEGAServiceImpl implements ResService {
@@ -96,7 +95,6 @@ public class LocalEGAServiceImpl implements ResService {
     }
 
     @Override
-    @HystrixCommand
     public long transfer(String sourceFormat,
                          String sourceKey,
                          String sourceIV,
@@ -126,7 +124,7 @@ public class LocalEGAServiceImpl implements ResService {
                     destinationKey,
                     destinationIV);
         } catch (Exception e) {
-            Logger.getLogger(LocalEGAServiceImpl.class.getName()).log(Level.SEVERE, null, e);
+            log.error(e.getMessage(), e);
             throw new RuntimeException(e);
         }
 
@@ -138,12 +136,11 @@ public class LocalEGAServiceImpl implements ResService {
             outputStream.flush();
             return transferSize;
         } catch (IOException e) {
-            Logger.getLogger(LocalEGAServiceImpl.class.getName()).log(Level.SEVERE, null, e);
+            log.error(e.getMessage(), e);
             throw new RuntimeException(e);
         }
     }
 
-    @HystrixCommand
     protected InputStream getInputStream(byte[] key,
                                          byte[] iv,
                                          String fileLocation,
@@ -172,7 +169,6 @@ public class LocalEGAServiceImpl implements ResService {
                 positionedStream;
     }
 
-    @HystrixCommand
     protected OutputStream getOutputStream(OutputStream outputStream, Format targetFormat, String targetKey, String targetIV) throws IOException,
             PGPException {
         switch (targetFormat) {

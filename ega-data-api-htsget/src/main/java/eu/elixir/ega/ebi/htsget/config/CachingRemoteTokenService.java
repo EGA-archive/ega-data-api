@@ -25,12 +25,13 @@ import org.springframework.security.oauth2.common.exceptions.InvalidTokenExcepti
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.token.RemoteTokenServices;
 
+import lombok.extern.slf4j.Slf4j;
+
 /**
  * @author asenf
  */
+@Slf4j
 public class CachingRemoteTokenService extends RemoteTokenServices {
-
-    private static Log log = LogFactory.getLog(CachingRemoteTokenService.class);
 
     @Override
     @Cacheable(cacheNames = "tokens", key = "#root.methodName + #accessToken")
