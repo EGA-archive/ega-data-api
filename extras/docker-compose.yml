@@ -16,6 +16,9 @@ services:
       - ega.ega.cram.fasta=/homes/ega-prod/ngs_dev/Homo_sapiens_assembly38.fasta
       - ega.ega.cram.fasta.a=/homes/ega-prod/ngs_dev/Homo_sapiens_assembly38.fasta 
       - ega.ega.cram.fasta.b=/homes/ega-prod/ngs_dev/hsapiens.GRCh37.fasta
+      - ega.internal.filedatabase.url=https://FILEDATABASE
+      - ega.internal.res.url=https://RES2
+      - ega.internal.key.url=https://KEYSERVER
     volumes:
       - "$TRAVIS_BUILD_DIR/extras/certificate/ca/CA.cert:/etc/ssl/certs/ca-certificates.crt"   
       - "$TRAVIS_BUILD_DIR/extras/certificate/dataedge.p12:/dataedge.p12"               
@@ -47,6 +50,9 @@ services:
       - EGA_EBI_FIRE_ARCHIVE=""
       - EGA_EBI_FIRE_KEY=""
       - service.archive.class=""
+      - ega.internal.filedatabase.url=https://FILEDATABASE
+      - ega.internal.res.url=https://RES2
+      - ega.internal.key.url=https://KEYSERVER      
     volumes:
       - "$TRAVIS_BUILD_DIR/extras/certificate/ca/CA.cert:/etc/ssl/certs/ca-certificates.crt"   
       - "$TRAVIS_BUILD_DIR/extras/certificate/resserver.p12:/resserver.p12"    

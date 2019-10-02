@@ -15,7 +15,7 @@
  */
 package eu.elixir.ega.ebi.shared.service.internal;
 
-import static eu.elixir.ega.ebi.shared.Constants.FILEDATABASE_SERVICE;
+import static eu.elixir.ega.ebi.dataedge.config.Constants.FILEDATABASE_SERVICE;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;

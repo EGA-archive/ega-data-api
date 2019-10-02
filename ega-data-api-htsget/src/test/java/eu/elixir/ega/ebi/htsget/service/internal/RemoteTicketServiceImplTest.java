@@ -15,8 +15,8 @@
  */
 package eu.elixir.ega.ebi.htsget.service.internal;
 
-import static eu.elixir.ega.ebi.shared.Constants.FILEDATABASE_SERVICE;
-import static eu.elixir.ega.ebi.shared.Constants.RES_SERVICE;
+import static eu.elixir.ega.ebi.htsget.config.Constants.FILEDATABASE_SERVICE;
+import static eu.elixir.ega.ebi.htsget.config.Constants.RES_SERVICE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.Matchers.any;

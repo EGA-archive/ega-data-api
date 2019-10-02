@@ -29,6 +29,7 @@ import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
+import com.google.common.base.Strings;
 import com.google.common.io.ByteStreams;
 import eu.elixir.ega.ebi.reencryptionmvc.config.GeneralStreamingException;
 import eu.elixir.ega.ebi.reencryptionmvc.config.ServerErrorException;
@@ -217,9 +218,11 @@ public class CacheResServiceImpl implements ResService {
                          HttpServletRequest request,
                          HttpServletResponse response) {
 
+		String sessionId= Strings.isNullOrEmpty(request.getHeader("Session-Id"))? "" : request.getHeader("Session-Id") + " ";
+		
         // Check if File Header is in Cache - otherwise Load it
         if (!myHeaderCache.containsKey(id))
-            loadHeaderCleversafe(id, fileLocation, httpAuth, fileSize, response, sourceKey);
+            loadHeaderCleversafe(id, fileLocation, httpAuth, fileSize, request, response, sourceKey);
 
         // Streams and Digests for this data transfer
         OutputStream outStream = null;
@@ -248,7 +251,7 @@ public class CacheResServiceImpl implements ResService {
                     startCoordinate);
             errorLocation = 1;
             if (eOut == null) {
-                throw new GeneralStreamingException("Output Stream (ReEncryption Stage) Null", 2);
+                throw new GeneralStreamingException(sessionId + "Output Stream (ReEncryption Stage) Null", 2);
             }
 
             // Transfer Loop - Get data from Cache, write it - until done!
@@ -287,7 +290,7 @@ public class CacheResServiceImpl implements ResService {
                 byte[] get = myPageCache.get(key).getPage(); // Get Cache page that contains requested data
                 errorLocation = 4;
                 if (get == null)
-                    throw new GeneralStreamingException("Error getting Cache Page " + key + " at Stage ", 8);
+                    throw new GeneralStreamingException(sessionId + "Error getting Cache Page " + key + " at Stage ", 8);
                 // Prefetch Loop (prefetch next few pages in background)
                 for (int prefetch = 1; prefetch <= MAX_CONCURRENT; prefetch++) {
                     if ((cachePage + prefetch) < cacheEndPage) { // no paged past end of file
@@ -328,7 +331,7 @@ public class CacheResServiceImpl implements ResService {
             }
             return bytesTransferred;
         } catch (Exception ex) {
-            throw new GeneralStreamingException("Error Location: " + errorLocation + "\n" + ex.toString(), 10);
+            throw new GeneralStreamingException(sessionId + "Error Location: " + errorLocation + "\n" + ex.toString(), 10);
         } finally {
             try {
                 // Close all Streams in reverse order (theoretically only the first should be necessary)
@@ -344,7 +347,7 @@ public class CacheResServiceImpl implements ResService {
                 }
 
             } catch (Exception ex) {
-                throw new GeneralStreamingException(ex.toString(), 5);
+                throw new GeneralStreamingException(sessionId + ex.toString(), 5);
             }
         }
     }
@@ -623,8 +626,9 @@ public class CacheResServiceImpl implements ResService {
     }
 
     private void loadHeaderCleversafe(String id, String url, String httpAuth,
-                                      long fileSize, HttpServletResponse response_, String sourceKey) {
-        boolean close = false;
+                                      long fileSize, HttpServletRequest request_, HttpServletResponse response_, String sourceKey) {
+        String sessionId= Strings.isNullOrEmpty(request_.getHeader("Session-Id"))? "" : request_.getHeader("Session-Id") + " ";
+
 
         if (url.startsWith("s3")) {
             url = getS3ObjectUrl(url);
@@ -658,7 +662,7 @@ public class CacheResServiceImpl implements ResService {
             HttpResponse response = httpclient.execute(request);
             if (response == null || response.getEntity() == null) {
                 response_.setStatus(534);
-                throw new ServerErrorException("LoadHeader: Error obtaining input stream for ", url);
+                throw new ServerErrorException(sessionId +"LoadHeader: Error obtaining input stream for ", url);
             }
             DataInputStream content = new DataInputStream(response.getEntity().getContent());
             content.readFully(IV);
@@ -666,7 +670,7 @@ public class CacheResServiceImpl implements ResService {
             EgaAESFileHeader header = new EgaAESFileHeader(IV, "aes256", fileSize, url, sourceKey);
             myHeaderCache.put(id, header);
         } catch (IOException ex) {
-            throw new ServerErrorException("LoadHeader: " + ex.toString() + " :: ", url);
+            throw new ServerErrorException(sessionId +"LoadHeader: " + ex.toString() + " :: ", url);
         }
     }
 

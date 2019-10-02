@@ -23,6 +23,6 @@ import org.springframework.cache.annotation.Cacheable;
 @Cacheable
 public interface ArchiveAdapterService {
 
-    String[] getPath(String path);
+    String[] getPath(String path, String sessionId);
 
 }

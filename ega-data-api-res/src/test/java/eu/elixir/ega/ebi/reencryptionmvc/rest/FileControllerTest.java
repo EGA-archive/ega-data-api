@@ -95,7 +95,7 @@ public class FileControllerTest {
         archiveSource.setEncryptionFormat("AES");
 
         commonMockMethod();
-        when(archiveService.getArchiveFile(any(String.class), any(HttpServletResponse.class)))
+        when(archiveService.getArchiveFile(any(String.class), any(HttpServletRequest.class), any(HttpServletResponse.class)))
                 .thenReturn(archiveSource);
 
         final MockHttpServletResponse response = mockMvc
@@ -118,7 +118,7 @@ public class FileControllerTest {
         archiveSource.setEncryptionFormat("AES");
 
         commonMockMethod();
-        when(archiveService.getArchiveFile(any(String.class), any(HttpServletResponse.class)))
+        when(archiveService.getArchiveFile(any(String.class), any(HttpServletRequest.class), any(HttpServletResponse.class)))
                 .thenReturn(archiveSource);
 
         final MockHttpServletResponse response = mockMvc
@@ -137,7 +137,7 @@ public class FileControllerTest {
     public void testGetArchiveFileSize_NullSource() throws Exception {
 
         commonMockMethod();
-        when(archiveService.getArchiveFile(any(String.class), any(HttpServletResponse.class))).thenReturn(null);
+        when(archiveService.getArchiveFile(any(String.class), any(HttpServletRequest.class), any(HttpServletResponse.class))).thenReturn(null);
 
         final MockHttpServletResponse response = mockMvc
                 .perform(get("/file/archive/id/size").session(new MockHttpSession())).andReturn().getResponse();

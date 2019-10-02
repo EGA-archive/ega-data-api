@@ -18,6 +18,7 @@ package eu.elixir.ega.ebi.reencryptionmvc.service;
 import eu.elixir.ega.ebi.reencryptionmvc.dto.ArchiveSource;
 import org.springframework.cache.annotation.Cacheable;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
@@ -26,6 +27,6 @@ import javax.servlet.http.HttpServletResponse;
 @Cacheable
 public interface ArchiveService {
 
-    ArchiveSource getArchiveFile(String id, HttpServletResponse response);
+    ArchiveSource getArchiveFile(String id, HttpServletRequest request, HttpServletResponse response);
 
 }

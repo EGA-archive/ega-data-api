@@ -15,6 +15,7 @@
  */
 package eu.elixir.ega.ebi.dataedge.rest;
 
+import com.google.common.base.Strings;
 import eu.elixir.ega.ebi.dataedge.config.InvalidAuthenticationException;
 import eu.elixir.ega.ebi.shared.service.AuthenticationService;
 import lombok.extern.slf4j.Slf4j;
@@ -80,7 +81,9 @@ public class FileController {
                         @RequestHeader(value = "Range", required = false, defaultValue = "") String range,
                         HttpServletRequest request,
                         HttpServletResponse response) {
-
+		String sessionId= Strings.isNullOrEmpty(request.getHeader("Session-Id"))? "" : request.getHeader("Session-Id") + " ";
+		log.info(sessionId + "Get file request started");
+		
         if (range.length() > 0 && range.startsWith("bytes=") && startCoordinate == 0 && endCoordinate == 0) {
             String[] ranges = range.substring("bytes=".length()).split("-");
             startCoordinate = Long.valueOf(ranges[0]);
@@ -99,7 +102,7 @@ public class FileController {
         try {
             response.flushBuffer();
         } catch (IOException ex) {
-            log.error(ex.getMessage(), ex);
+            log.error(sessionId + ex.getMessage(), ex);
         }
     }
 

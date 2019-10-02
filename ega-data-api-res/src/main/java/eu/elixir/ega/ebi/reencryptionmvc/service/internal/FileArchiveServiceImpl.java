@@ -15,6 +15,7 @@
  */
 package eu.elixir.ega.ebi.reencryptionmvc.service.internal;
 
+import com.google.common.base.Strings;
 import eu.elixir.ega.ebi.reencryptionmvc.config.NotFoundException;
 import eu.elixir.ega.ebi.reencryptionmvc.config.ServerErrorException;
 import eu.elixir.ega.ebi.reencryptionmvc.dto.ArchiveSource;
@@ -34,9 +35,10 @@ import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import javax.servlet.http.HttpServletResponse;
+import static eu.elixir.ega.ebi.reencryptionmvc.config.Constants.FILEDATABASE_SERVICE;
 
-import static eu.elixir.ega.ebi.shared.Constants.FILEDATABASE_SERVICE;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * @author asenf
@@ -59,7 +61,9 @@ public class FileArchiveServiceImpl implements ArchiveService {
     @Override
     @Retryable(maxAttempts = 8, backoff = @Backoff(delay = 2000, multiplier = 2))
     @Cacheable(cacheNames = "archive")
-    public ArchiveSource getArchiveFile(String id, HttpServletResponse response) {
+    public ArchiveSource getArchiveFile(String id,  HttpServletRequest request, HttpServletResponse response) {
+       
+        String sessionId= Strings.isNullOrEmpty(request.getHeader("Session-Id"))? "" : request.getHeader("Session-Id") + " "; 
         // Get Filename from EgaFile ID - via DATA service (potentially multiple files)
         ResponseEntity<EgaFile[]> forEntity = restTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}", EgaFile[].class, id);
         response.setStatus(forEntity.getStatusCodeValue());
@@ -69,7 +73,7 @@ public class FileArchiveServiceImpl implements ArchiveService {
         String fileName = (body != null && body.length > 0) ? forEntity.getBody()[0].getFileName() : "";
         if ((body == null || body.length == 0)) {
             response.setStatus(forEntity.getStatusCodeValue());
-            throw new NotFoundException("Can't obtain File data for ID", id);
+            throw new NotFoundException(sessionId + "Can't obtain File data for ID", id);
         }
         if (fileName.startsWith("/fire")) fileName = fileName.substring(16);
         // Guess Encryption Format from File
@@ -78,7 +82,7 @@ public class FileArchiveServiceImpl implements ArchiveService {
         String encryptionKey = keyService.getFileKey(id);
         if (encryptionKey == null || encryptionKey.length() == 0) {
             response.setStatus(532);
-            throw new ServerErrorException("Error in obtaining Archive Key for ", fileName);
+            throw new ServerErrorException(sessionId + "Error in obtaining Archive Key for ", fileName);
         }
 
         // Build result object and return it (auth is 'null' --> it is part of the URL now)
