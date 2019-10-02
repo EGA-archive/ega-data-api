@@ -2,7 +2,6 @@
 
 [![Build Status](https://travis-ci.org/neicnordic/ega-data-api.svg?branch=master)](https://travis-ci.org/neicnordic/ega-data-api)
 
-
 The EGA Data API is a REST API providing secure and controlled access to the archive. Access is secured by OAuth2 Bearer tokens issued from the the EGA OpenID Connect AAI. The EGA Data API implements the GA4GH Streaming/htsget API as it is specified here http://samtools.github.io/hts-specs/htsget.html. The API supports BAM, CRAM, VCF, BCF files.
 
 
