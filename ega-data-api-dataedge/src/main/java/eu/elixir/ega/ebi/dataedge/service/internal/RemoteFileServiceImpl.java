@@ -44,6 +44,7 @@ import htsjdk.variant.variantcontext.writer.VariantContextWriter;
 import htsjdk.variant.variantcontext.writer.VariantContextWriterBuilder;
 import htsjdk.variant.vcf.MyVCFFileReader;
 import htsjdk.variant.vcf.VCFHeader;
+import lombok.extern.slf4j.Slf4j;
 
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,8 +73,7 @@ import java.security.DigestInputStream;
 import java.security.DigestOutputStream;
 import java.security.MessageDigest;
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
 import java.util.stream.Stream;
 
 import static eu.elixir.ega.ebi.shared.Constants.FILEDATABASE_SERVICE;
@@ -85,6 +85,7 @@ import static org.apache.catalina.connector.OutputBuffer.DEFAULT_BUFFER_SIZE;
  */
 @Service
 @EnableDiscoveryClient
+@Slf4j
 public class RemoteFileServiceImpl implements FileService {
 
     @Autowired
@@ -124,7 +125,6 @@ public class RemoteFileServiceImpl implements FileService {
      * @param response Response stream for the returned data.
      */
     @Override
-    //@HystrixCommand
     public void getFile(String fileId,
                         String destinationFormat,
                         String destinationKey,
@@ -216,7 +216,7 @@ public class RemoteFileServiceImpl implements FileService {
                     outDigestStream.close();
                     inHashtext = getDigestText(inDigest.digest());
                 } catch (Throwable t) {
-                    System.out.println("RemoteFileServiceImpl Error 1: " + t.toString());
+                    log.error("RemoteFileServiceImpl Error 1: " + t.toString());
                     t.getMessage();
                     String errorMessage = t.toString();
                     throw new GeneralStreamingException(errorMessage, 7);
@@ -242,7 +242,7 @@ public class RemoteFileServiceImpl implements FileService {
             timeDelta = System.currentTimeMillis() - timeDelta;
 
         } catch (Throwable t) { // Log Error!
-            System.out.println("RemoteFileServiceImpl Error 2: " + t.toString());
+            log.error("RemoteFileServiceImpl Error 2: " + t.toString());
             String errorMessage = fileId + ":" + destinationFormat + ":" + startCoordinate + ":" + endCoordinate + ":" + t.toString();
             EventEntry eev = downloaderLogService.createEventEntry(errorMessage,  "file");
             downloaderLogService.logEvent(eev);
@@ -259,7 +259,7 @@ public class RemoteFileServiceImpl implements FileService {
                 boolean success = outHashtext.equals(inHashtext);
                 double speed = (xferResult.getBytes() / 1024.0 / 1024.0) / (timeDelta / 1000.0);
                 long bytes = xferResult.getBytes();
-                System.out.println("Success? " + success + ", Speed: " + speed + " MB/s");
+                log.info("Success? " + success + ", Speed: " + speed + " MB/s");
                 DownloadEntry dle = downloaderLogService.createDownloadEntry(success, speed, fileId,
                          "file", destinationFormat,
                         startCoordinate, endCoordinate, bytes);
@@ -278,7 +278,6 @@ public class RemoteFileServiceImpl implements FileService {
      * @param response Response stream for the returned data.
      */
     @Override
-    //@HystrixCommand
     @Cacheable(cacheNames = "fileHead", key="T(org.springframework.security.core.context.SecurityContextHolder).getContext().getAuthentication() + #p0 + #p1 + #p2 + #p3")
     public void getFileHead(String fileId,
                             String destinationFormat,
@@ -316,7 +315,6 @@ public class RemoteFileServiceImpl implements FileService {
      * @return The SAM file header for the file.
      */
     @Override
-    //@HystrixCommand
     @Cacheable(cacheNames = "headerFile", key="T(org.springframework.security.core.context.SecurityContextHolder).getContext().getAuthentication() + #p0 + #p1 + #p2 + #p3")
     public Object getFileHeader(String fileId,
                                 String destinationFormat,
@@ -346,7 +344,7 @@ public class RemoteFileServiceImpl implements FileService {
                 header = reader.getFileHeader();
                 reader.close();
             } catch (IOException ex) {
-                Logger.getLogger(RemoteFileServiceImpl.class.getName()).log(Level.SEVERE, null, ex);
+                log.error(ex.getMessage(), ex);
             }
         }
 
@@ -380,7 +378,6 @@ public class RemoteFileServiceImpl implements FileService {
      * @param response Response stream for the returned data.
      */
     @Override
-    //@HystrixCommand
     public void getById(String fileId,
                         String accession,
                         String format,
@@ -513,7 +510,7 @@ public class RemoteFileServiceImpl implements FileService {
             } catch (Throwable t) { // Log Error!
                 EventEntry eev = downloaderLogService.createEventEntry(t.toString(), "GA4GH htsget Download BAM/CRAM");
                 downloaderLogService.logEvent(eev);
-                System.out.println("ERROR 4 " + t.toString());
+                log.error("ERROR 4 " + t.toString());
                 throw new GeneralStreamingException(t.toString(), 6);
             } finally {
 
@@ -521,7 +518,7 @@ public class RemoteFileServiceImpl implements FileService {
                 double speed = (cOut.getCount() / 1024.0 / 1024.0) / (timeDelta / 1000.0);
                 long bytes = cOut.getCount();
                 boolean success = cOut.getCount() > 0;
-                System.out.println("Success? " + success + ", Speed: " + speed + " MB/s");
+                log.info("Success? " + success + ", Speed: " + speed + " MB/s");
                 DownloadEntry dle = downloaderLogService.createDownloadEntry(success, speed, localFileId,
                          "htsget bam/cram", destinationFormat,
                         start, end, bytes);
@@ -559,7 +556,6 @@ public class RemoteFileServiceImpl implements FileService {
      * @param response Response stream for the returned data.
      */
     @Override
-    //@HystrixCommand
     public void getVCFById(String fileId,
                            String accession,
                            String format,
@@ -609,13 +605,13 @@ public class RemoteFileServiceImpl implements FileService {
 
                 indexURL = new URL(resURL() + "/file/archive/" + fileIndexFile.getIndexFileId() + vcf_ext[1]); // Just specify index ID
 
-                System.out.println("Opening Reader!! ");
+                log.info("Opening Reader!! ");
                 // VCFFileReader with input stream based on RES URL
                 reader = new MyVCFFileReader(resURL.toString(),
                         indexURL.toString(),
                         false,
                         fileDatabaseURL());
-                System.out.println("Reader!! ");
+                log.info("Reader!! ");
             } catch (Exception ex) {
                 throw new InternalErrorException(ex.getMessage(), "19");
             } catch (Throwable th) {
@@ -623,7 +619,7 @@ public class RemoteFileServiceImpl implements FileService {
             }
 
             VCFHeader fileHeader = reader.getFileHeader();
-            System.out.println("Header!! " + fileHeader.toString());
+            log.info("Header!! " + fileHeader.toString());
 
             // Handle Request here - query Reader according to parameters
             int iStart = (int) (start);
@@ -667,7 +663,7 @@ public class RemoteFileServiceImpl implements FileService {
                 double speed = (cOut.getCount() / 1024.0 / 1024.0) / (timeDelta / 1000.0);
                 long bytes = cOut.getCount();
                 boolean success = cOut.getCount() > 0;
-                System.out.println("Success? " + success + ", Speed: " + speed + " MB/s");
+                log.info("Success? " + success + ", Speed: " + speed + " MB/s");
                 DownloadEntry dle = downloaderLogService.createDownloadEntry(success, speed, localFileId,
                         "htsget vcf/bcf", destinationFormat,
                         start, end, bytes);
@@ -690,7 +686,6 @@ public class RemoteFileServiceImpl implements FileService {
       * @param inDigest input digest to convert.
       * @return integer digest of the input.
       */
-    //@HystrixCommand
     private String getDigestText(byte[] inDigest) {
         BigInteger bigIntIn = new BigInteger(1, inDigest);
         String hashtext = bigIntIn.toString(16);
@@ -707,7 +702,6 @@ public class RemoteFileServiceImpl implements FileService {
      * @param headerValue header value to set as an 'X-session' value.
      * @return The response parameter with the header value set.
      */
-    //@HystrixCommand
     private HttpServletResponse setHeaders(HttpServletResponse response, String headerValue) {
         // Set headers for the response
         String headerKey = "X-Session";
@@ -715,7 +709,7 @@ public class RemoteFileServiceImpl implements FileService {
 
         // get MIME type of the file (actually, it's always this for now)
         String mimeType = "application/octet-stream";
-        System.out.println("MIME type: " + mimeType);
+        log.info("MIME type: " + mimeType);
 
         // set content attributes for the response
         response.setContentType(mimeType);
@@ -737,7 +731,6 @@ public class RemoteFileServiceImpl implements FileService {
      * @param endCoord End coordinate of the requested file area, or 0.
      * @return Formatted URI for the resource.
      */
-    //@HystrixCommand
     private URI getResUri(String fileStableIdPath,
                           String destFormat,
                           String destKey,
@@ -782,7 +775,6 @@ public class RemoteFileServiceImpl implements FileService {
         return builder.build().encode().toUri();
     }
 
-    //@HystrixCommand
     private String mapRunToFile(String runId) {
 
         // Can't access Runs yet... TODO
@@ -795,7 +787,6 @@ public class RemoteFileServiceImpl implements FileService {
      *
      * @return RES service URL.
      */
-    //@HystrixCommand
     public String resURL() {
         return loadBalancer.choose("RES2").getUri().toString();
     }
@@ -805,7 +796,6 @@ public class RemoteFileServiceImpl implements FileService {
      *
      * @return file database URL.
      */
-    //@HystrixCommand
     public String fileDatabaseURL() {
         return loadBalancer.choose("FILEDATABASE").getUri().toString();
     }
@@ -816,7 +806,6 @@ public class RemoteFileServiceImpl implements FileService {
      * @param fileId ELIXIR id of the requested file.
      * @return The content of the index file.
      */
-    //@HystrixCommand
     @Cacheable(cacheNames = "indexFile", key="T(org.springframework.security.core.context.SecurityContextHolder).getContext().getAuthentication() + #p0")
     private FileIndexFile getFileIndexFile(String fileId) {
         FileIndexFile indexFile = null;
@@ -842,7 +831,6 @@ public class RemoteFileServiceImpl implements FileService {
      *     was modified, otherwise UNAUTHORIZED.
      */
     @Override
-    //@HystrixCommand
     @Cacheable(cacheNames = "fileSize", key="T(org.springframework.security.core.context.SecurityContextHolder).getContext().getAuthentication() + #p0 + #p1 + #p2 +#p3")
     public ResponseEntity getHeadById(String fileId,
                                       String accession,

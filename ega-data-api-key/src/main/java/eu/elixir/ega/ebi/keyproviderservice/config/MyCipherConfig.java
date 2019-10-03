@@ -15,9 +15,10 @@
  */
 package eu.elixir.ega.ebi.keyproviderservice.config;
 
-import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import eu.elixir.ega.ebi.keyproviderservice.dto.KeyPath;
 import eu.elixir.ega.ebi.keyproviderservice.dto.PublicKey;
+import lombok.extern.slf4j.Slf4j;
+
 import org.apache.tomcat.util.http.fileupload.util.Streams;
 import org.bouncycastle.bcpg.ArmoredInputStream;
 import org.bouncycastle.bcpg.ArmoredOutputStream;
@@ -36,12 +37,11 @@ import org.springframework.web.client.RestTemplate;
 import java.io.*;
 import java.security.Security;
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * @author asenf
  */
+@Slf4j
 public class MyCipherConfig {
 
     @Autowired
@@ -86,7 +86,7 @@ public class MyCipherConfig {
                 int cnt = readCharArray(buf, sharedKeyPath);
                 this.sharedKey = new GuardedString(Arrays.copyOfRange(buf, 0, cnt));
             } catch (IOException ex) {
-                Logger.getLogger(MyCipherConfig.class.getName()).log(Level.SEVERE, null, ex);
+                log.error(ex.getMessage(), ex);
             }
         }
 
@@ -105,7 +105,7 @@ public class MyCipherConfig {
                 // Store Re-Armoured Key String
                 reArmourKey(keyId, pgpPublicKey, pgpPrivateKey);
             } catch (IOException ex) {
-                Logger.getLogger(MyCipherConfig.class.getName()).log(Level.SEVERE, null, ex);
+                log.error(ex.getMessage(), ex);
             }
         }
 
@@ -118,7 +118,7 @@ public class MyCipherConfig {
                     this.egaLegacy = new GuardedString(scanner.nextLine().toCharArray());
                 }
             } catch (FileNotFoundException ex) {
-                Logger.getLogger(MyCipherConfig.class.getName()).log(Level.SEVERE, null, ex);
+                log.error(ex.getMessage(), ex);
             }
         }
 
@@ -141,7 +141,7 @@ public class MyCipherConfig {
             }
 
         } catch (PGPException ex) {
-            Logger.getLogger(MyCipherConfig.class.getName()).log(Level.SEVERE, null, ex);
+            log.error(ex.getMessage(), ex);
         }
         return key;
     }
@@ -163,20 +163,17 @@ public class MyCipherConfig {
     }
 
     // https://github.com/mailvelope/keyserver/blob/master/README.md
-    @HystrixCommand
     public String getPublicKeyById(String id) {
         ResponseEntity<PublicKey> publicKey = restTemplate.getForEntity(this.publicKeyUrl + "?id=" + id, PublicKey.class);
         return publicKey.getBody().getPublicKeyArmored();
     }
 
     // https://github.com/mailvelope/keyserver/blob/master/README.md
-    @HystrixCommand
     public String getPublicKeyByEmail(String email) {
         ResponseEntity<PublicKey> publicKey = restTemplate.getForEntity(this.publicKeyUrl + "?email=" + email, PublicKey.class);
         return publicKey.getBody().getPublicKeyArmored();
     }
 
-	@HystrixCommand
     public String getFileKey(String fileId) {
         final StringBuilder clearKey = new StringBuilder();
         egaLegacy.access(clearKey::append);
@@ -191,7 +188,7 @@ public class MyCipherConfig {
             PGPSecretKey secretKey = getSecretKey(sKey);
             return secretKey.getPublicKey();
         } catch (IOException | PGPException ex) {
-            System.out.println(ex.toString());
+            log.error(ex.getMessage(), ex);
         }
         return null;
     }
@@ -208,7 +205,7 @@ public class MyCipherConfig {
 
             key = secretKey.extractPrivateKey(decryptor);
         } catch (IOException | PGPException ex) {
-            System.out.println(ex.toString());
+            log.error(ex.getMessage(), ex);
         }
 
         return key;
@@ -275,7 +272,7 @@ public class MyCipherConfig {
 
             armouredKey.put(keyId, baos.toString());
         } catch (Exception ex) {
-            Logger.getLogger(MyCipherConfig.class.getName()).log(Level.SEVERE, null, ex);
+            log.error(ex.getMessage(), ex);
         }
     }
 

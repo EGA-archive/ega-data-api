@@ -18,6 +18,7 @@ package htsjdk.samtools;
 import htsjdk.samtools.cram.ref.CRAMReferenceSource;
 import htsjdk.samtools.cram.ref.ReferenceSource;
 import htsjdk.samtools.util.CloseableIterator;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.*;
 import java.nio.file.Path;
@@ -27,6 +28,7 @@ import java.util.concurrent.Executors;
 /**
  * Created by vadim on 17/05/2016.
  */
+@Slf4j
 public class Converter {
     CRAMReferenceSource referenceSource = new ReferenceSource((Path) null);
     ExecutorService es = Executors.newFixedThreadPool(10);
@@ -53,13 +55,13 @@ public class Converter {
             try {
                 final BAMFileWriter writer = new BAMFileWriter(pos, null);
                 writer.setHeader(header);
-                System.out.println("Pumping records as BAM");
+                log.info("Pumping records as BAM");
                 long count = 0;
                 while (records.hasNext()) {
                     writer.addAlignment(records.next());
                     count++;
                 }
-                System.out.println("Pumping records is done: " + count + " records.");
+                log.info("Pumping records is done: " + count + " records.");
                 writer.close();
             } catch (Exception e) {
                 try {
@@ -90,11 +92,11 @@ public class Converter {
             try {
                 final SAMTextWriter writer = new SAMTextWriter(pos);
                 writer.setHeader(header);
-                System.out.println("Pumping records as BAM");
+                log.info("Pumping records as BAM");
                 while (records.hasNext()) {
                     writer.addAlignment(records.next());
                 }
-                System.out.println("Pumping records is done");
+                log.info("Pumping records is done");
                 writer.close();
             } catch (Exception e) {
                 try {
@@ -124,11 +126,11 @@ public class Converter {
         es.submit((Runnable) () -> {
             try {
                 final CRAMFileWriter writer = new CRAMFileWriter(pos, referenceSource, header, "");
-                System.out.println("Pumping records as CRAM");
+                log.info("Pumping records as CRAM");
                 while (records.hasNext()) {
                     writer.addAlignment(records.next());
                 }
-                System.out.println("Pumping records is done");
+                log.info("Pumping records is done");
                 writer.close();
                 records.close();
             } catch (Exception e) {

@@ -2,7 +2,5 @@
 
 It contains three microservice which are netflix component.
  * Config service
- * Eureka service
- * Hystrix service
- 
+ * Eureka service 
  

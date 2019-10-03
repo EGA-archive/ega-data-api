@@ -39,7 +39,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 import javax.servlet.http.HttpServletRequest;
@@ -49,13 +48,10 @@ import java.util.*;
 import static eu.elixir.ega.ebi.shared.Constants.FILEDATABASE_SERVICE;
 import static eu.elixir.ega.ebi.shared.Constants.RES_SERVICE;
 
-//import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
-
 /**
  * @author asenf
  */
 @Service
-@Transactional
 @EnableDiscoveryClient
 public class RemoteTicketServiceImpl implements TicketService {
 
@@ -92,7 +88,6 @@ public class RemoteTicketServiceImpl implements TicketService {
     }
 
     @Override
-    //@HystrixCommand
     public Object getTicket(String fileId,
                             String format,
                             int referenceIndex,
@@ -185,7 +180,6 @@ public class RemoteTicketServiceImpl implements TicketService {
     }
 
     @Override
-    //@HystrixCommand
     public Object getVariantTicket(String fileId,
                                    String format,
                                    int referenceIndex,
@@ -277,7 +271,6 @@ public class RemoteTicketServiceImpl implements TicketService {
                 .body(new HtsgetContainer(new HtsgetErrorResponse("UnAuthorized", "No authorization for accession '" + fileId + "'")));
     }
 
-    //@HystrixCommand
     @Cacheable(cacheNames = "indexFile")
     private FileIndexFile getFileIndexFile(String fileId) {
         FileIndexFile indexFile = null;
@@ -289,7 +282,6 @@ public class RemoteTicketServiceImpl implements TicketService {
         return indexFile;
     }
 
-    //@HystrixCommand
     public String resUrl() {
         return RES_SERVICE;
     }

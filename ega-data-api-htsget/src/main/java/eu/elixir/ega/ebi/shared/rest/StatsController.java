@@ -34,9 +34,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import lombok.extern.slf4j.Slf4j;
+
 /**
  * @author asenf
  */
+@Slf4j
 @RestController
 @RequestMapping("/stats")
 public class StatsController {
@@ -59,7 +62,7 @@ public class StatsController {
     @RequestMapping(value = "/load", method = OPTIONS)
     public void getLoadOptions(HttpServletResponse response) {
         response.addHeader("Access-Control-Request-Method", "GET");
-        System.out.println("Adding Header load");
+        log.info("Adding Header load");
     }
 
     @RequestMapping(value = "/load", method = GET)
@@ -82,7 +85,7 @@ public class StatsController {
     @RequestMapping(value = "/testme", method = OPTIONS)
     public void getTestOptions(HttpServletResponse response) {
         response.addHeader("Access-Control-Request-Method", "GET");
-        System.out.println("Adding Header testme");
+        log.info("Adding Header testme");
     }
 
     @RequestMapping(value = "/testme", method = {GET, POST})
@@ -94,9 +97,9 @@ public class StatsController {
         result = "Headers: ";
         Set<String> keySet = headers.keySet();
         for (String k : keySet) {
-            System.out.println(k);
+            log.info(k);
             result += k + " ";
-            System.out.println(k + ": " + headers.get(k));
+            log.info(k + ": " + headers.get(k));
         }
 
         if (headers.containsKey("X-Permissions")) {

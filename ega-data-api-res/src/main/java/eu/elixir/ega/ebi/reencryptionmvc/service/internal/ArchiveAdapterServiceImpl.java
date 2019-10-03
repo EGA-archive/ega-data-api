@@ -15,9 +15,10 @@
  */
 package eu.elixir.ega.ebi.reencryptionmvc.service.internal;
 
-import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import eu.elixir.ega.ebi.reencryptionmvc.dto.MyFireConfig;
 import eu.elixir.ega.ebi.reencryptionmvc.service.ArchiveAdapterService;
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
@@ -34,6 +35,7 @@ import java.util.ArrayList;
  */
 @Service
 @EnableDiscoveryClient
+@Slf4j
 public class ArchiveAdapterServiceImpl implements ArchiveAdapterService {
 
     @Autowired
@@ -41,9 +43,8 @@ public class ArchiveAdapterServiceImpl implements ArchiveAdapterService {
 
     @Override
     @Cacheable(cacheNames = "path")
-    @HystrixCommand
     public String[] getPath(String path) {
-        System.out.println("path=" + path);
+        log.info("path=" + path);
         if (path.equalsIgnoreCase("Virtual File")) return new String[]{"Virtual File"};
 
         try {
@@ -66,9 +67,9 @@ public class ArchiveAdapterServiceImpl implements ArchiveAdapterService {
 
                     // Reading Response - with Retries
                     responseCode = connection.getResponseCode();
-                    System.out.println("Response Code " + responseCode);
+                    log.info("Response Code " + responseCode);
                 } catch (Throwable th) {
-                    System.out.println("FIRE error: " + th.toString());
+                    log.error("FIRE error: " + th.getMessage(), th);
                 }
                 if (responseCode != 200) {
                     connection = null;
@@ -123,9 +124,7 @@ public class ArchiveAdapterServiceImpl implements ArchiveAdapterService {
 
             return result;
         } catch (Exception e) {
-            System.out.println("Path = " + path);
-            System.out.println(e.toString());
-            //e.printStackTrace();
+            log.error(e.getMessage() + " Path = " + path, e);
         }
 
         return null;

@@ -17,7 +17,6 @@ image:
       res: res-app
       dataedge: dataedge-app      
       htsget: htsget-app    
-      hystrix: hystrix-app                
   tag: stable
   pullPolicy: Always
   imageSecrets: regcredc 
@@ -63,14 +62,7 @@ image:
         port: 9060
         nodeport: 30060
         debug: 5060
-        debugNodePort: 30006      
-      hystrix:
-        value: cscfi/netflix-hystrix
-        tag: "1.0"
-        port: 8088
-        nodeport: 30088
-        debug: 5089
-        debugNodePort: 30007
+        debugNodePort: 30006
 
 configService: "http://config.default.svc.cluster.local"
 

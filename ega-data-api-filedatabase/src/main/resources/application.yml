@@ -23,10 +23,6 @@ spring.datasource.username: ${DB_USERNAME}
 
 spring.datasource.password: ${DB_PASSWORD}
 
-
-hystrix.command.default.circuitBreaker.enabled: false
-hystrix.command.default.fallback.enabled: false
-hystrix.command.default.execution.timeout.enabled: false
 spring.jpa.hibernate.ddl-auto: none
 ## DataSource common settings
 # Keep the connection alive if idle for a long time (needed in production)

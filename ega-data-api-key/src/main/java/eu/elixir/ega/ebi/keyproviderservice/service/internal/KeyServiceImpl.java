@@ -28,9 +28,6 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.ResponseBody;
-
-import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
-
 import eu.elixir.ega.ebi.keyproviderservice.aesdecryption.AesCtr256Ega;
 import eu.elixir.ega.ebi.keyproviderservice.config.MyCipherConfig;
 import eu.elixir.ega.ebi.keyproviderservice.domain.file.entity.FileKey;
@@ -64,7 +61,6 @@ public class KeyServiceImpl implements KeyService {
     private String dbPasswordDecryptKey;
 
     @Override
-    @HystrixCommand
     @ResponseBody
     public String getFileKey(String id) {
         String key = "";
@@ -93,7 +89,6 @@ public class KeyServiceImpl implements KeyService {
     }
 
     @Override
-    @HystrixCommand
     @ResponseBody
     public PGPPrivateKey getPrivateKey(String keyId) {
         long lKeyId = Long.parseLong(keyId);
@@ -101,7 +96,6 @@ public class KeyServiceImpl implements KeyService {
     }
 
     @Override
-    @HystrixCommand
     @ResponseBody
     public KeyPath getPrivateKeyPath(String keyId) {
         long lKeyId = Long.parseLong(keyId);
@@ -109,7 +103,6 @@ public class KeyServiceImpl implements KeyService {
     }
 
     @Override
-    @HystrixCommand
     @ResponseBody
     public byte[] getPrivateKeyByte(String keyId) {
         long lKeyId = Long.parseLong(keyId);
@@ -117,7 +110,6 @@ public class KeyServiceImpl implements KeyService {
     }
 
     @Override
-    @HystrixCommand
     @ResponseBody
     public String getPrivateKeyString(String keyId) {
         long lKeyId = Long.parseLong(keyId);
@@ -125,7 +117,6 @@ public class KeyServiceImpl implements KeyService {
     }
 
     @Override
-    @HystrixCommand
     @ResponseBody
     public String getPublicKey(String keyType, String keyId) {
         if (keyType.equalsIgnoreCase("id")) {
@@ -137,14 +128,12 @@ public class KeyServiceImpl implements KeyService {
     }
 
     @Override
-    @HystrixCommand
     @ResponseBody
     public PGPPublicKey getPublicKeyFromPrivate(String keyId) {
         return myCipherConfig.getPublicKey(Long.parseLong(keyId));
     }
 
     @Override
-    @HystrixCommand
     @ResponseBody
     public Set<Long> getKeyIDs(String keyType) {
         return this.myCipherConfig.getKeyIDs();

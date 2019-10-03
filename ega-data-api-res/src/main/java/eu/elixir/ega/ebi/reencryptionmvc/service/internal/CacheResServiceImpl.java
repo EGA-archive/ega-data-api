@@ -30,7 +30,6 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
 import com.google.common.io.ByteStreams;
-import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import eu.elixir.ega.ebi.reencryptionmvc.config.GeneralStreamingException;
 import eu.elixir.ega.ebi.reencryptionmvc.config.ServerErrorException;
 import eu.elixir.ega.ebi.reencryptionmvc.dto.CachePage;
@@ -42,6 +41,8 @@ import eu.elixir.ega.ebi.reencryptionmvc.service.ResService;
 import htsjdk.samtools.seekablestream.*;
 import htsjdk.samtools.seekablestream.cipher.ebi.*;
 import htsjdk.samtools.seekablestream.ebi.BufferedBackgroundSeekableInputStream;
+import lombok.extern.slf4j.Slf4j;
+
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
@@ -93,6 +94,7 @@ import static com.amazonaws.HttpMethod.GET;
  * @author asenf
  */
 @Service
+@Slf4j
 @Profile("default")
 @Primary
 @EnableDiscoveryClient
@@ -200,7 +202,6 @@ public class CacheResServiceImpl implements ResService {
     }
 
     @Override
-    @HystrixCommand
     public long transfer(String sourceFormat,
                          String sourceKey,
                          String sourceIV,
@@ -387,7 +388,7 @@ public class CacheResServiceImpl implements ResService {
                 plainIn = getAsymmetricGPGDecryptingInputStream(fileIn, sourceKey, sourceFormat);
             }
         } catch (IOException | URISyntaxException ex) {
-            System.out.println(" ** " + ex.toString());
+            log.error(ex.getMessage(), ex);
         }
 
         return plainIn;
@@ -464,7 +465,7 @@ public class CacheResServiceImpl implements ResService {
             in = GPGStream.getDecodingGPGInoutStream(in, sourceKey.toCharArray());
 
         } catch (IOException | PGPException | NoSuchProviderException ex) {
-            System.out.println("GOPG Error " + ex.toString());
+            log.error("GOPG Error " +ex.getMessage(), ex);
         }
 
         return new FakeSeekableStream(in);
@@ -517,7 +518,7 @@ public class CacheResServiceImpl implements ResService {
                         sKey = pgpSecKey.extractPrivateKey(decryptor);
                     }
                 } catch (Throwable t) {
-                    System.out.println("Error -- " + t.getLocalizedMessage());
+                    log.error(t.getMessage(), t);
                 }
             }
 
@@ -544,7 +545,7 @@ public class CacheResServiceImpl implements ResService {
                 in = ld.getInputStream();
             }
         } catch (IOException | PGPException ex) {
-            System.out.println(" *** " + ex.toString());
+            log.error(ex.getMessage(), ex);
         }
 
         return new FakeSeekableStream(in);
@@ -552,7 +553,6 @@ public class CacheResServiceImpl implements ResService {
 
     // *************************************************************************
     // ** Get Public Key fo Encryption
-    @HystrixCommand
     public PGPPublicKey getPublicGPGKey(String destinationFormat) throws IOException {
         PGPPublicKey pgKey = null;
         Security.addProvider(new BouncyCastleProvider());
