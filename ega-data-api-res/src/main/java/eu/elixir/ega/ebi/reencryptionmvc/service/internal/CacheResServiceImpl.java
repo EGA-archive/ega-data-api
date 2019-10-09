@@ -104,8 +104,7 @@ public class CacheResServiceImpl implements ResService {
     /**
      * Size of a byte buffer to read/write file (for Random Stream)
      */
-    //private static final int BUFFER_SIZE = 16;
-    private static final long BUFFER_SIZE = 1024 * 1024 * 12;
+    private static final long BUFFER_SIZE = 1024 * 1024 * 64;
     private static final int MAX_CONCURRENT = 4;
     /**
      * Bouncy Castle code for Public Key encrypted Files
