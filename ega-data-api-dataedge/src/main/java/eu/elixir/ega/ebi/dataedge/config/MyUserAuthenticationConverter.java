@@ -41,7 +41,7 @@ public class MyUserAuthenticationConverter implements UserAuthenticationConverte
     private UserDetailsService userDetailsService;
 
     // Overwrites default from interface (asenf)
-    private String USERNAME = "user_id";
+    private String USERNAME = "sub";
 
     /**
      * Optional {@link UserDetailsService} to use when extracting an {@link Authentication} from the incoming map.

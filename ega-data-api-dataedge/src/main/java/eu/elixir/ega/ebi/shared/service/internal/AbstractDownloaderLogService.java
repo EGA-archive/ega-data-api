@@ -31,7 +31,7 @@ public abstract class AbstractDownloaderLogService implements DownloaderLogServi
   /**
    * Writes an {@link EventEntry} string to the log.
    *
-   * @param downloadEntry an EventEntry to write to the log
+   * @param eventEntry an EventEntry to write to the log
    */
   @Override
   public void logEvent(EventEntry eventEntry) {
@@ -100,7 +100,7 @@ public abstract class AbstractDownloaderLogService implements DownloaderLogServi
     dle.setEndCoordinate(endCoordinate);
     dle.setBytes(bytes);
     dle.setCreated(new java.sql.Timestamp(Calendar.getInstance().getTime().getTime()));
-    dle.setTokenSource("EGA");
+    dle.setTokenSource("Elixir AAI");
 
     return dle;
   }

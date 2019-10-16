@@ -123,9 +123,9 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
      * @param checkTokenUrl EGA AAI token endpoint url
      * @param clientId Client id for the EGA AAI
      * @param clientSecret Client secret for the EGA AAI
-     * @param zuulCheckTokenUrl Elixir token endpoint url
-     * @param zuulClientId Elixir AAI ID
-     * @param zuulClientSecret Elixir AAI client
+     * @param elixirCheckTokenUrl Elixir token endpoint url
+     * @param elixirClientId Elixir AAI ID
+     * @param elixirClientSecret Elixir AAI client
      * @return A combined authentication token service
      */
     @Profile("enable-aai")
@@ -135,9 +135,9 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
                                                    final @Value("${auth.server.url}") String checkTokenUrl,
                                                    final @Value("${auth.server.clientId}") String clientId,
                                                    final @Value("${auth.server.clientsecret}") String clientSecret,
-                                                   final @Value("${auth.zuul.server.url}") String zuulCheckTokenUrl,
-                                                   final @Value("${auth.zuul.server.clientId}") String zuulClientId,
-                                                   final @Value("${auth.zuul.server.clientsecret}") String zuulClientSecret) {
+                                                   final @Value("${auth.elixir.server.url}") String elixirCheckTokenUrl,
+                                                   final @Value("${auth.elixir.server.clientId}") String elixirClientId,
+                                                   final @Value("${auth.elixir.server.clientsecret}") String elixirClientSecret) {
 
         final CachingMultipleRemoteTokenService remoteTokenServices = new CachingMultipleRemoteTokenService();
 
@@ -151,9 +151,9 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
 
         // ELIXIR AAI
         CachingRemoteTokenService a = new CachingRemoteTokenService();
-        a.setCheckTokenEndpointUrl(zuulCheckTokenUrl);
-        a.setClientId(zuulClientId);
-        a.setClientSecret(zuulClientSecret);
+        a.setCheckTokenEndpointUrl(elixirCheckTokenUrl);
+        a.setClientId(elixirClientId);
+        a.setClientSecret(elixirClientSecret);
         remoteTokenServices.addRemoteTokenService(a);
 
         return remoteTokenServices;

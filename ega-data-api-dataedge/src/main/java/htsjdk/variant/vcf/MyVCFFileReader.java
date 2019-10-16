@@ -182,7 +182,7 @@ public class MyVCFFileReader implements Closeable, Iterable<VariantContext> {
      * URL with a specified index file.
      *
      * @param url URL to read data from.
-     * @param indexFile {@code File} handle for the index file
+     * @param indexUrl {@code File} handle for the index file
      * @param requireIndex {@code true} if an index file is required,
      *     {@code false} otherwise.
      */
@@ -202,7 +202,7 @@ public class MyVCFFileReader implements Closeable, Iterable<VariantContext> {
      * URL with a specified index file, and downloader URL.
      *
      * @param url URL to read data from.
-     * @param indexFile {@code File} handle for the index file
+     * @param indexUrl {@code File} handle for the index file
      * @param requireIndex {@code true} if an index file is required,
      *     {@code false} otherwise.
      * @param downloaderUrl base URL for the downloader.

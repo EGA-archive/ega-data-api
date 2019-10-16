@@ -109,7 +109,7 @@ public class RemoteFileServiceImplTest {
 
     /**
      * Test class for
-     * {@link RemoteFileServiceImpl#getFile(Authentication, String, String, String, String, long, long, HttpServletRequest, HttpServletResponse)}.
+     * {@link #testGetFile()}.
      * Verify code is executing without errors.
      */
     @Test
@@ -125,7 +125,7 @@ public class RemoteFileServiceImplTest {
 
     /**
      * Test class for
-     * {@link RemoteFileServiceImpl#getFileHead(Authentication, String, String, HttpServletRequest, HttpServletResponse)}.
+     * {@link #testGetFileHead}.
      * Verify code is executing without errors.
      */
     @Test
@@ -140,7 +140,7 @@ public class RemoteFileServiceImplTest {
 
     /**
      * Test class for
-     * {@link RemoteFileServiceImpl#getFileHeader(Authentication, String, String, String, CRAMReferenceSource)}.
+     * {@link #testGetFileHeader}.
      * Verify code is executing without errors and checking output
      * samFileHeaderOutput.
      */
@@ -158,7 +158,7 @@ public class RemoteFileServiceImplTest {
 
     /**
      * Test class for
-     * {@link RemoteFileServiceImpl#getById(Authentication, String, String, String, String, long, long, List, List, List, boolean, String, String, HttpServletRequest, HttpServletResponse)}.
+     * {@link #testGetById}.
      * Verify code is executing without errors.
      */
     @Test
@@ -174,7 +174,7 @@ public class RemoteFileServiceImplTest {
 
     /**
      * Test class for
-     * {@link RemoteFileServiceImpl#getById(Authentication, String, String, String, String, long, long, List, List, List, boolean, String, String, HttpServletRequest, HttpServletResponse)}.
+     * {@link #testGetByIdforNullIndexFileId}.
      * Verify code is throws InternalErrorException.
      */
     @Test(expected =  InternalErrorException.class)
@@ -191,7 +191,7 @@ public class RemoteFileServiceImplTest {
     
     /**
      * Test class for
-     * {@link RemoteFileServiceImpl#getVCFById(Authentication, String, String, String, String, long, long, List, List, List, boolean, String, String, HttpServletRequest, HttpServletResponse)}.
+     * {@link #testGetVCFById}.
      * Verify code is executing without errors.
      */
     @Test
@@ -227,7 +227,7 @@ public class RemoteFileServiceImplTest {
 
     /**
      * Test class for
-     * {@link RemoteFileServiceImpl#getHeadById(Authentication, String, String, HttpServletRequest, HttpServletResponse)}.
+     * {@link #testGetHeadById}.
      * Verify the response status code.
      */
     @SuppressWarnings("rawtypes")

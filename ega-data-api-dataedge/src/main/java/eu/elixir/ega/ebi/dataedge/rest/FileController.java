@@ -281,7 +281,7 @@ public class FileController {
      * Writes the content length of a selected file to the reponse parameter, and
      * returns OK or UNAUTHORIZED wheather the file exists and can be accessible.
      *
-     * @param fileId    should be "file".
+     * @param type    should be "file".
      * @param accession accession id of the requested file.
      * @param request   Unused.
      * @param response  reponse object which will be modified with the content

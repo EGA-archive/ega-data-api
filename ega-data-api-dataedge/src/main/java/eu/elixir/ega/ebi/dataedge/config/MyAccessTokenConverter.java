@@ -107,7 +107,7 @@ public class MyAccessTokenConverter implements AccessTokenConverter {
      *
      * @param value Value to set in the return authentication token
      * @param map   An authentication map, such as returned from
-     *              {@link convertAccessToken}
+     *              {@link #convertAccessToken(OAuth2AccessToken, OAuth2Authentication)}
      * @return Access token containing the combined information
      */
     public OAuth2AccessToken extractAccessToken(String value, Map<String, ?> map) {
@@ -133,7 +133,7 @@ public class MyAccessTokenConverter implements AccessTokenConverter {
      * authentication request.
      *
      * @param map An authentication map, such as returned from
-     *            {@link convertAccessToken}
+     *            {@link #convertAccessToken(OAuth2AccessToken, OAuth2Authentication)}
      * @return An OAuth2 authentication object
      */
     @Override
@@ -172,7 +172,7 @@ public class MyAccessTokenConverter implements AccessTokenConverter {
      * given authentication map.
      *
      * @param map An authentication map, such as returned from
-     *            {@link convertAccessToken}
+     *            {@link #convertAccessToken(OAuth2AccessToken, OAuth2Authentication)}
      * @return The extracted authentication audience
      */
     private Collection<String> getAudience(Map<String, ?> map) {
@@ -190,7 +190,7 @@ public class MyAccessTokenConverter implements AccessTokenConverter {
      * given authentication map.
      *
      * @param map An authentication map, such as returned from
-     *            {@link convertAccessToken}
+     *            {@link #convertAccessToken(OAuth2AccessToken, OAuth2Authentication)} convertAccessToken}
      * @return The extracted authentication scope
      */
     private Set<String> extractScope(Map<String, ?> map) {

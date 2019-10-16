@@ -33,7 +33,7 @@ public interface DownloaderLogService {
     /**
      * Writes an {@link EventEntry} string to the log.
      *
-     * @param downloadEntry an EventEntry to write to the log
+     * @param eventEntry an EventEntry to write to the log
      */
     void logEvent(EventEntry eventEntry);
 
