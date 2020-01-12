@@ -2,7 +2,6 @@ language: java
 
 services: docker
 
-jdk: oraclejdk8
 install:
   # installing dependencies and skipping docker push
   - mvn install -DskipTests=true -Dmaven.javadoc.skip=true -B -V -DskipDockerPush
