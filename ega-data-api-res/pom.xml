@@ -227,12 +227,12 @@
                         <version>${docker.maven.version}</version>
                         <configuration>
                             <imageName>${dockerRegistry}/ega-res</imageName>
-                            <baseImage>java:8-alpine</baseImage>
+                            <baseImage>openjdk:8-alpine</baseImage>
                             <imageTags>
                                 <imageTag>${image.version}</imageTag>
                                 <imageTag>latest</imageTag>
                             </imageTags>
-                            <entryPoint>["java", "-jar", "/${project.build.finalName}.jar"]</entryPoint>
+                            <entryPoint>exec java $JAVA_OPTS -jar /${project.build.finalName}.jar</entryPoint>
                             <resources>
                                 <resource>
                                     <targetPath>/</targetPath>
@@ -284,12 +284,12 @@
                         <version>${docker.maven.version}</version>
                         <configuration>
                             <imageName>${dockerRegistry}/ega-res</imageName>
-                            <baseImage>java:8-alpine</baseImage>
+                            <baseImage>openjdk:8-alpine</baseImage>
                             <imageTags>
                                 <imageTag>${image.version}</imageTag>
                                 <imageTag>latest</imageTag>
                             </imageTags>
-                            <entryPoint>["java", "${debug.config}${debug.res.port}", "-jar", "/${project.build.finalName}.jar"]</entryPoint>
+                            <entryPoint>exec java $JAVA_OPTS ${debug.config}${debug.res.port} -jar /${project.build.finalName}.jar</entryPoint>
                             <resources>
                                 <resource>
                                     <targetPath>/</targetPath>
