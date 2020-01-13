@@ -12,7 +12,6 @@ services:
       - FILEDATABASE.listOfServers=filedatabase:9051
       - RES2.listOfServers=resserver:9092
       - KEYSERVER.listOfServers=keyserver:9095
-      - JAVA_OPTS=-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap
       - ega.ega.external.url=https://ega.ebi.ac.uk:8051/elixir/data/files/
       - ega.ega.cram.fasta=/homes/ega-prod/ngs_dev/Homo_sapiens_assembly38.fasta
       - ega.ega.cram.fasta.a=/homes/ega-prod/ngs_dev/Homo_sapiens_assembly38.fasta 
@@ -50,7 +49,6 @@ services:
       - EGA_EBI_FIRE_URL=""
       - EGA_EBI_FIRE_ARCHIVE=""
       - EGA_EBI_FIRE_KEY=""
-      - JAVA_OPTS=-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap      
       - service.archive.class=""
       - ega.internal.filedatabase.url=https://FILEDATABASE
       - ega.internal.res.url=https://RES2
