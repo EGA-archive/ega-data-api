@@ -180,7 +180,7 @@
                                 <imageTag>${image.version}</imageTag>
                                 <imageTag>latest</imageTag>
                             </imageTags>
-                            <entryPoint>exec java $JAVA_OPTS -jar /${project.build.finalName}.jar</entryPoint>
+                            <entryPoint>["java", "-jar", "/${project.build.finalName}.jar"]</entryPoint>
                             <resources>
                                 <resource>
                                     <targetPath>/</targetPath>
