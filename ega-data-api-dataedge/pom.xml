@@ -175,7 +175,7 @@
                         <version>${docker.maven.version}</version>
                         <configuration>
                             <imageName>${dockerRegistry}/ega-dataedge</imageName>
-                            <baseImage>openjdk:8-alpine</baseImage>
+                            <baseImage>java:8-alpine</baseImage>
                             <imageTags>
                                 <imageTag>${image.version}</imageTag>
                                 <imageTag>latest</imageTag>
@@ -227,12 +227,12 @@
                         <version>${docker.maven.version}</version>
                         <configuration>
                             <imageName>${dockerRegistry}/ega-dataedge</imageName>
-                            <baseImage>openjdk:8-alpine</baseImage>
+                            <baseImage>java:8-alpine</baseImage>
                             <imageTags>
                                 <imageTag>${image.version}</imageTag>
                                 <imageTag>latest</imageTag>
                             </imageTags>
-                            <entryPoint>exec java $JAVA_OPTS ${debug.config}${debug.dataedge.port} -jar /${project.build.finalName}.jar</entryPoint>
+                            <entryPoint>["java", "${debug.config}${debug.dataedge.port}", "-jar", "/${project.build.finalName}.jar"]</entryPoint>
                             <resources>
                                 <resource>
                                     <targetPath>/</targetPath>
