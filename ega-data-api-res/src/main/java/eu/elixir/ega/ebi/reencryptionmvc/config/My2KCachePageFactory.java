@@ -544,7 +544,7 @@ public class My2KCachePageFactory implements FactoryBean<Cache<String, CachePage
 
             return result;
         } catch (Exception e) {
-            log.error(e.getMessage() + " Path = " + path, e);
+            log.error(e.getMessage() + " Path error= " + path, e);
         }
         return null;
     }
