@@ -78,13 +78,13 @@ public class MyConfiguration {
     @Value("${ega.sharedpass.path}")
     private String sharedKeyPath;
     
-    @Value("${fire.user}") 
+    @Value("${fire.user:testUser}") 
     private String username;
     
-    @Value("${fire.password}") 
+    @Value("${fire.password:testPass}") 
     private String password;
     
-    @Value("${fire.url}") 
+    @Value("${fire.url:testUrl}") 
     private String fireURL;
 
     @Autowired
