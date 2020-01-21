@@ -17,26 +17,22 @@ package eu.elixir.ega.ebi.reencryptionmvc.service.internal;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.mockito.Matchers.any;
-import static org.powermock.api.mockito.PowerMockito.mock;
+import static org.mockito.Matchers.anyString;
 import static org.powermock.api.mockito.PowerMockito.when;
-import static org.powermock.api.mockito.PowerMockito.whenNew;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
+import java.util.Optional;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-import eu.elixir.ega.ebi.reencryptionmvc.dto.MyFireConfig;
+import uk.ac.ebi.ega.fire.ingestion.service.IFireServiceNew;
+import uk.ac.ebi.ega.fire.models.FireObjectResponse;
+import uk.ac.ebi.ega.fire.models.FireResponse;
 
 /**
  * Test class for {@link ArchiveAdapterServiceImpl}.
@@ -47,12 +43,11 @@ import eu.elixir.ega.ebi.reencryptionmvc.dto.MyFireConfig;
 @PrepareForTest(ArchiveAdapterServiceImpl.class)
 public class ArchiveAdapterServiceImplTest {
 
-    @InjectMocks
     private ArchiveAdapterServiceImpl archiveAdapterServiceImpl;
 
-    @Mock
-    private MyFireConfig myFireConfig;
-
+    @Mock 
+    private IFireServiceNew fireService;
+    
     @Before
     public void initMocks() {
         MockitoAnnotations.initMocks(this);
@@ -67,38 +62,21 @@ public class ArchiveAdapterServiceImplTest {
     @Test
     public void testGetPath() throws Exception {
 
-        final String pathInput = "/EGAZ0000125/analysis/ALL.chr22.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.vcf.gz.cip";
-        final String object_get = "http://read:8oSSaB@10.10.10.10/ega/06ca84a54eeadf8acd3cf05691652d5e0014";
-        final String object_length = "214453766";
-        final String object_storage_class = "CLEVERSAFE";
+        final String pathInput = "EGAF00000094601.bam.cip";
+        final Long object_length = 2556580787L;
+        final String PATH_OBJECTS = "objects/blob/path/";
+        final String fireURL = "https://hx.fire.sdo.ebi.ac.uk/fire/v1.1";
+        archiveAdapterServiceImpl= new ArchiveAdapterServiceImpl(fireService, fireURL);
+        FireObjectResponse fireObjectResponse = new FireObjectResponse();
+        fireObjectResponse.setObjectSize(object_length);  
 
-        final BufferedReader bufferedReaderMock = mock(BufferedReader.class);
-        final URL urlMock = mock(URL.class);
-        final HttpURLConnection connectionMock = mock(HttpURLConnection.class);
-
-        whenNew(URL.class).withArguments(any(String.class)).thenReturn(urlMock);
-        whenNew(BufferedReader.class).withArguments(any()).thenReturn(bufferedReaderMock);
-
-        when(myFireConfig.getFireUrl()).thenReturn("testUrl");
-        when(myFireConfig.getFireArchive()).thenReturn("fireArchive");
-        when(myFireConfig.getFireKey()).thenReturn("fireKey");
-        when(connectionMock.getResponseCode()).thenReturn(200);
-        when(connectionMock.getInputStream()).thenReturn(new ByteArrayInputStream("test stream".getBytes()));
-        when(urlMock.openConnection()).thenReturn(connectionMock);
-        when(bufferedReaderMock.readLine()).thenReturn("BEGIN").thenReturn("OBJECT_GET " + object_get)
-                .thenReturn(
-                        "OBJECT_HEAD http://read:8oSSaB@10.10.10.10/ega/06ca84a54eeadf8acd3cf05691652d5e0014")
-                .thenReturn("OBJECT_MD5 fa402efda9fdb3cf73799d854c52120c").thenReturn("OBJECT_LENGTH " + object_length)
-                .thenReturn("OBJECT_URL_EXPIRE 2018-03-20T09:34:46.040868")
-                .thenReturn("OBJECT_STORAGE_CLASS " + object_storage_class).thenReturn("END").thenReturn(null);
+        when(fireService.findFile(anyString())).thenReturn(Optional.of(new FireResponse(fireObjectResponse)));
 
         final String[] ouput = archiveAdapterServiceImpl.getPath(pathInput, "");
 
-        assertThat(ouput.length, equalTo(4));
-        assertThat(ouput[0], equalTo(object_get));
-        assertThat(ouput[1], equalTo(object_length));
-        assertThat(ouput[2], equalTo(object_storage_class));
-        assertThat(ouput[3], equalTo(pathInput));
+        assertThat(ouput.length, equalTo(2));
+        assertThat(ouput[0], equalTo(fireURL+PATH_OBJECTS + pathInput));
+        assertThat(ouput[1], equalTo(object_length.toString()));
 
     }
 

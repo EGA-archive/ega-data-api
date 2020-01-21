@@ -17,12 +17,25 @@ package eu.elixir.ega.ebi.reencryptionmvc.config;
 
 import com.google.common.cache.CacheBuilder;
 import eu.elixir.ega.ebi.reencryptionmvc.dto.*;
+import eu.elixir.ega.ebi.reencryptionmvc.service.ArchiveAdapterService;
+import eu.elixir.ega.ebi.reencryptionmvc.service.internal.ArchiveAdapterServiceImpl;
 import no.uio.ifi.crypt4gh.factory.HeaderFactory;
+import uk.ac.ebi.ega.fire.ingestion.service.FireService;
+import uk.ac.ebi.ega.fire.ingestion.service.IFireServiceNew;
+import uk.ac.ebi.ega.fire.properties.HttpClientProperties;
+
 import org.apache.commons.io.IOUtils;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.config.ConnectionConfig;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.http.message.BasicHeader;
 import org.cache2k.Cache;
 import org.identityconnectors.common.security.GuardedString;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cache.guava.GuavaCache;
@@ -38,6 +51,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Arrays;
+import java.util.Base64;
+import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -47,13 +62,6 @@ import java.util.concurrent.TimeUnit;
 @EnableCaching
 @EnableDiscoveryClient
 public class MyConfiguration {
-
-    @Value("${ega.ebi.fire.url}")
-    private String fireUrl;
-    @Value("${ega.ebi.fire.archive}")
-    private String fireArchive;
-    @Value("${ega.ebi.fire.key}")
-    private String fireKey;
 
     @Value("${ega.ebi.aws.access.key:#{null}}")
     private String awsKey;
@@ -69,22 +77,29 @@ public class MyConfiguration {
 
     @Value("${ega.sharedpass.path}")
     private String sharedKeyPath;
+    
+    @Value("${fire.user}") 
+    private String username;
+    
+    @Value("${fire.password}") 
+    private String password;
+    
+    @Value("${fire.url}") 
+    private String fireURL;
 
     @Autowired
     private LoadBalancerClient loadBalancer;
     
     @Autowired
     private Cache<String, EgaAESFileHeader> myCache;
+    
+    @Autowired
+    private IFireServiceNew initFireService;
 
     @LoadBalanced
     @Bean
     public RestTemplate restTemplate() {
         return new RestTemplate();
-    }
-
-    @Bean
-    public MyFireConfig MyCipherConfig() {
-        return new MyFireConfig(fireUrl, fireArchive, fireKey);
     }
 
     @Bean
@@ -112,9 +127,8 @@ public class MyConfiguration {
                 pageCount,
                 awsKey,
                 awsSecretKey,
-                fireUrl,
-                fireArchive,
-                fireKey,
+                fireURL,
+                base64EncodedCredentials(),
                 awsEndpointUrl,
                 awsRegion)).getObject();
     }
@@ -144,4 +158,52 @@ public class MyConfiguration {
         return new GuardedString(passphrase.toCharArray());
     }
 
+    @ConfigurationProperties(prefix = "httpclient.connection")
+    @Bean
+    public HttpClientProperties initHttpClientProperties() {
+        return new HttpClientProperties();
+    }
+    
+    @Bean
+    public CloseableHttpClient initHttpClient(final HttpClientProperties httpClientProperties) {
+
+        final ConnectionConfig connectionConfig = ConnectionConfig.custom()
+                .setBufferSize(httpClientProperties.getBufferSize())
+                .build();
+
+        final PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
+        connectionManager.setMaxTotal(httpClientProperties.getMaxTotal());
+        connectionManager.setDefaultMaxPerRoute(httpClientProperties.getDefaultMaxPerRoute());
+        connectionManager.setValidateAfterInactivity(5000);
+
+        final RequestConfig requestConfig = RequestConfig.custom()
+                .setConnectTimeout(httpClientProperties.getTimeout() * 1000)
+                .setConnectionRequestTimeout(httpClientProperties.getTimeout() * 1000)
+                .setSocketTimeout(0)
+                .build();
+
+        return HttpClients.custom()
+                .setDefaultConnectionConfig(connectionConfig)
+                .setConnectionManager(connectionManager)
+                .setDefaultRequestConfig(requestConfig)
+                .setDefaultHeaders(Collections.singleton(new BasicHeader("Authorization", "Basic ".concat(base64EncodedCredentials()))))
+                .build();
+    }
+
+    @Bean
+    public IFireServiceNew initFireService(final CloseableHttpClient httpClient) {
+        return new FireService(httpClient, fireURL);
+    }
+    
+    @Bean
+    public ArchiveAdapterService achiveAdapterService() {
+        return new ArchiveAdapterServiceImpl(initFireService, fireURL);
+    }
+    
+    @Bean
+    public String base64EncodedCredentials() {
+       return Base64.getEncoder()
+                .encodeToString((username + ":" + password).getBytes());
+    }
+    
 }

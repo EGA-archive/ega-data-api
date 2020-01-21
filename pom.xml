@@ -61,4 +61,10 @@
 		</pluginManagement>
 	</build>
 
+ 	<repositories>
+        <repository>
+            <id>gitlab-maven</id>
+            <url>https://gitlab.ebi.ac.uk/api/v4/groups/428/-/packages/maven</url>
+        </repository>
+    </repositories>
 </project>

@@ -29,7 +29,7 @@ import eu.elixir.ega.ebi.reencryptionmvc.dto.ArchiveSource;
 import eu.elixir.ega.ebi.reencryptionmvc.dto.CachePage;
 import eu.elixir.ega.ebi.reencryptionmvc.dto.EgaAESFileHeader;
 import eu.elixir.ega.ebi.reencryptionmvc.dto.EgaFile;
-import eu.elixir.ega.ebi.reencryptionmvc.service.internal.CacheResServiceImpl;
+import eu.elixir.ega.ebi.reencryptionmvc.service.ArchiveAdapterService;
 import htsjdk.samtools.seekablestream.SeekableHTTPStream;
 import htsjdk.samtools.seekablestream.SeekablePathStream;
 import htsjdk.samtools.seekablestream.SeekableStream;
@@ -46,6 +46,7 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.cache2k.Cache;
 import org.cache2k.Cache2kBuilder;
 import org.springframework.beans.factory.FactoryBean;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
 
 import javax.crypto.BadPaddingException;
@@ -81,9 +82,11 @@ public class My2KCachePageFactory implements FactoryBean<Cache<String, CachePage
     private final String awsSecretAccessKey;
     private final String awsEndpointUrl;
     private final String awsRegion;
-    private final String fireUrl;
-    private final String fireArchive;
-    private final String fireKey;
+    private final String fireURL;
+    private final String base64EncodedCredentials;
+        
+    @Autowired
+    private ArchiveAdapterService archiveAdapterService;
 
     public My2KCachePageFactory(Cache<String, EgaAESFileHeader> myHeaderCache,
                                 LoadBalancerClient loadBalancer,
@@ -91,12 +94,10 @@ public class My2KCachePageFactory implements FactoryBean<Cache<String, CachePage
                                 int pageCount,
                                 String awsAccessKeyId,
                                 String awsSecretAccessKey,
-                                String fireUrl,
-                                String fireArchive,
-                                String fireKey,
+                                String fireURL,
+                                String base64EncodedCredentials,
                                 String awsEndpointUrl,
                                 String awsRegion) {
-
         this.myHeaderCache = myHeaderCache;
         this.loadBalancer = loadBalancer;
         this.pageSize = pageSize;
@@ -105,9 +106,8 @@ public class My2KCachePageFactory implements FactoryBean<Cache<String, CachePage
         this.awsSecretAccessKey = awsSecretAccessKey;
         this.awsEndpointUrl = awsEndpointUrl;
         this.awsRegion = awsRegion;
-        this.fireUrl = fireUrl;
-        this.fireArchive = fireArchive;
-        this.fireKey = fireKey;
+        this.fireURL = fireURL;
+        this.base64EncodedCredentials =base64EncodedCredentials;
     }
 
     private String getServiceURL(String service) {
@@ -259,11 +259,9 @@ public class My2KCachePageFactory implements FactoryBean<Cache<String, CachePage
         String url = header.getUrl();
         HttpGet request = new HttpGet(url);
 
-        // Add request header for Basic Auth (for CleverSafe)
-        if (httpAuth != null && httpAuth.length() > 0) {
-            request.addHeader("Authorization", httpAuth);
-        }
-
+        // Add request header for Basic Auth
+        request.addHeader("Authorization", "Basic ".concat(base64EncodedCredentials));
+        
         // Add range header - logical (unencrypted) coordinates to file coordinates (add IV handling '+16')
         if ((startCoordinate + 16) >= header.getSize())
             return new CachePage(new byte[]{});
@@ -331,8 +329,8 @@ public class My2KCachePageFactory implements FactoryBean<Cache<String, CachePage
             url = getS3ObjectUrl(id, path, httpAuth, fileSize, sourceKey);
         } else {
             String path_ = path.toLowerCase().startsWith("/fire/a/") ? path.substring(16) : path;
-            String[] url__ = getPath(path_);
-            url = url__[0];
+            String[] url__ = archiveAdapterService.getPath(path_,"");
+            url = fireURL + url__[0];
         }
 
         // Load first 16 bytes; set stats
@@ -349,11 +347,7 @@ public class My2KCachePageFactory implements FactoryBean<Cache<String, CachePage
             try {
                 URL url_ = new URL(url);
                 if (url_.getUserInfo() != null) {
-                    //String encoding = new sun.misc.BASE64Encoder().encode(url_.getUserInfo().getBytes());
-                    //encoding = encoding.replaceAll("\n", "");
-                    String encoding = java.util.Base64.getEncoder().encodeToString(url_.getUserInfo().getBytes());
-                    String auth = "Basic " + encoding;
-                    request.addHeader("Authorization", auth);
+                    request.addHeader("Authorization", "Basic " + base64EncodedCredentials);
                 }
             } catch (MalformedURLException ignored) {
             }
@@ -463,90 +457,6 @@ public class My2KCachePageFactory implements FactoryBean<Cache<String, CachePage
         }
 
         return plainIn;
-    }
-
-    private String[] getPath(String path) {
-        if (path.equalsIgnoreCase("Virtual File")) return new String[]{"Virtual File"};
-
-        try {
-            String[] result = new String[4]; // [0] name [1] stable_id [2] size [3] rel path
-            result[0] = "";
-            result[1] = "";
-            result[3] = path;
-            String path_ = path;
-
-            // Sending Request; 4 re-try attempts
-            int reTryCount = 4;
-            int responseCode = 0;
-            HttpURLConnection connection = null;
-            do {
-                try {
-                    connection = (HttpURLConnection) (new URL(fireUrl)).openConnection();
-                    connection.setRequestMethod("GET");
-                    connection.setRequestProperty("X-FIRE-Archive", fireArchive);
-                    connection.setRequestProperty("X-FIRE-Key", fireKey);
-                    connection.setRequestProperty("X-FIRE-FilePath", path_);
-
-                    // Reading Response - with Retries
-                    responseCode = connection.getResponseCode();
-                    //System.out.println("Response Code " + responseCode);
-                } catch (Throwable th) {
-                    log.error("FIRE error: " + th.getMessage(), th);
-                }
-                if (responseCode != 200) {
-                    connection = null;
-                    Thread.sleep(500);
-                }
-            } while (responseCode != 200 && --reTryCount > 0);
-
-            // if Response OK
-            if (responseCode == 200) {
-                BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-                String inputLine;
-
-                ArrayList<String[]> paths = new ArrayList<>();
-
-                String object_get = "",             // 1
-                        object_head = "",            // 2
-                        object_md5 = "",             // 3
-                        object_length = "",          // 4
-                        object_url_expire = "",      // 5
-                        object_storage_class = "";   // 6
-                while ((inputLine = in.readLine()) != null) {
-                    if (inputLine.startsWith("OBJECT_GET"))
-                        object_get = inputLine.substring(inputLine.indexOf("http://")).trim();
-                    if (inputLine.startsWith("OBJECT_HEAD"))
-                        object_head = inputLine.substring(inputLine.indexOf(" ") + 1).trim();
-                    if (inputLine.startsWith("OBJECT_MD5"))
-                        object_md5 = inputLine.substring(inputLine.indexOf(" ") + 1).trim();
-                    if (inputLine.startsWith("OBJECT_LENGTH"))
-                        object_length = inputLine.substring(inputLine.indexOf(" ") + 1).trim();
-                    if (inputLine.startsWith("OBJECT_URL_EXPIRE"))
-                        object_url_expire = inputLine.substring(inputLine.indexOf(" ") + 1).trim();
-                    if (inputLine.startsWith("OBJECT_STORAGE_CLASS"))
-                        object_storage_class = inputLine.substring(inputLine.indexOf(" ") + 1).trim();
-                    if (inputLine.startsWith("END"))
-                        paths.add(new String[]{object_get, object_length, object_storage_class});
-                }
-                in.close();
-
-                if (paths.size() > 0) {
-                    for (String[] e : paths) {
-                        if (!e[0].toLowerCase().contains("/ota/")) { // filter out tape archive
-                            result[0] = e[0];   // GET Url
-                            result[1] = e[1];   // Length
-                            result[2] = e[2];   // Storage CLass
-                            break;              // Pick first non-tape entry
-                        }
-                    }
-                }
-            }
-
-            return result;
-        } catch (Exception e) {
-            log.error(e.getMessage() + " Path = " + path, e);
-        }
-        return null;
     }
 
 }

@@ -84,8 +84,6 @@ public class CleversaveArchiveServiceImpl implements ArchiveService {
             response.setStatus(530);
             throw new ServerErrorException(sessionId + "Fire Error in obtaining URL for ", fileName);
         }
-        String fileUrlString = filePath[0];
-        long size = Long.valueOf(filePath[1]);
 
         // Get EgaFile encryption Key
         String encryptionKey = keyService.getFileKey(id);
@@ -95,7 +93,7 @@ public class CleversaveArchiveServiceImpl implements ArchiveService {
         }
 
         // Build result object and return it (auth is 'null' --> it is part of the URL now)
-        return new ArchiveSource(fileUrlString, size, null, encryptionFormat, encryptionKey, null);
+        return new ArchiveSource(filePath[0], Long.valueOf(filePath[1]), null, encryptionFormat, encryptionKey, null);
     }
 
 }

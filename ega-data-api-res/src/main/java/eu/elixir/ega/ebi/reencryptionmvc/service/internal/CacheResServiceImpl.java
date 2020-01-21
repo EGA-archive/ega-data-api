@@ -58,6 +58,7 @@ import org.bouncycastle.openpgp.operator.bc.BcPGPDigestCalculatorProvider;
 import org.bouncycastle.openpgp.operator.bc.BcPublicKeyDataDecryptorFactory;
 import org.cache2k.Cache;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
@@ -126,7 +127,9 @@ public class CacheResServiceImpl implements ResService {
     private Cache<String, EgaAESFileHeader> myHeaderCache;
     @Autowired
     private Cache<String, CachePage> myPageCache;
-
+    
+    @Value("#{base64EncodedCredentials}")
+    private String base64EncodedCredentials;
     /*
      * Perform Data Transfer Requested by File Controller
      */
@@ -643,18 +646,7 @@ public class CacheResServiceImpl implements ResService {
             String auth = "Basic " + encoding;
             request.addHeader("Authorization", auth);
         } else if (!url.contains("X-Amz")) {        // Not an S3 URL - Basic Auth embedded with URL
-//            close = true;
-            try {
-                URL url_ = new URL(url);
-                if (url_.getUserInfo() != null) {
-                    //String encoding = new sun.misc.BASE64Encoder().encode(url_.getUserInfo().getBytes());
-                    //encoding = encoding.replaceAll("\n", "");
-                    String encoding = java.util.Base64.getEncoder().encodeToString(url_.getUserInfo().getBytes());
-                    String auth = "Basic " + encoding;
-                    request.addHeader("Authorization", auth);
-                }
-            } catch (MalformedURLException ignored) {
-            }
+            request.addHeader("Authorization", "Basic " + base64EncodedCredentials);
         }
 
         byte[] IV = new byte[16];
