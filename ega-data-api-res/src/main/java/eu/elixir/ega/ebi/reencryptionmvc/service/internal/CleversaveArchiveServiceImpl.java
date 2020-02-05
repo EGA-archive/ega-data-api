@@ -267,7 +267,7 @@ public class CleversaveArchiveServiceImpl implements ArchiveService {
         }
     }
     
-    private static void byteIncrementFast(byte[] data, long increment) {
+    private void byteIncrementFast(byte[] data, long increment) {
         long countdown = increment / 16; // Count number of block updates
 
         ArrayList<Integer> digits_ = new ArrayList<>();
