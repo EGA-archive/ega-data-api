@@ -16,6 +16,7 @@
 package eu.elixir.ega.ebi.reencryptionmvc.service.internal;
 
 import eu.elixir.ega.ebi.reencryptionmvc.dto.ArchiveSource;
+import eu.elixir.ega.ebi.reencryptionmvc.dto.CachePage;
 import eu.elixir.ega.ebi.reencryptionmvc.dto.EgaFile;
 import eu.elixir.ega.ebi.reencryptionmvc.service.ArchiveService;
 import eu.elixir.ega.ebi.reencryptionmvc.service.KeyService;
@@ -26,6 +27,7 @@ import org.apache.commons.codec.DecoderException;
 import org.bouncycastle.jcajce.provider.util.BadBlockException;
 import org.bouncycastle.openpgp.PGPException;
 import org.apache.commons.codec.binary.Hex;
+import org.apache.commons.lang.NotImplementedException;
 import org.identityconnectors.common.security.GuardedString;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
@@ -108,6 +110,11 @@ public class LocalEGAArchiveServiceImpl implements ArchiveService {
     @Autowired
     public void setSharedKey(GuardedString sharedKey) {
         this.sharedKey = sharedKey;
+    }
+    
+    @Override
+    public CachePage loadPageCleversafe(int pageSize, String key) {
+        throw new NotImplementedException();        
     }
 
 }

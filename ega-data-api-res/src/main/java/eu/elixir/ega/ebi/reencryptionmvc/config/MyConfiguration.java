@@ -18,7 +18,10 @@ package eu.elixir.ega.ebi.reencryptionmvc.config;
 import com.google.common.cache.CacheBuilder;
 import eu.elixir.ega.ebi.reencryptionmvc.dto.*;
 import eu.elixir.ega.ebi.reencryptionmvc.service.ArchiveAdapterService;
+import eu.elixir.ega.ebi.reencryptionmvc.service.ArchiveService;
+import eu.elixir.ega.ebi.reencryptionmvc.service.S3Service;
 import eu.elixir.ega.ebi.reencryptionmvc.service.internal.ArchiveAdapterServiceImpl;
+import eu.elixir.ega.ebi.reencryptionmvc.service.internal.S3ServiceImpl;
 import no.uio.ifi.crypt4gh.factory.HeaderFactory;
 import uk.ac.ebi.ega.fire.ingestion.service.FireService;
 import uk.ac.ebi.ega.fire.ingestion.service.IFireServiceNew;
@@ -88,13 +91,10 @@ public class MyConfiguration {
     private String fireURL;
 
     @Autowired
-    private LoadBalancerClient loadBalancer;
-    
-    @Autowired
-    private Cache<String, EgaAESFileHeader> myCache;
-    
-    @Autowired
     private IFireServiceNew initFireService;
+    
+    @Autowired
+    private ArchiveService archiveService;
 
     @LoadBalanced
     @Bean
@@ -121,16 +121,7 @@ public class MyConfiguration {
     public Cache<String, CachePage> myPageCache() throws Exception {
         int pagesize = 1024 * 1024 * 12;    // 12 MB Page Size
         int pageCount = 1200;               // 1200 * 12 = 14 GB Cache Size
-        return (new My2KCachePageFactory(myCache,
-                loadBalancer,
-                pagesize,
-                pageCount,
-                awsKey,
-                awsSecretKey,
-                fireURL,
-                base64EncodedCredentials(),
-                awsEndpointUrl,
-                awsRegion)).getObject();
+        return (new My2KCachePageFactory(archiveService, pagesize, pageCount)).getObject();
     }
 
     @Bean
@@ -204,6 +195,11 @@ public class MyConfiguration {
     public String base64EncodedCredentials() {
        return Base64.getEncoder()
                 .encodeToString((username + ":" + password).getBytes());
+    }
+    
+    @Bean
+    public S3Service initS3Service() {
+       return new S3ServiceImpl(awsKey, awsSecretKey, awsEndpointUrl, awsRegion);
     }
     
 }

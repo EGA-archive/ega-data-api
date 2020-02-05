@@ -5,7 +5,7 @@
     <parent>
         <groupId>eu.elixir.ega.ebi</groupId>
         <artifactId>ega-data-api</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
+        <version>1.0.1-SNAPSHOT</version>
     </parent>
 
     <artifactId>ega-data-api-res</artifactId>
@@ -151,7 +151,7 @@
             <groupId>io.minio</groupId>
             <artifactId>minio</artifactId>
             <version>5.0.1</version>
-        </dependency>
+	    </dependency>
 		<dependency>
 			<groupId>uk.ac.ebi.ega</groupId>
 			<artifactId>fire-core</artifactId>
@@ -162,8 +162,8 @@
 					<artifactId>logback-classic</artifactId>
 				</exclusion>
 				<exclusion>
-            		<groupId>org.springframework.boot</groupId>
-            		<artifactId>spring-boot-starter-data-jpa</artifactId>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-starter-data-jpa</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>

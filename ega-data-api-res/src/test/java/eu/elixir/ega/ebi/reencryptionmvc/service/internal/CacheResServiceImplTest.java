@@ -19,6 +19,8 @@ import eu.elixir.ega.ebi.reencryptionmvc.dto.CachePage;
 import eu.elixir.ega.ebi.reencryptionmvc.dto.EgaAESFileHeader;
 import eu.elixir.ega.ebi.reencryptionmvc.dto.MyAwsConfig;
 import eu.elixir.ega.ebi.reencryptionmvc.service.KeyService;
+import eu.elixir.ega.ebi.reencryptionmvc.service.S3Service;
+
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -70,6 +72,9 @@ public class CacheResServiceImplTest {
     @Mock
     private Cache<String, CachePage> myPageCache;
 
+    @Mock
+    private S3Service s3Service;
+    
     @Before
     public void initMocks() {
         MockitoAnnotations.initMocks(this);

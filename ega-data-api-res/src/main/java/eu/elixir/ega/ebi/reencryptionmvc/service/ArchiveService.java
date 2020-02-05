@@ -16,6 +16,8 @@
 package eu.elixir.ega.ebi.reencryptionmvc.service;
 
 import eu.elixir.ega.ebi.reencryptionmvc.dto.ArchiveSource;
+import eu.elixir.ega.ebi.reencryptionmvc.dto.CachePage;
+
 import org.springframework.cache.annotation.Cacheable;
 
 import javax.servlet.http.HttpServletRequest;
@@ -28,5 +30,6 @@ import javax.servlet.http.HttpServletResponse;
 public interface ArchiveService {
 
     ArchiveSource getArchiveFile(String id, HttpServletRequest request, HttpServletResponse response);
-
+    
+    CachePage loadPageCleversafe(int pageSize, String key);
 }

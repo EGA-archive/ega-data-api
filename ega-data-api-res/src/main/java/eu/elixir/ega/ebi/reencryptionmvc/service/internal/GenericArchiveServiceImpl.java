@@ -18,9 +18,12 @@ package eu.elixir.ega.ebi.reencryptionmvc.service.internal;
 import com.google.common.base.Strings;
 import eu.elixir.ega.ebi.reencryptionmvc.config.NotFoundException;
 import eu.elixir.ega.ebi.reencryptionmvc.dto.ArchiveSource;
+import eu.elixir.ega.ebi.reencryptionmvc.dto.CachePage;
 import eu.elixir.ega.ebi.reencryptionmvc.dto.EgaFile;
 import eu.elixir.ega.ebi.reencryptionmvc.service.ArchiveService;
 import eu.elixir.ega.ebi.reencryptionmvc.service.KeyService;
+
+import org.apache.commons.lang.NotImplementedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.context.annotation.Primary;
@@ -75,6 +78,11 @@ public class GenericArchiveServiceImpl implements ArchiveService {
 
         // Build result object and return it
         return new ArchiveSource(fileUrlString, size, "", encryptionFormat, encryptionKey, null);
+    }
+
+    @Override
+    public CachePage loadPageCleversafe(int pageSize, String key) {
+        throw new NotImplementedException();        
     }
 
 }
