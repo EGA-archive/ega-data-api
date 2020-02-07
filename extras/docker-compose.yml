@@ -20,8 +20,8 @@ services:
       - ega.internal.res.url=https://RES2
       - ega.internal.key.url=https://KEYSERVER
     volumes:
-      - "$TRAVIS_BUILD_DIR/extras/certificate/ca/CA.cert:/etc/ssl/certs/ca-certificates.crt"   
-      - "$TRAVIS_BUILD_DIR/extras/certificate/dataedge.p12:/dataedge.p12"               
+      - "$TRAVIS_BUILD_DIR/extras/certificate/rootCA.pem:/etc/ssl/certs/ca-certificates.crt"   
+      - "$TRAVIS_BUILD_DIR/extras/certificate/server.p12:/dataedge.p12"               
     networks:
       - webnet
 
@@ -54,8 +54,8 @@ services:
       - ega.internal.res.url=https://RES2
       - ega.internal.key.url=https://KEYSERVER      
     volumes:
-      - "$TRAVIS_BUILD_DIR/extras/certificate/ca/CA.cert:/etc/ssl/certs/ca-certificates.crt"   
-      - "$TRAVIS_BUILD_DIR/extras/certificate/resserver.p12:/resserver.p12"    
+      - "$TRAVIS_BUILD_DIR/extras/certificate/rootCA.pem:/etc/ssl/certs/ca-certificates.crt"   
+      - "$TRAVIS_BUILD_DIR/extras/certificate/server.p12:/resserver.p12"    
       - "$TRAVIS_BUILD_DIR/ega-data-api-res/src/test/resources/pgp:/pgp"                        
     networks:
       - webnet
@@ -73,8 +73,8 @@ services:
       - ega.publickey.url=/pgp/ega.pub
       - ega.legacy.path=/pgp/legacy.pass
     volumes:
-      - "$TRAVIS_BUILD_DIR/extras/certificate/ca/CA.cert:/etc/ssl/certs/ca-certificates.crt"   
-      - "$TRAVIS_BUILD_DIR/extras/certificate/keyserver.p12:/keyserver.p12"
+      - "$TRAVIS_BUILD_DIR/extras/certificate/rootCA.pem:/etc/ssl/certs/ca-certificates.crt"   
+      - "$TRAVIS_BUILD_DIR/extras/certificate/server.p12:/keyserver.p12"
       - "$TRAVIS_BUILD_DIR/ega-data-api-key/src/test/resources/pgp:/pgp"
     networks:
       - webnet
@@ -105,8 +105,8 @@ services:
       - DB_PASSWORD=${POSTGRES_PASSWORD}
       - DB_URL=jdbc:postgresql://postgresdb:5432/${POSTGRES_DB}
     volumes:
-      - "$TRAVIS_BUILD_DIR/extras/certificate/ca/CA.cert:/etc/ssl/certs/ca-certificates.crt"   
-      - "$TRAVIS_BUILD_DIR/extras/certificate/filedatabase.p12:/filedatabase.p12"      
+      - "$TRAVIS_BUILD_DIR/extras/certificate/rootCA.pem:/etc/ssl/certs/ca-certificates.crt"   
+      - "$TRAVIS_BUILD_DIR/extras/certificate/server.p12:/filedatabase.p12"      
     networks:
       - webnet
 

@@ -5,10 +5,11 @@
 	<parent>
 		<groupId>eu.elixir.ega.ebi</groupId>
 		<artifactId>ega-data-api</artifactId>
-		<version>0.0.1-SNAPSHOT</version>
+		<version>1.0.0</version>
 	</parent>
 	<artifactId>ega-data-api-netflix</artifactId>
 	<packaging>pom</packaging>
+	<version>1.0.0</version>
 	<name>EGA Data API Netflix</name>
 
 	<modules>
