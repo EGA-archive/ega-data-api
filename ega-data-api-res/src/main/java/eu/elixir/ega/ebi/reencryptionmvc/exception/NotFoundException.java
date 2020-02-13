@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package eu.elixir.ega.ebi.reencryptionmvc.config;
+package eu.elixir.ega.ebi.reencryptionmvc.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -21,12 +21,12 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 /**
  * @author asenf
  */
-@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-public class ServerErrorException extends RuntimeException {
+@ResponseStatus(HttpStatus.NOT_FOUND)
+public class NotFoundException extends RuntimeException {
 
     private static final long serialVersionUID = 1L;
 
-    public ServerErrorException(String error, String id) {
+    public NotFoundException(String error, String id) {
         super(error + ": " + id);
     }
 

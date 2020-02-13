@@ -16,13 +16,15 @@
 package eu.elixir.ega.ebi.reencryptionmvc.service.internal;
 
 import com.google.common.base.Strings;
-import eu.elixir.ega.ebi.reencryptionmvc.config.NotFoundException;
-import eu.elixir.ega.ebi.reencryptionmvc.config.ServerErrorException;
+
 import eu.elixir.ega.ebi.reencryptionmvc.dto.ArchiveSource;
 import eu.elixir.ega.ebi.reencryptionmvc.dto.EgaFile;
-import eu.elixir.ega.ebi.reencryptionmvc.service.ArchiveAdapterService;
+import eu.elixir.ega.ebi.reencryptionmvc.exception.NotFoundException;
+import eu.elixir.ega.ebi.reencryptionmvc.exception.ServerErrorException;
 import eu.elixir.ega.ebi.reencryptionmvc.service.ArchiveService;
 import eu.elixir.ega.ebi.reencryptionmvc.service.KeyService;
+import eu.elixir.ega.ebi.reencryptionmvc.util.FireCommons;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
@@ -54,7 +56,7 @@ public class CleversaveArchiveServiceImpl implements ArchiveService {
     private KeyService keyService;
 
     @Autowired
-    private ArchiveAdapterService archiveAdapterService;
+    private FireCommons fireCommons;
 
     @Override
 //    @Retryable(maxAttempts = 4, backoff = @Backoff(delay = 2000, multiplier = 2))
@@ -79,7 +81,7 @@ public class CleversaveArchiveServiceImpl implements ArchiveService {
         // Guess Encryption Format from File
         String encryptionFormat = fileName.toLowerCase().endsWith("gpg") ? "symmetricgpg" : "aes256";
         // Get Cleversafe URL from Filename via Fire
-        String[] filePath = archiveAdapterService.getPath(fileName, sessionId);
+        String[] filePath = fireCommons.getFireSignedUrl(fileName, sessionId);
         if (filePath == null || filePath[0] == null) {
             response.setStatus(530);
             throw new ServerErrorException(sessionId + "Fire Error in obtaining URL for ", fileName);

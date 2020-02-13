@@ -15,8 +15,8 @@
  */
 package eu.elixir.ega.ebi.reencryptionmvc.rest;
 
-import eu.elixir.ega.ebi.reencryptionmvc.config.NotFoundException;
 import eu.elixir.ega.ebi.reencryptionmvc.dto.ArchiveSource;
+import eu.elixir.ega.ebi.reencryptionmvc.exception.NotFoundException;
 import eu.elixir.ega.ebi.reencryptionmvc.service.ArchiveService;
 import eu.elixir.ega.ebi.reencryptionmvc.service.ResService;
 import htsjdk.samtools.seekablestream.RandomInputStream;

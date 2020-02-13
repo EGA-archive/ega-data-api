@@ -16,7 +16,14 @@
 package eu.elixir.ega.ebi.reencryptionmvc.config;
 
 import com.google.common.cache.CacheBuilder;
+
+import eu.elixir.ega.ebi.reencryptionmvc.cache2k.My2KCacheFactory;
+import eu.elixir.ega.ebi.reencryptionmvc.cache2k.My2KCachePageFactory;
 import eu.elixir.ega.ebi.reencryptionmvc.dto.*;
+import eu.elixir.ega.ebi.reencryptionmvc.util.FireCommons;
+import eu.elixir.ega.ebi.reencryptionmvc.util.S3Commons;
+import htsjdk.samtools.seekablestream.ISeekableStreamFactory;
+import htsjdk.samtools.seekablestream.SeekableStreamFactory;
 import no.uio.ifi.crypt4gh.factory.HeaderFactory;
 import org.apache.commons.io.IOUtils;
 import org.cache2k.Cache;
@@ -75,21 +82,22 @@ public class MyConfiguration {
     
     @Autowired
     private Cache<String, EgaAESFileHeader> myCache;
-
+    
+    @Autowired
+    private FireCommons fireCommons;
+    
+    @Autowired
+    private S3Commons s3Commons;
+    
+    @Bean
+    public ISeekableStreamFactory seekableStreamFactory() {
+        return SeekableStreamFactory.getInstance();
+    }
+    
     @LoadBalanced
     @Bean
     public RestTemplate restTemplate() {
         return new RestTemplate();
-    }
-
-    @Bean
-    public MyFireConfig MyCipherConfig() {
-        return new MyFireConfig(fireUrl, fireArchive, fireKey);
-    }
-
-    @Bean
-    public MyAwsConfig MyAwsCipherConfig() {
-        return new MyAwsConfig(awsKey, awsSecretKey, awsEndpointUrl, awsRegion);
     }
 
     @Bean
@@ -110,15 +118,20 @@ public class MyConfiguration {
                 loadBalancer,
                 pagesize,
                 pageCount,
-                awsKey,
-                awsSecretKey,
-                fireUrl,
-                fireArchive,
-                fireKey,
-                awsEndpointUrl,
-                awsRegion)).getObject();
+                fireCommons,
+                s3Commons)).getObject();
     }
-
+    
+    @Bean
+    public FireCommons initFireCommons() {
+        return new FireCommons( fireUrl, fireArchive, fireKey);
+    }
+    
+    @Bean
+    public S3Commons initS3Commons() {
+        return new S3Commons(awsKey, awsSecretKey, awsEndpointUrl, awsRegion);
+    }
+    
     @Bean
     public CacheManager cacheManager() {
         SimpleCacheManager simpleCacheManager = new SimpleCacheManager();

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 ELIXIR EGA
+ * Copyright 2016 ELIXIR EGA
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,16 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package eu.elixir.ega.ebi.reencryptionmvc.service;
+package eu.elixir.ega.ebi.reencryptionmvc.exception;
 
-import org.springframework.cache.annotation.Cacheable;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
 /**
  * @author asenf
  */
-@Cacheable
-public interface ArchiveAdapterService {
+@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+public class ServerErrorException extends RuntimeException {
 
-    String[] getPath(String path, String sessionId);
+    private static final long serialVersionUID = 1L;
+
+    public ServerErrorException(String error, String id) {
+        super(error + ": " + id);
+    }
 
 }

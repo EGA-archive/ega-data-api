@@ -40,8 +40,8 @@ import org.springframework.web.client.RestTemplate;
 
 import eu.elixir.ega.ebi.reencryptionmvc.dto.ArchiveSource;
 import eu.elixir.ega.ebi.reencryptionmvc.dto.EgaFile;
-import eu.elixir.ega.ebi.reencryptionmvc.service.ArchiveAdapterService;
 import eu.elixir.ega.ebi.reencryptionmvc.service.KeyService;
+import eu.elixir.ega.ebi.reencryptionmvc.util.FireCommons;
 
 /**
  * Test class for {@link CleversaveArchiveServiceImpl}.
@@ -62,8 +62,8 @@ public class CleversaveArchiveServiceImplTest {
     private KeyService keyService;
 
     @Mock
-    private ArchiveAdapterService archiveAdapterService;
-
+    private FireCommons fireCommons;
+    
     @Before
     public void initMocks() {
         MockitoAnnotations.initMocks(this);
@@ -91,7 +91,7 @@ public class CleversaveArchiveServiceImplTest {
                 .thenReturn(mockResponseEntity);
         when(mockResponseEntity.getStatusCode()).thenReturn(HttpStatus.OK);
         when(mockResponseEntity.getBody()).thenReturn(body);
-        when(archiveAdapterService.getPath(anyString(), anyString())).thenReturn(filePath);
+        when(fireCommons.getFireSignedUrl(anyString(), anyString())).thenReturn(filePath);
         when(keyService.getFileKey(anyString())).thenReturn(encryptionKey);
 
         final ArchiveSource archiveSource = cleversaveArchiveServiceImpl.getArchiveFile("id",  new MockHttpServletRequest(),
