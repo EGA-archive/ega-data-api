@@ -16,9 +16,10 @@
 package eu.elixir.ega.ebi.reencryptionmvc.service.internal;
 
 import com.google.common.base.Strings;
-import eu.elixir.ega.ebi.reencryptionmvc.config.NotFoundException;
+
 import eu.elixir.ega.ebi.reencryptionmvc.dto.ArchiveSource;
 import eu.elixir.ega.ebi.reencryptionmvc.dto.EgaFile;
+import eu.elixir.ega.ebi.reencryptionmvc.exception.NotFoundException;
 import eu.elixir.ega.ebi.reencryptionmvc.service.ArchiveService;
 import eu.elixir.ega.ebi.reencryptionmvc.service.KeyService;
 import org.springframework.beans.factory.annotation.Autowired;

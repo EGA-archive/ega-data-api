@@ -15,13 +15,15 @@
  */
 package eu.elixir.ega.ebi.reencryptionmvc.config;
 
-import com.google.common.cache.CacheBuilder;
-import eu.elixir.ega.ebi.reencryptionmvc.dto.*;
-import no.uio.ifi.crypt4gh.factory.HeaderFactory;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
+
 import org.apache.commons.io.IOUtils;
 import org.cache2k.Cache;
 import org.identityconnectors.common.security.GuardedString;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
@@ -34,11 +36,17 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestTemplate;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.util.Arrays;
-import java.util.concurrent.TimeUnit;
+import com.google.common.cache.CacheBuilder;
+
+import eu.elixir.ega.ebi.reencryptionmvc.cache2k.My2KCacheFactory;
+import eu.elixir.ega.ebi.reencryptionmvc.cache2k.My2KCachePageFactory;
+import eu.elixir.ega.ebi.reencryptionmvc.dto.CachePage;
+import eu.elixir.ega.ebi.reencryptionmvc.dto.EgaAESFileHeader;
+import eu.elixir.ega.ebi.reencryptionmvc.util.FireCommons;
+import eu.elixir.ega.ebi.reencryptionmvc.util.S3Commons;
+import htsjdk.samtools.seekablestream.ISeekableStreamFactory;
+import htsjdk.samtools.seekablestream.SeekableStreamFactory;
+import no.uio.ifi.crypt4gh.factory.HeaderFactory;
 
 /**
  * @author asenf
@@ -64,37 +72,18 @@ public class MyConfiguration {
     @Value("${ega.ebi.aws.endpoint.region:#{null}}")
     private String awsRegion;
 
-    @Value("${service.archive.class}")
-    private String archiveImplBean;
-
     @Value("${ega.sharedpass.path}")
     private String sharedKeyPath;
 
-    @Autowired
-    private LoadBalancerClient loadBalancer;
+    @Bean
+    public ISeekableStreamFactory seekableStreamFactory() {
+        return SeekableStreamFactory.getInstance();
+    }
     
-    @Autowired
-    private Cache<String, EgaAESFileHeader> myCache;
-
     @LoadBalanced
     @Bean
     public RestTemplate restTemplate() {
         return new RestTemplate();
-    }
-
-    @Bean
-    public MyFireConfig MyCipherConfig() {
-        return new MyFireConfig(fireUrl, fireArchive, fireKey);
-    }
-
-    @Bean
-    public MyAwsConfig MyAwsCipherConfig() {
-        return new MyAwsConfig(awsKey, awsSecretKey, awsEndpointUrl, awsRegion);
-    }
-
-    @Bean
-    public MyArchiveConfig MyArchiveConfig() {
-        return new MyArchiveConfig(archiveImplBean);
     }
 
     @Bean
@@ -103,22 +92,17 @@ public class MyConfiguration {
     }
 
     @Bean
-    public Cache<String, CachePage> myPageCache() throws Exception {
+    public Cache<String, CachePage> myPageCache(Cache<String, EgaAESFileHeader> myCache, LoadBalancerClient loadBalancer) throws Exception {
         int pagesize = 1024 * 1024 * 12;    // 12 MB Page Size
         int pageCount = 1200;               // 1200 * 12 = 14 GB Cache Size
         return (new My2KCachePageFactory(myCache,
                 loadBalancer,
                 pagesize,
                 pageCount,
-                awsKey,
-                awsSecretKey,
-                fireUrl,
-                fireArchive,
-                fireKey,
-                awsEndpointUrl,
-                awsRegion)).getObject();
+                new FireCommons( fireUrl, fireArchive, fireKey), 
+                new S3Commons(awsKey, awsSecretKey, awsEndpointUrl, awsRegion))).getObject();
     }
-
+    
     @Bean
     public CacheManager cacheManager() {
         SimpleCacheManager simpleCacheManager = new SimpleCacheManager();
