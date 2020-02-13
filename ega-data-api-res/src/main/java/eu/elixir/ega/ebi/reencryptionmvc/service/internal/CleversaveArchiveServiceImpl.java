@@ -15,6 +15,16 @@
  */
 package eu.elixir.ega.ebi.reencryptionmvc.service.internal;
 
+import static eu.elixir.ega.ebi.reencryptionmvc.config.Constants.FILEDATABASE_SERVICE;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestTemplate;
+
 import com.google.common.base.Strings;
 
 import eu.elixir.ega.ebi.reencryptionmvc.dto.ArchiveSource;
@@ -25,38 +35,22 @@ import eu.elixir.ega.ebi.reencryptionmvc.service.ArchiveService;
 import eu.elixir.ega.ebi.reencryptionmvc.service.KeyService;
 import eu.elixir.ega.ebi.reencryptionmvc.util.FireCommons;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
-import org.springframework.context.annotation.Primary;
-import org.springframework.context.annotation.Profile;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
-
-import static eu.elixir.ega.ebi.reencryptionmvc.config.Constants.FILEDATABASE_SERVICE;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 /**
  * @author asenf
  */
-@Service
-@Profile("default")
-@Primary
-@EnableDiscoveryClient
 public class CleversaveArchiveServiceImpl implements ArchiveService {
 
-    @Autowired
     private RestTemplate restTemplate;
 
-    @Autowired
     private KeyService keyService;
 
-    @Autowired
     private FireCommons fireCommons;
+    
+    public CleversaveArchiveServiceImpl(RestTemplate restTemplate, KeyService keyService, FireCommons fireCommons) {
+        this.restTemplate = restTemplate;
+        this.keyService = keyService;
+        this.fireCommons = fireCommons;
+    }
 
     @Override
 //    @Retryable(maxAttempts = 4, backoff = @Backoff(delay = 2000, multiplier = 2))

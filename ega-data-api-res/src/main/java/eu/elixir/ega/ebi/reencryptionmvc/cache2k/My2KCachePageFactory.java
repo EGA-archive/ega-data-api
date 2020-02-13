@@ -208,7 +208,7 @@ public class My2KCachePageFactory implements FactoryBean<Cache<String, CachePage
         // Add range header - logical (unencrypted) coordinates to file coordinates (add IV handling '+16')
         if ((startCoordinate + 16) >= header.getSize())
             return new CachePage(new byte[]{});
-        //String byteRange = "bytes=" + (startCoordinate+16) + "-" + ((endCoordinate+16)>header.getSize()?header.getSize():(endCoordinate+16));
+
         String byteRange = "bytes=" + (startCoordinate + 16) + "-" + (endCoordinate + 16);
         request.addHeader("Range", byteRange);
         long pageSize_ = ((endCoordinate + 16) > header.getSize() ? header.getSize() : (endCoordinate + 16)) - (startCoordinate + 16);

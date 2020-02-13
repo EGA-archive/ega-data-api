@@ -15,20 +15,15 @@
  */
 package eu.elixir.ega.ebi.reencryptionmvc.config;
 
-import com.google.common.cache.CacheBuilder;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
 
-import eu.elixir.ega.ebi.reencryptionmvc.cache2k.My2KCacheFactory;
-import eu.elixir.ega.ebi.reencryptionmvc.cache2k.My2KCachePageFactory;
-import eu.elixir.ega.ebi.reencryptionmvc.dto.*;
-import eu.elixir.ega.ebi.reencryptionmvc.util.FireCommons;
-import eu.elixir.ega.ebi.reencryptionmvc.util.S3Commons;
-import htsjdk.samtools.seekablestream.ISeekableStreamFactory;
-import htsjdk.samtools.seekablestream.SeekableStreamFactory;
-import no.uio.ifi.crypt4gh.factory.HeaderFactory;
 import org.apache.commons.io.IOUtils;
 import org.cache2k.Cache;
 import org.identityconnectors.common.security.GuardedString;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
@@ -41,11 +36,17 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestTemplate;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.util.Arrays;
-import java.util.concurrent.TimeUnit;
+import com.google.common.cache.CacheBuilder;
+
+import eu.elixir.ega.ebi.reencryptionmvc.cache2k.My2KCacheFactory;
+import eu.elixir.ega.ebi.reencryptionmvc.cache2k.My2KCachePageFactory;
+import eu.elixir.ega.ebi.reencryptionmvc.dto.CachePage;
+import eu.elixir.ega.ebi.reencryptionmvc.dto.EgaAESFileHeader;
+import eu.elixir.ega.ebi.reencryptionmvc.util.FireCommons;
+import eu.elixir.ega.ebi.reencryptionmvc.util.S3Commons;
+import htsjdk.samtools.seekablestream.ISeekableStreamFactory;
+import htsjdk.samtools.seekablestream.SeekableStreamFactory;
+import no.uio.ifi.crypt4gh.factory.HeaderFactory;
 
 /**
  * @author asenf
@@ -71,24 +72,9 @@ public class MyConfiguration {
     @Value("${ega.ebi.aws.endpoint.region:#{null}}")
     private String awsRegion;
 
-    @Value("${service.archive.class}")
-    private String archiveImplBean;
-
     @Value("${ega.sharedpass.path}")
     private String sharedKeyPath;
 
-    @Autowired
-    private LoadBalancerClient loadBalancer;
-    
-    @Autowired
-    private Cache<String, EgaAESFileHeader> myCache;
-    
-    @Autowired
-    private FireCommons fireCommons;
-    
-    @Autowired
-    private S3Commons s3Commons;
-    
     @Bean
     public ISeekableStreamFactory seekableStreamFactory() {
         return SeekableStreamFactory.getInstance();
@@ -101,35 +87,20 @@ public class MyConfiguration {
     }
 
     @Bean
-    public MyArchiveConfig MyArchiveConfig() {
-        return new MyArchiveConfig(archiveImplBean);
-    }
-
-    @Bean
     public Cache<String, EgaAESFileHeader> myCache() {
         return (new My2KCacheFactory()).getObject();
     }
 
     @Bean
-    public Cache<String, CachePage> myPageCache() throws Exception {
+    public Cache<String, CachePage> myPageCache(Cache<String, EgaAESFileHeader> myCache, LoadBalancerClient loadBalancer) throws Exception {
         int pagesize = 1024 * 1024 * 12;    // 12 MB Page Size
         int pageCount = 1200;               // 1200 * 12 = 14 GB Cache Size
         return (new My2KCachePageFactory(myCache,
                 loadBalancer,
                 pagesize,
                 pageCount,
-                fireCommons,
-                s3Commons)).getObject();
-    }
-    
-    @Bean
-    public FireCommons initFireCommons() {
-        return new FireCommons( fireUrl, fireArchive, fireKey);
-    }
-    
-    @Bean
-    public S3Commons initS3Commons() {
-        return new S3Commons(awsKey, awsSecretKey, awsEndpointUrl, awsRegion);
+                new FireCommons( fireUrl, fireArchive, fireKey), 
+                new S3Commons(awsKey, awsSecretKey, awsEndpointUrl, awsRegion))).getObject();
     }
     
     @Bean

@@ -124,11 +124,7 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * @author asenf
  */
-@Service
 @Slf4j
-@Profile("default")
-@Primary
-@EnableDiscoveryClient
 public class CacheResServiceImpl implements ResService {
 
     /**
@@ -146,17 +142,20 @@ public class CacheResServiceImpl implements ResService {
      * Background processing
      */
     ExecutorService executorService2 = Executors.newFixedThreadPool(200);
-    @Autowired
     private KeyService keyService;
-    
-    @Autowired
     private Cache<String, EgaAESFileHeader> myHeaderCache;
-    @Autowired
     private Cache<String, CachePage> myPageCache;
-    @Autowired
     private FireCommons fireCommons;
-    @Autowired
     private S3Commons s3Commons;
+    
+    public CacheResServiceImpl(KeyService keyService, Cache<String, EgaAESFileHeader> myHeaderCache,
+            Cache<String, CachePage> myPageCache, FireCommons fireCommons, S3Commons s3Commons) {
+        this.keyService = keyService;
+        this.myHeaderCache = myHeaderCache;
+        this.myPageCache = myPageCache;
+        this.fireCommons = fireCommons;
+        this.s3Commons = s3Commons;
+    }
 
     /*
      * Perform Data Transfer Requested by File Controller
@@ -685,7 +684,5 @@ public class CacheResServiceImpl implements ResService {
         }
 
     }
-        
-    
 
 }
