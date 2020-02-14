@@ -18,10 +18,10 @@ RES2:
 KEYSERVER:
   listOfServers: ${KEYS_SERVERS:keys}
 
+fire.user: testUser
+fire.password: testPassword
+fire.url: testFireUrl
 
-ega.ebi.fire.url: http://test
-ega.ebi.fire.archive: test
-ega.ebi.fire.key: test
 ega.sharedpass.path: /src/test/resources/testing
 service.archive.class:
 
@@ -37,6 +37,11 @@ spring.datasource.hikari.validation-query: SELECT 1
 spring.datasource.hikari.initial-size: 3
 spring.datasource.hikari.maximum-pool-size: 8
 spring.datasource.hikari.minimum-idle: 1
+
+httpclient.connection.buffer-size: 4096
+httpclient.connection.timeout: 5
+httpclient.connection.max-total: 10
+httpclient.connection.default-max-per-route: 10
 
 server.ssl.key-store-type: ${KEY_STORE_TYPE:PKCS12}
 server.ssl.key-store: ${KEY_STORE:/resserver.p12}

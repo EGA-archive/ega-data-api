@@ -226,7 +226,7 @@ public class My2KCachePageFactory implements FactoryBean<Cache<String, CachePage
                     if (response.getStatusLine().getStatusCode() != 200
                             && response.getStatusLine().getStatusCode() != 206)
                         throw new ServerErrorException(
-                                "Error Loading Cache Page Code " + response.getStatusLine().getStatusCode() + " for ",
+                                "FIRE error Loading Cache Page Code " + response.getStatusLine().getStatusCode() + " for ",
                                 key);
 
                     // Read response from HTTP call, count bytes read (encrypted Data)
@@ -237,7 +237,7 @@ public class My2KCachePageFactory implements FactoryBean<Cache<String, CachePage
                     }
                 } catch (Throwable th) {
                     pageSuccess = false;
-                    log.error("Error page " + key + " attempt " + pageCnt + ": " + th.toString());
+                    log.error("FIRE error page " + key + " attempt " + pageCnt + ": " + th.toString());
                 }
             } while (!pageSuccess && pageCnt++ < 3);
 
