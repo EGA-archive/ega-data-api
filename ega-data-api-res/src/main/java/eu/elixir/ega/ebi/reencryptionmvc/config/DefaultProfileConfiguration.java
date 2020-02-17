@@ -20,7 +20,7 @@ import eu.elixir.ega.ebi.reencryptionmvc.service.internal.CacheResServiceImpl;
 import eu.elixir.ega.ebi.reencryptionmvc.service.internal.CleversaveArchiveServiceImpl;
 import eu.elixir.ega.ebi.reencryptionmvc.util.FireCommons;
 import eu.elixir.ega.ebi.reencryptionmvc.util.S3Commons;
-import uk.ac.ebi.ega.fire.ingestion.service.IFireServiceNew;
+import uk.ac.ebi.ega.fire.service.IFireService;
 
 @Configuration
 @Profile("default")
@@ -46,7 +46,7 @@ public class DefaultProfileConfiguration {
     @Bean
     @Primary
     public ResService initCacheResService(KeyService keyService, Cache<String, EgaAESFileHeader> myHeaderCache,
-            Cache<String, CachePage> myPageCache, IFireServiceNew fireService) {
+            Cache<String, CachePage> myPageCache, IFireService fireService) {
         return new CacheResServiceImpl(keyService, myHeaderCache, myPageCache,
                 new FireCommons(fireURL, base64EncodedCredentials(), fireService),
                 new S3Commons(awsKey, awsSecretKey, awsEndpointUrl, awsRegion));
@@ -55,7 +55,7 @@ public class DefaultProfileConfiguration {
     @Bean
     @Primary
     public ArchiveService initCleversaveArchiveServiceImpl(RestTemplate restTemplate, KeyService keyService,
-            IFireServiceNew fireService) {
+            IFireService fireService) {
         return new CleversaveArchiveServiceImpl(restTemplate, keyService,
                 new FireCommons(fireURL, base64EncodedCredentials(), fireService));
     }

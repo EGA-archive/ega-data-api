@@ -56,8 +56,8 @@ import eu.elixir.ega.ebi.reencryptionmvc.util.S3Commons;
 import htsjdk.samtools.seekablestream.ISeekableStreamFactory;
 import htsjdk.samtools.seekablestream.SeekableStreamFactory;
 import no.uio.ifi.crypt4gh.factory.HeaderFactory;
-import uk.ac.ebi.ega.fire.ingestion.service.FireService;
-import uk.ac.ebi.ega.fire.ingestion.service.IFireServiceNew;
+import uk.ac.ebi.ega.fire.service.FireService;
+import uk.ac.ebi.ega.fire.service.IFireService;
 import uk.ac.ebi.ega.fire.properties.HttpClientProperties;
 
 /**
@@ -104,7 +104,7 @@ public class MyConfiguration {
     }
 
     @Bean
-    public Cache<String, CachePage> myPageCache(Cache<String, EgaAESFileHeader> myCache, LoadBalancerClient loadBalancer,  IFireServiceNew fireService) throws Exception {
+    public Cache<String, CachePage> myPageCache(Cache<String, EgaAESFileHeader> myCache, LoadBalancerClient loadBalancer,  IFireService fireService) throws Exception {
         int pagesize = 1024 * 1024 * 12;    // 12 MB Page Size
         int pageCount = 1200;               // 1200 * 12 = 14 GB Cache Size
         return (new My2KCachePageFactory(myCache,
@@ -173,7 +173,7 @@ public class MyConfiguration {
     }
 
     @Bean
-    public IFireServiceNew initFireService(final CloseableHttpClient httpClient) {
+    public IFireService initFireService(final CloseableHttpClient httpClient) {
         return new FireService(httpClient, fireURL);
     }
 

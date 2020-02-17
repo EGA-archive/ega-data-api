@@ -5,7 +5,7 @@ import java.util.Optional;
 import org.apache.http.client.methods.HttpGet;
 
 import lombok.extern.slf4j.Slf4j;
-import uk.ac.ebi.ega.fire.ingestion.service.IFireServiceNew;
+import uk.ac.ebi.ega.fire.service.IFireService;
 import uk.ac.ebi.ega.fire.models.FireResponse;
 
 @Slf4j
@@ -14,9 +14,9 @@ public class FireCommons {
     private static final String PATH_OBJECTS = "objects/blob/path/";
     private final String fireUrl;
     private final String base64EncodedCredentials;
-    private final IFireServiceNew fireService;
+    private final IFireService fireService;
     
-    public FireCommons(String fireUrl, String base64EncodedCredentials, IFireServiceNew fireService) {
+    public FireCommons(String fireUrl, String base64EncodedCredentials, IFireService fireService) {
         this.fireUrl = fireUrl;
         this.base64EncodedCredentials = base64EncodedCredentials;
         this.fireService = fireService;
