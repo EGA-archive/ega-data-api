@@ -201,9 +201,7 @@ public class My2KCachePageFactory implements FactoryBean<Cache<String, CachePage
         HttpGet request = new HttpGet(url);
 
         // Add request header for Basic Auth (for CleverSafe)
-        if (httpAuth != null && httpAuth.length() > 0) {
-            request.addHeader("Authorization", httpAuth);
-        }
+        request.addHeader("Authorization", "Basic ".concat(fireCommons.getBase64EncodedCredentials()));
 
         // Add range header - logical (unencrypted) coordinates to file coordinates (add IV handling '+16')
         if ((startCoordinate + 16) >= header.getSize())

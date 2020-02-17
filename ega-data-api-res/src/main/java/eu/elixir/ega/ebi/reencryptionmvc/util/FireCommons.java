@@ -74,4 +74,9 @@ public class FireCommons {
         }
         return null;
     }
+
+    public String getBase64EncodedCredentials() {
+        return base64EncodedCredentials;
+    }
+    
 }

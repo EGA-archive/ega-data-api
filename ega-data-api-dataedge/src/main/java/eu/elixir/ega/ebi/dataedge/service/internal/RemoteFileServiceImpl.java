@@ -220,9 +220,7 @@ public class RemoteFileServiceImpl implements FileService {
                         log.error(sessionId + "RemoteFileServiceImpl Error 1: " + t.toString());
                         String errorMessage = t.toString();
                         throw new GeneralStreamingException(sessionId + errorMessage, 7);
-                    } finally {
-                        outDigestStream.close();
-                    }
+                    } 
 
                     // return number of bytes copied, RES session header, and MD5 of RES input stream
                     return new HttpResult(b, get, inHashtext); // This is the result of the RestTemplate

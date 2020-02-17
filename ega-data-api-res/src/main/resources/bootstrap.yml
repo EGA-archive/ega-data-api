@@ -6,8 +6,8 @@ ega.internal.res.url: http://RES2
 ega.internal.key.url: http://KEYSERVER
 httpclient.connection.buffer-size: 4096
 httpclient.connection.timeout: 5
-httpclient.connection.max-total: 10
-httpclient.connection.default-max-per-route: 10
+httpclient.connection.max-total: 50
+httpclient.connection.default-max-per-route: 50
 
 ---
 spring.profiles: no-oss
