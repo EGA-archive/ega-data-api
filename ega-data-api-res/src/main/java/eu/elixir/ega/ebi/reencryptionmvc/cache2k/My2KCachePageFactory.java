@@ -153,7 +153,6 @@ public class My2KCachePageFactory implements FactoryBean<Cache<String, CachePage
      * Derive Path and Coordinates from Key
      */
     private CachePage loadPage(String key) {
-        CloseableHttpClient localHttpclient = HttpClientBuilder.create().build();
         String[] keys = key.split("\\_");
 
         String id = keys[0];
@@ -164,7 +163,7 @@ public class My2KCachePageFactory implements FactoryBean<Cache<String, CachePage
         if (!myHeaderCache.containsKey(id)) { // Get Header (once in 24h)
             EgaFile[] files;
             String encryptionKey;
-            try {
+            try(CloseableHttpClient localHttpclient = HttpClientBuilder.create().build()) {
                 files = getEgaFile(id, key, localHttpclient);
                 encryptionKey = getEncryptionKey(id, key, localHttpclient);
 
@@ -214,7 +213,7 @@ public class My2KCachePageFactory implements FactoryBean<Cache<String, CachePage
 
         byte[] buffer = new byte[(int) pageSize_];
         byte[] decrypted;
-        try {
+        try(CloseableHttpClient localHttpclient = HttpClientBuilder.create().build()) {
             // Attemp loading page 3 times (mask object store read errors)
             int pageCnt = 0;
             boolean pageSuccess;

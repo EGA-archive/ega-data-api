@@ -40,8 +40,8 @@ spring.datasource.hikari.minimum-idle: 1
 
 httpclient.connection.buffer-size: 4096
 httpclient.connection.timeout: 5
-httpclient.connection.max-total: 10
-httpclient.connection.default-max-per-route: 10
+httpclient.connection.max-total: 50
+httpclient.connection.default-max-per-route: 50
 
 server.ssl.key-store-type: ${KEY_STORE_TYPE:PKCS12}
 server.ssl.key-store: ${KEY_STORE:/resserver.p12}
