@@ -86,7 +86,6 @@ import org.bouncycastle.openpgp.operator.bc.BcPBESecretKeyDecryptorBuilder;
 import org.bouncycastle.openpgp.operator.bc.BcPGPDigestCalculatorProvider;
 import org.bouncycastle.openpgp.operator.bc.BcPublicKeyDataDecryptorFactory;
 import org.cache2k.Cache;
-import org.cache2k.expiry.Expiry;
 
 import com.google.common.base.Strings;
 import com.google.common.io.ByteStreams;
@@ -351,7 +350,6 @@ public class CacheResServiceImpl implements ResService {
                 errorLocation = 6;
                 bytesTransferred += bytes;
                 cachePage += 1;
-                myPageCache.expireAt(key, Expiry.NOW);
             }
             return bytesTransferred;
         } catch (Exception ex) {

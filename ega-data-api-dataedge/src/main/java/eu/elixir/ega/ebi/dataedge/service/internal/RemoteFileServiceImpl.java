@@ -217,8 +217,8 @@ public class RemoteFileServiceImpl implements FileService {
                             inHashtext = getDigestText(inDigest.digest());
                         }
                     } catch (Throwable t) {
-                        log.error(sessionId + "RemoteFileServiceImpl Error 1: " + t.toString());
                         String errorMessage = t.toString();
+                        log.error(sessionId + "RemoteFileServiceImpl Error 1: " + errorMessage);
                         throw new GeneralStreamingException(sessionId + errorMessage, 7);
                     } 
 
