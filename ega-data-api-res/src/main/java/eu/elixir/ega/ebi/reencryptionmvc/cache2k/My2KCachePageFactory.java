@@ -153,7 +153,6 @@ public class My2KCachePageFactory implements FactoryBean<Cache<String, CachePage
      * Derive Path and Coordinates from Key
      */
     private CachePage loadPage(String key) {
-        CloseableHttpClient localHttpclient = HttpClientBuilder.create().build();
         String[] keys = key.split("\\_");
 
         String id = keys[0];
@@ -164,7 +163,7 @@ public class My2KCachePageFactory implements FactoryBean<Cache<String, CachePage
         if (!myHeaderCache.containsKey(id)) { // Get Header (once in 24h)
             EgaFile[] files;
             String encryptionKey;
-            try {
+            try(CloseableHttpClient localHttpclient = HttpClientBuilder.create().build()) {
                 files = getEgaFile(id, key, localHttpclient);
                 encryptionKey = getEncryptionKey(id, key, localHttpclient);
 
@@ -201,9 +200,7 @@ public class My2KCachePageFactory implements FactoryBean<Cache<String, CachePage
         HttpGet request = new HttpGet(url);
 
         // Add request header for Basic Auth (for CleverSafe)
-        if (httpAuth != null && httpAuth.length() > 0) {
-            request.addHeader("Authorization", httpAuth);
-        }
+        request.addHeader("Authorization", "Basic ".concat(fireCommons.getBase64EncodedCredentials()));
 
         // Add range header - logical (unencrypted) coordinates to file coordinates (add IV handling '+16')
         if ((startCoordinate + 16) >= header.getSize())
@@ -216,7 +213,7 @@ public class My2KCachePageFactory implements FactoryBean<Cache<String, CachePage
 
         byte[] buffer = new byte[(int) pageSize_];
         byte[] decrypted;
-        try {
+        try(CloseableHttpClient localHttpclient = HttpClientBuilder.create().build()) {
             // Attemp loading page 3 times (mask object store read errors)
             int pageCnt = 0;
             boolean pageSuccess;
@@ -226,7 +223,7 @@ public class My2KCachePageFactory implements FactoryBean<Cache<String, CachePage
                     if (response.getStatusLine().getStatusCode() != 200
                             && response.getStatusLine().getStatusCode() != 206)
                         throw new ServerErrorException(
-                                "Error Loading Cache Page Code " + response.getStatusLine().getStatusCode() + " for ",
+                                "FIRE error Loading Cache Page Code " + response.getStatusLine().getStatusCode() + " for ",
                                 key);
 
                     // Read response from HTTP call, count bytes read (encrypted Data)
@@ -237,7 +234,7 @@ public class My2KCachePageFactory implements FactoryBean<Cache<String, CachePage
                     }
                 } catch (Throwable th) {
                     pageSuccess = false;
-                    log.error("Error page " + key + " attempt " + pageCnt + ": " + th.toString());
+                    log.error("FIRE error page " + key + " attempt " + pageCnt + ": " + th.toString());
                 }
             } while (!pageSuccess && pageCnt++ < 3);
 

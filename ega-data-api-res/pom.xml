@@ -152,7 +152,18 @@
             <artifactId>minio</artifactId>
             <version>5.0.1</version>
         </dependency>
-
+		<dependency>
+			<groupId>uk.ac.ebi.ega</groupId>
+			<artifactId>fire-v3-core</artifactId>
+			<version>1.0.0</version>
+			<exclusions>
+				<exclusion>
+					<groupId>ch.qos.logback</groupId>
+					<artifactId>logback-classic</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		
         <!-- Test -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

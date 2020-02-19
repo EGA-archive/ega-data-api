@@ -61,4 +61,15 @@
 		</pluginManagement>
 	</build>
 
+ 	<repositories>
+ 		<repository>
+            <id>central</id>
+            <name>Central Repository</name>
+            <url>https://repo.maven.apache.org/maven2</url>
+        </repository>
+        <repository>
+            <id>gitlab-maven</id>
+            <url>https://gitlab.ebi.ac.uk/api/v4/groups/428/-/packages/maven</url>
+        </repository>
+    </repositories>
 </project>

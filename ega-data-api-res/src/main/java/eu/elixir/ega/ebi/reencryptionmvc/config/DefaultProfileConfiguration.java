@@ -1,5 +1,7 @@
 package eu.elixir.ega.ebi.reencryptionmvc.config;
 
+import java.util.Base64;
+
 import org.cache2k.Cache;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
@@ -18,18 +20,19 @@ import eu.elixir.ega.ebi.reencryptionmvc.service.internal.CacheResServiceImpl;
 import eu.elixir.ega.ebi.reencryptionmvc.service.internal.CleversaveArchiveServiceImpl;
 import eu.elixir.ega.ebi.reencryptionmvc.util.FireCommons;
 import eu.elixir.ega.ebi.reencryptionmvc.util.S3Commons;
+import uk.ac.ebi.ega.fire.service.IFireService;
 
 @Configuration
 @Profile("default")
 @EnableDiscoveryClient
 public class DefaultProfileConfiguration {
 
-    @Value("${ega.ebi.fire.url}")
-    private String fireUrl;
-    @Value("${ega.ebi.fire.archive}")
-    private String fireArchive;
-    @Value("${ega.ebi.fire.key}")
-    private String fireKey;
+    @Value("${fire.user:testUser}")
+    private String fireUsername;
+    @Value("${fire.password:testPass}")
+    private String firePassword;
+    @Value("${fire.url:testUrl}")
+    private String fireURL;
 
     @Value("${ega.ebi.aws.access.key:#{null}}")
     private String awsKey;
@@ -43,17 +46,21 @@ public class DefaultProfileConfiguration {
     @Bean
     @Primary
     public ResService initCacheResService(KeyService keyService, Cache<String, EgaAESFileHeader> myHeaderCache,
-            Cache<String, CachePage> myPageCache) {
+            Cache<String, CachePage> myPageCache, IFireService fireService) {
         return new CacheResServiceImpl(keyService, myHeaderCache, myPageCache,
-                new FireCommons(fireUrl, fireArchive, fireKey),
+                new FireCommons(fireURL, base64EncodedCredentials(), fireService),
                 new S3Commons(awsKey, awsSecretKey, awsEndpointUrl, awsRegion));
     }
 
     @Bean
     @Primary
-    public ArchiveService initCleversaveArchiveServiceImpl(RestTemplate restTemplate, KeyService keyService) {
+    public ArchiveService initCleversaveArchiveServiceImpl(RestTemplate restTemplate, KeyService keyService,
+            IFireService fireService) {
         return new CleversaveArchiveServiceImpl(restTemplate, keyService,
-                new FireCommons(fireUrl, fireArchive, fireKey));
+                new FireCommons(fireURL, base64EncodedCredentials(), fireService));
     }
 
+    private String base64EncodedCredentials() {
+        return Base64.getEncoder().encodeToString((fireUsername + ":" + firePassword).getBytes());
+    }
 }
