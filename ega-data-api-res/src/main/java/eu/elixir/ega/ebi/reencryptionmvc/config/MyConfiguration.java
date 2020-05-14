@@ -49,7 +49,6 @@ import com.google.common.cache.CacheBuilder;
 
 import eu.elixir.ega.ebi.reencryptionmvc.cache2k.My2KCacheFactory;
 import eu.elixir.ega.ebi.reencryptionmvc.cache2k.My2KCachePageFactory;
-import eu.elixir.ega.ebi.reencryptionmvc.dto.CachePage;
 import eu.elixir.ega.ebi.reencryptionmvc.dto.EgaAESFileHeader;
 import eu.elixir.ega.ebi.reencryptionmvc.util.FireCommons;
 import eu.elixir.ega.ebi.reencryptionmvc.util.S3Commons;
@@ -104,15 +103,13 @@ public class MyConfiguration {
     }
 
     @Bean
-    public Cache<String, CachePage> myPageCache(Cache<String, EgaAESFileHeader> myCache, LoadBalancerClient loadBalancer,  IFireService fireService) throws Exception {
+    public My2KCachePageFactory myPageFactory(Cache<String, EgaAESFileHeader> myCache, LoadBalancerClient loadBalancer,  IFireService fireService) throws Exception {
         int pagesize = 1024 * 1024 * 12;    // 12 MB Page Size
-        int pageCount = 1200;               // 1200 * 12 = 14 GB Cache Size
-        return (new My2KCachePageFactory(myCache,
+        return new My2KCachePageFactory(myCache,
                 loadBalancer,
                 pagesize,
-                pageCount,
                 new FireCommons(fireURL, base64EncodedCredentials(), fireService), 
-                new S3Commons(awsKey, awsSecretKey, awsEndpointUrl, awsRegion))).getObject();
+                new S3Commons(awsKey, awsSecretKey, awsEndpointUrl, awsRegion));
     }
     
     @Bean
@@ -125,7 +122,10 @@ public class MyConfiguration {
         GuavaCache path = new GuavaCache("path", CacheBuilder.newBuilder()
                 .expireAfterAccess(20, TimeUnit.HOURS)
                 .build());
-        simpleCacheManager.setCaches(Arrays.asList(key, archive, path));
+        GuavaCache fireSignedUrl = new GuavaCache("fireSignedUrl", CacheBuilder.newBuilder()
+                .expireAfterAccess(2, TimeUnit.HOURS)
+                .build());
+        simpleCacheManager.setCaches(Arrays.asList(key, archive, path, fireSignedUrl));
         return simpleCacheManager;
     }
 

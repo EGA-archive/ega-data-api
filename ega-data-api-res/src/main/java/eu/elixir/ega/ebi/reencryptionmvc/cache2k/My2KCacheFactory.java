@@ -31,11 +31,12 @@ public class My2KCacheFactory implements FactoryBean<Cache<String, EgaAESFileHea
     public Cache<String, EgaAESFileHeader> getObject() {
         return new Cache2kBuilder<String, EgaAESFileHeader>() {
         }
-                .expireAfterWrite(5, TimeUnit.MINUTES)    // expire/refresh after 5 minutes
+                .expireAfterWrite(50, TimeUnit.MINUTES)    // expire/refresh after 5 minutes
                 .resilienceDuration(30, TimeUnit.SECONDS) // cope with at most 30 seconds
                 // outage before propagating
                 // exceptions
                 .refreshAhead(false)                       // keep fresh when expiring
+                .entryCapacity(1000)
                 //.loader(this::expensiveOperation)         // auto populating function
                 .build();
     }

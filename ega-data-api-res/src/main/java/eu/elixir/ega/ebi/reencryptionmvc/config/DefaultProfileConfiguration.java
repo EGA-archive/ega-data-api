@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 import org.springframework.web.client.RestTemplate;
 
-import eu.elixir.ega.ebi.reencryptionmvc.dto.CachePage;
+import eu.elixir.ega.ebi.reencryptionmvc.cache2k.My2KCachePageFactory;
 import eu.elixir.ega.ebi.reencryptionmvc.dto.EgaAESFileHeader;
 import eu.elixir.ega.ebi.reencryptionmvc.service.ArchiveService;
 import eu.elixir.ega.ebi.reencryptionmvc.service.KeyService;
@@ -46,8 +46,8 @@ public class DefaultProfileConfiguration {
     @Bean
     @Primary
     public ResService initCacheResService(KeyService keyService, Cache<String, EgaAESFileHeader> myHeaderCache,
-            Cache<String, CachePage> myPageCache, IFireService fireService) {
-        return new CacheResServiceImpl(keyService, myHeaderCache, myPageCache,
+            My2KCachePageFactory pageDownloader, IFireService fireService) {
+        return new CacheResServiceImpl(keyService, myHeaderCache, pageDownloader,
                 new FireCommons(fireURL, base64EncodedCredentials(), fireService),
                 new S3Commons(awsKey, awsSecretKey, awsEndpointUrl, awsRegion));
     }

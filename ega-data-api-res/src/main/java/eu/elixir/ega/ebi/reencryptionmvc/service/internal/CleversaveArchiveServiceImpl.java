@@ -53,8 +53,7 @@ public class CleversaveArchiveServiceImpl implements ArchiveService {
     }
 
     @Override
-//    @Retryable(maxAttempts = 4, backoff = @Backoff(delay = 2000, multiplier = 2))
-    @Cacheable(cacheNames = "archive")
+    @Cacheable(cacheNames = "archive", key = "#root.methodName + #id")
     public ArchiveSource getArchiveFile(String id, HttpServletRequest request, HttpServletResponse response) {
 		
 		String sessionId= Strings.isNullOrEmpty(request.getHeader("Session-Id"))? "" : request.getHeader("Session-Id") + " ";

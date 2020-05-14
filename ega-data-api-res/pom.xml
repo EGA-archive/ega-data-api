@@ -236,7 +236,7 @@
                         <version>${docker.maven.version}</version>
                         <configuration>
                             <imageName>${dockerRegistry}/ega-res</imageName>
-                            <baseImage>java:8-alpine</baseImage>
+                            <baseImage>openjdk:8</baseImage>
                             <imageTags>
                                 <imageTag>${image.version}</imageTag>
                                 <imageTag>latest</imageTag>
@@ -293,7 +293,7 @@
                         <version>${docker.maven.version}</version>
                         <configuration>
                             <imageName>${dockerRegistry}/ega-res</imageName>
-                            <baseImage>java:8-alpine</baseImage>
+                            <baseImage>openjdk:8</baseImage>
                             <imageTags>
                                 <imageTag>${image.version}</imageTag>
                                 <imageTag>latest</imageTag>

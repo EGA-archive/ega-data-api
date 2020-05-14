@@ -45,7 +45,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 
-import eu.elixir.ega.ebi.reencryptionmvc.dto.CachePage;
+import eu.elixir.ega.ebi.reencryptionmvc.cache2k.My2KCachePageFactory;
 import eu.elixir.ega.ebi.reencryptionmvc.dto.EgaAESFileHeader;
 import eu.elixir.ega.ebi.reencryptionmvc.dto.MyAwsConfig;
 import eu.elixir.ega.ebi.reencryptionmvc.service.KeyService;
@@ -74,7 +74,7 @@ public class CacheResServiceImplTest {
     private Cache<String, EgaAESFileHeader> myHeaderCache;
 
     @Mock
-    private Cache<String, CachePage> myPageCache;
+    private My2KCachePageFactory pageDowloader;
     
     @Mock
     private FireCommons fireCommons;
@@ -100,7 +100,7 @@ public class CacheResServiceImplTest {
             cacheResServiceImpl.transfer("aes256", "sourceKey", "sourceIV", "plain", "destinationKey", "destinationIV",
                     "/EGAZ00001257562/analysis/ALL.chr22.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.vcf.gz.cip",
                     0, 0, 37, "httpAuth", "id", new MockHttpServletRequest(), new MockHttpServletResponse());
-            verify(myPageCache, times(1)).get(anyString());
+            verify(pageDowloader, times(1)).downloadPage(anyString());
         } catch (Exception e) {
             fail("Should not have thrown an exception");
         }
@@ -115,7 +115,6 @@ public class CacheResServiceImplTest {
     private void setupMock() throws Exception {
         final String inputData = "test output forty one characters given.";
 
-        final CachePage cachePage = mock(CachePage.class);
         final HttpClientBuilder mockHttpClientBuilder = mock(HttpClientBuilder.class);
         final CloseableHttpClient mockCloseableHttpClient = mock(CloseableHttpClient.class);
         final CloseableHttpResponse mockHttpResponse = mock(CloseableHttpResponse.class);
@@ -132,8 +131,7 @@ public class CacheResServiceImplTest {
         when(myAwsConfig.getAwsAccessKeyId()).thenReturn("accessKeyId");
         when(myAwsConfig.getAwsSecretAccessKey()).thenReturn("secretAccesskey");
         when(myHeaderCache.containsKey(any())).thenReturn(Boolean.FALSE);
-        when(cachePage.getPage()).thenReturn(inputData.getBytes());
-        when(myPageCache.get(anyString())).thenReturn(cachePage);
+        when(pageDowloader.downloadPage(anyString())).thenReturn(new byte[] {});
     }
 
 }

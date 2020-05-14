@@ -59,21 +59,18 @@ import lombok.extern.slf4j.Slf4j;
  * @author asenf
  */
 @Slf4j
-public class My2KCachePageFactory implements FactoryBean<Cache<String, CachePage>> { // extends SimpleJdbcDaoSupport
-
+public class My2KCachePageFactory {
     private Cache<String, EgaAESFileHeader> myHeaderCache;
     private final int pageSize;
-    private final int pageCount;
     private final LoadBalancerClient loadBalancer;
     private final FireCommons fireCommons;
     private final S3Commons s3Commons;
 
     public My2KCachePageFactory(Cache<String, EgaAESFileHeader> myHeaderCache, LoadBalancerClient loadBalancer,
-            int pageSize, int pageCount, FireCommons fireCommons, S3Commons s3Commons) {
+            int pageSize, FireCommons fireCommons, S3Commons s3Commons) {
         this.myHeaderCache = myHeaderCache;
         this.loadBalancer = loadBalancer;
         this.pageSize = pageSize;
-        this.pageCount = pageCount;
         this.fireCommons = fireCommons;
         this.s3Commons = s3Commons;
     }
@@ -121,38 +118,7 @@ public class My2KCachePageFactory implements FactoryBean<Cache<String, CachePage
         }
     }
 
-    @Override
-    public Cache<String, CachePage> getObject() {
-        return new Cache2kBuilder<String, CachePage>() {
-        }
-                .expireAfterWrite(10, TimeUnit.MINUTES)    // expire/refresh after 10 minutes
-                .resilienceDuration(45, TimeUnit.SECONDS) // cope with at most 45 seconds
-                // outage before propagating
-                // exceptions
-                .refreshAhead(false)                      // keep fresh when expiring
-                .loader(this::loadPage)                   // auto populating function
-                .keepDataAfterExpired(false)
-                .loaderExecutor(Executors.newFixedThreadPool(1280))
-                .loaderThreadCount(640)
-                .entryCapacity(this.pageCount)
-                .build();
-    }
-
-    @Override
-    public Class<?> getObjectType() {
-        return Cache.class;
-    }
-
-    @Override
-    public boolean isSingleton() {
-        return true;
-    }
-
-    /*
-     * Cache Page Loader
-     * Derive Path and Coordinates from Key
-     */
-    private CachePage loadPage(String key) {
+    public byte[] downloadPage(String key) {
         String[] keys = key.split("\\_");
 
         String id = keys[0];
@@ -204,7 +170,7 @@ public class My2KCachePageFactory implements FactoryBean<Cache<String, CachePage
 
         // Add range header - logical (unencrypted) coordinates to file coordinates (add IV handling '+16')
         if ((startCoordinate + 16) >= header.getSize())
-            return new CachePage(new byte[]{});
+            return new byte[]{};
 
         String byteRange = "bytes=" + (startCoordinate + 16) + "-" + (endCoordinate + 16);
         request.addHeader("Range", byteRange);
@@ -212,7 +178,6 @@ public class My2KCachePageFactory implements FactoryBean<Cache<String, CachePage
         pageSize_ = pageSize > pageSize_ ? pageSize_ : pageSize;
 
         byte[] buffer = new byte[(int) pageSize_];
-        byte[] decrypted;
         try(CloseableHttpClient localHttpclient = HttpClientBuilder.create().build()) {
             // Attemp loading page 3 times (mask object store read errors)
             int pageCnt = 0;
@@ -242,7 +207,7 @@ public class My2KCachePageFactory implements FactoryBean<Cache<String, CachePage
             byte[] newIV = new byte[16]; // IV always 16 bytes long
             System.arraycopy(header.getIV(), 0, newIV, 0, 16); // preserved start value
             if (startCoordinate > 0) byteIncrementFast(newIV, startCoordinate);
-            decrypted = decrypt(buffer, sourceKey, newIV);
+            return decrypt(buffer, sourceKey, newIV);
         } catch (UnsupportedOperationException th) {
             log.error("HTTP GET ERROR -1 " + th.toString() + "   -- " + byteRange + "\n" + url);
             throw new ServerErrorException("Error Loading Cache Page -1 " + th.toString() + " for ", key);
@@ -261,8 +226,6 @@ public class My2KCachePageFactory implements FactoryBean<Cache<String, CachePage
         } finally {
             request.releaseConnection();
         }
-
-        return new CachePage(decrypted);
     }
 
     private String getEncryptionKey(String id, String key, HttpClient localHttpclient)
@@ -306,9 +269,7 @@ public class My2KCachePageFactory implements FactoryBean<Cache<String, CachePage
 
     private Optional<EgaAESFileHeader> getFileEncryptionHeader(String id, String path, String httpAuth, long fileSize, String sourceKey) {
         String url;
-        
         HttpGet request;
-
         if (path.startsWith("s3")) {
             url = s3Commons.getS3ObjectUrl(path);
             request = new HttpGet(url);
@@ -316,6 +277,7 @@ public class My2KCachePageFactory implements FactoryBean<Cache<String, CachePage
             url = fireCommons.getFireObjectUrl(path);
             request = new HttpGet(url);
             fireCommons.addAuthenticationForFireRequest(httpAuth, url, request);
+            request.addHeader("Range", "bytes=0-16");
         }
 
         byte[] IV = new byte[16];
