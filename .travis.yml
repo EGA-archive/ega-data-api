@@ -8,7 +8,7 @@ dist: trusty
 
 install:
   # installing dependencies and skipping docker push
-  - mvn dependency:purge-local-repository install -DskipTests=true -Dmaven.javadoc.skip=true -B -V -DskipDockerPush
+  - mvn dependency:purge-local-repository install -DskipTests=true -P production -Dmaven.javadoc.skip=true -B -V -DskipDockerPush
 
 cache:
   directories:
