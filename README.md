@@ -26,8 +26,14 @@ Ega Data API is divided into several microservices:
 
 # Build
 ```
-$ mvn clean install -DskipDockerPush
+$ mvn clean install
 ```
+
+To build and push the docker images enable the profile `production` or `debug` respectively
+```
+$ mvn clean install -P production
+```
+If you wish to build the images but not push them, add the parameter `-DskipDockerPush`
 
 ## License
 
