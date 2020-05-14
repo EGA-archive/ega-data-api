@@ -131,7 +131,7 @@ public class CacheResServiceImplTest {
         when(myAwsConfig.getAwsAccessKeyId()).thenReturn("accessKeyId");
         when(myAwsConfig.getAwsSecretAccessKey()).thenReturn("secretAccesskey");
         when(myHeaderCache.containsKey(any())).thenReturn(Boolean.FALSE);
-        when(pageDowloader.downloadPage(anyString())).thenReturn(new byte[] {});
+        when(pageDowloader.downloadPage(anyString())).thenReturn(inputData.getBytes());
     }
 
 }
