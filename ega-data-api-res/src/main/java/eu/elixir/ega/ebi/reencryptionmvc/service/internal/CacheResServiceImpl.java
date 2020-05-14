@@ -322,13 +322,15 @@ public class CacheResServiceImpl implements ResService {
             }
             return bytesTransferred;
         } catch (Exception ex) {
-            throw new GeneralStreamingException(sessionId + "Error Location: " + errorLocation + "\n" + ex.toString(), 10);
+            log.error(sessionId + " Error Location: " + errorLocation + "\n" + ex.toString());
+            throw new GeneralStreamingException(sessionId + " Error Location: " + errorLocation + "\n" + ex.toString(), 10);
         } finally {
             try {
                 in.close();
                 encryptedDigestOut.close();
                 eOut.close();
             } catch (Exception ex) {
+                log.error(sessionId + " Error Location: " + errorLocation + "\n" + ex.toString());
                 throw new GeneralStreamingException(sessionId.concat(" ").concat(ex.toString()), 5);
             }
         }

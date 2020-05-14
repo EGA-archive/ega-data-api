@@ -209,7 +209,7 @@ public class My2KCachePageFactory {
             if (startCoordinate > 0) byteIncrementFast(newIV, startCoordinate);
             return decrypt(buffer, sourceKey, newIV);
         } catch (Exception ex) {
-            log.error("Error loading page " + ex.toString() + " for " + key);
+            log.error("Error loading page " + ex.toString() + "   -- " + byteRange + "\n" + url);
             throw new ServerErrorException("Error loading page " + ex.toString() + " for ", key);
         } finally {
             request.releaseConnection();
