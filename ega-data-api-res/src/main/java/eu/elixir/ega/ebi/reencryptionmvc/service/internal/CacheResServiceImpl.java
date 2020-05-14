@@ -216,27 +216,6 @@ public class CacheResServiceImpl implements ResService {
         }
     }
     
-    private String printmemory() {
-        long heapSize = Runtime.getRuntime().totalMemory();
-
-        // Get maximum size of heap in bytes. The heap cannot grow beyond this size.
-        // Any attempt will result in an OutOfMemoryException.
-        long heapMaxSize = Runtime.getRuntime().maxMemory();
-
-        // Get amount of free memory within the heap in bytes. This size will increase
-        // after garbage collection and decrease as new objects are created.
-        long heapFreeSize = Runtime.getRuntime().freeMemory();
-
-       return "heapsize " + formatSize(heapSize) + ", heapFreesize " + formatSize(heapFreeSize)+", heapMaxsize " + formatSize(heapMaxSize);
-    }
-    
-    private static String formatSize(long v) {
-        if (v < 1024)
-            return v + " B";
-        int z = (63 - Long.numberOfLeadingZeros(v)) / 10;
-        return String.format("%.1f %sB", (double) v / (1L << (z * 10)), " KMGTPE".charAt(z));
-    }
-
     @Override
     public long transfer(String sourceFormat,
                          String sourceKey,
@@ -255,8 +234,6 @@ public class CacheResServiceImpl implements ResService {
 
 		String sessionId= Strings.isNullOrEmpty(request.getHeader("Session-Id"))? "" : request.getHeader("Session-Id") + " ";
 		
-        log.info("print memory : " + printmemory());
-
         // Check if File Header is in Cache - otherwise Load it
         if (!myHeaderCache.containsKey(id))
             loadHeaderCleversafe(id, fileLocation, httpAuth, fileSize, request, response, sourceKey);
@@ -318,20 +295,19 @@ public class CacheResServiceImpl implements ResService {
             while (bytesTransferred < bytesToTransfer) {
                 errorLocation = 3;
 
-                // New: Cache Loader takes care of loading autonomously, based on Key
                 key = id + "_" + startPage;
-                byte[] get = pageDowloader.downloadPage(key); // Get Cache page that contains requested data
+                byte[] page = pageDowloader.downloadPage(key);
                 errorLocation = 4;
-                if (get == null)
-                    throw new GeneralStreamingException(sessionId + " Error getting Cache Page " + key + " at Stage ", 8);
+                if (page == null)
+                    throw new GeneralStreamingException(sessionId + " Error getting page " + key);
 
-                ByteArrayInputStream bais = new ByteArrayInputStream(get); // Wrap byte array
+                ByteArrayInputStream bais = new ByteArrayInputStream(page);
                 bais.skip(pageOffset); // first cache page
 
                 // At this point the plain data is in a cache page
                 
                 long delta = bytesToTransfer - bytesTransferred;
-                if (delta < get.length) {
+                if (delta < page.length) {
                     in = ByteStreams.limit(bais, delta);
                 } else {
                     in = bais;
@@ -346,14 +322,14 @@ public class CacheResServiceImpl implements ResService {
             }
             return bytesTransferred;
         } catch (Exception ex) {
-            throw new GeneralStreamingException(sessionId + " Error Location: " + errorLocation, 10);
+            throw new GeneralStreamingException(sessionId + "Error Location: " + errorLocation + "\n" + ex.toString(), 10);
         } finally {
             try {
                 in.close();
                 encryptedDigestOut.close();
                 eOut.close();
             } catch (Exception ex) {
-                throw new GeneralStreamingException(sessionId.concat(" ").concat(ex.getMessage()), 5);
+                throw new GeneralStreamingException(sessionId.concat(" ").concat(ex.toString()), 5);
             }
         }
     }

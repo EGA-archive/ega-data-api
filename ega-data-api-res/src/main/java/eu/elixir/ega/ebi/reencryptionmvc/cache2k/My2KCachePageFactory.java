@@ -208,21 +208,9 @@ public class My2KCachePageFactory {
             System.arraycopy(header.getIV(), 0, newIV, 0, 16); // preserved start value
             if (startCoordinate > 0) byteIncrementFast(newIV, startCoordinate);
             return decrypt(buffer, sourceKey, newIV);
-        } catch (UnsupportedOperationException th) {
-            log.error("HTTP GET ERROR -1 " + th.toString() + "   -- " + byteRange + "\n" + url);
-            throw new ServerErrorException("Error Loading Cache Page -1 " + th.toString() + " for ", key);
-        } catch (IOException th) {
-            log.error("HTTP GET ERROR 0 " + th.toString() + "   -- " + byteRange + "\n" + url);
-            throw new ServerErrorException("Error Loading Cache Page 0 " + th.toString() + " for ", key);
-        } catch (IllegalBlockSizeException ex) {
-            log.error("HTTP GET ERROR 1 " + ex.toString() + "   -- " + byteRange + "\n" + url);
-            throw new ServerErrorException("Error Loading Cache Page 1 " + ex.toString() + " for ", key);
-        } catch (BadPaddingException ex) {
-            log.error("HTTP GET ERROR 2 " + ex.toString() + "   -- " + byteRange + "\n" + url);
-            throw new ServerErrorException("Error Loading Cache Page 2 " + ex.toString() + " for ", key);
         } catch (Exception ex) {
-            log.error("HTTP GET ERROR 3 " + ex.toString() + "   -- " + byteRange + "\n" + url);
-            throw new ServerErrorException("Error Loading Cache Page 3 " + ex.toString() + " for ", key);
+            log.error("Error loading page " + ex.toString() + " for " + key);
+            throw new ServerErrorException("Error loading page " + ex.toString() + " for ", key);
         } finally {
             request.releaseConnection();
         }

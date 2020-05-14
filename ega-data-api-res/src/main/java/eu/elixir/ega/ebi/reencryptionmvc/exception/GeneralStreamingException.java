@@ -26,6 +26,10 @@ public class GeneralStreamingException extends RuntimeException {
 
     private static final long serialVersionUID = 1L;
 
+    public GeneralStreamingException(String error) {
+        super(error);
+    }
+    
     public GeneralStreamingException(String error, int stage) {
         super("Error processing Stream at stage : " + stage + " (with error " + error + ")");
     }
