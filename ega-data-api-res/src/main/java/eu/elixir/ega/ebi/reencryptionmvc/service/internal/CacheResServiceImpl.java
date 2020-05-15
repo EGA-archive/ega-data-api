@@ -31,7 +31,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.math.BigInteger;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -48,10 +47,6 @@ import java.security.Security;
 import java.security.spec.AlgorithmParameterSpec;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import javax.crypto.Cipher;
 import javax.crypto.CipherOutputStream;
@@ -90,7 +85,7 @@ import org.cache2k.Cache;
 import com.google.common.base.Strings;
 import com.google.common.io.ByteStreams;
 
-import eu.elixir.ega.ebi.reencryptionmvc.dto.CachePage;
+import eu.elixir.ega.ebi.reencryptionmvc.cache2k.My2KCachePageFactory;
 import eu.elixir.ega.ebi.reencryptionmvc.dto.EgaAESFileHeader;
 import eu.elixir.ega.ebi.reencryptionmvc.dto.KeyPath;
 import eu.elixir.ega.ebi.reencryptionmvc.exception.GeneralStreamingException;
@@ -124,27 +119,24 @@ public class CacheResServiceImpl implements ResService {
      */
     //private static final int BUFFER_SIZE = 16;
     private static final long BUFFER_SIZE = 1024 * 1024 * 12;
-    private static final int MAX_CONCURRENT = 4;
     /**
      * Bouncy Castle code for Public Key encrypted Files
      */
     private static final KeyFingerPrintCalculator fingerPrintCalculater = new BcKeyFingerprintCalculator();
-    private static Set concurrentHashSet = ConcurrentHashMap.newKeySet();
     /**
      * Background processing
      */
-    ExecutorService executorService2 = Executors.newFixedThreadPool(200);
     private KeyService keyService;
     private Cache<String, EgaAESFileHeader> myHeaderCache;
-    private Cache<String, CachePage> myPageCache;
+    private My2KCachePageFactory pageDowloader;
     private FireCommons fireCommons;
     private S3Commons s3Commons;
     
     public CacheResServiceImpl(KeyService keyService, Cache<String, EgaAESFileHeader> myHeaderCache,
-            Cache<String, CachePage> myPageCache, FireCommons fireCommons, S3Commons s3Commons) {
+            My2KCachePageFactory pageDowloader, FireCommons fireCommons, S3Commons s3Commons) {
         this.keyService = keyService;
         this.myHeaderCache = myHeaderCache;
-        this.myPageCache = myPageCache;
+        this.pageDowloader = pageDowloader;
         this.fireCommons = fireCommons;
         this.s3Commons = s3Commons;
     }
@@ -223,7 +215,7 @@ public class CacheResServiceImpl implements ResService {
             cur_pos--;
         }
     }
-
+    
     @Override
     public long transfer(String sourceFormat,
                          String sourceKey,
@@ -251,7 +243,8 @@ public class CacheResServiceImpl implements ResService {
         MessageDigest encryptedDigest = null;
         DigestOutputStream encryptedDigestOut = null;
         OutputStream eOut = null;
-
+        InputStream in = null;
+        
         // get MIME type of the file (actually, it's always this for now)
         String mimeType = "application/octet-stream";
 
@@ -277,11 +270,10 @@ public class CacheResServiceImpl implements ResService {
             }
 
             // Transfer Loop - Get data from Cache, write it - until done!
-            SeekableStream sIn = null;
             if (sourceFormat.equalsIgnoreCase("aes128") || sourceFormat.equalsIgnoreCase("aes256"))
                 fileSize = fileSize - 16; // Adjust CIP File Size (subtracting 16 bytes)
             else if (sourceFormat.equalsIgnoreCase("symmetricgpg")) {
-                sIn = getSource(sourceFormat, sourceKey, fileLocation, httpAuth, fileSize);
+                getSource(sourceFormat, sourceKey, fileLocation, httpAuth, fileSize);
             }
             if (endCoordinate > fileSize)
                 endCoordinate = fileSize;
@@ -296,80 +288,50 @@ public class CacheResServiceImpl implements ResService {
             long bytesTransferred = 0;
             errorLocation = 2;
 
-            int cacheStartPage = (int) (startCoordinate / BUFFER_SIZE);
-            int cacheEndPage = (int) ((endCoordinate > 0 ? endCoordinate : fileSize) / BUFFER_SIZE);
-
-            // Cache Page Key
-            int cachePage = cacheStartPage;
-            int cachePageOffset = (int) (startCoordinate - ((long) cachePage * (long) BUFFER_SIZE));
-            String key = id + "_" + cachePage;
+            int startPage = (int) (startCoordinate / BUFFER_SIZE);
+            int pageOffset = (int) (startCoordinate - ((long) startPage * (long) BUFFER_SIZE));
+            String key = id + "_" + startPage;
 
             while (bytesTransferred < bytesToTransfer) {
                 errorLocation = 3;
 
-                // New: Cache Loader takes care of loading autonomously, based on Key
-                key = id + "_" + cachePage;
-                byte[] get = myPageCache.get(key).getPage(); // Get Cache page that contains requested data
+                key = id + "_" + startPage;
+                byte[] page = pageDowloader.downloadPage(key);
                 errorLocation = 4;
-                if (get == null)
-                    throw new GeneralStreamingException(sessionId + "Error getting Cache Page " + key + " at Stage ", 8);
-                // Prefetch Loop (prefetch next few pages in background)
-                for (int prefetch = 1; prefetch <= MAX_CONCURRENT; prefetch++) {
-                    if ((cachePage + prefetch) < cacheEndPage) { // no paged past end of file
-                        final String key__ = id + "_" + (cachePage + prefetch);
-                        if (!myPageCache.containsKey(key__) && !concurrentHashSet.contains(key__)) {
-                            concurrentHashSet.add(key__);
-                            //Executors.newSingleThreadExecutor().execute(new Runnable() {
-                            Executors.newCachedThreadPool().execute(new Runnable() {
-                                @Override
-                                public void run() {
-                                    byte[] page = myPageCache.get(key__).getPage();
-                                    concurrentHashSet.remove(key__);
-                                }
-                            });
-                        }
-                    }
-                }
-                errorLocation = 5;
+                if (page == null)
+                    throw new GeneralStreamingException(sessionId + " Error getting page " + key);
 
-                ByteArrayInputStream bais = new ByteArrayInputStream(get); // Wrap byte array
-                bais.skip(cachePageOffset); // first cache page
+                ByteArrayInputStream bais = new ByteArrayInputStream(page);
+                bais.skip(pageOffset); // first cache page
 
                 // At this point the plain data is in a cache page
-                InputStream in;
+                
                 long delta = bytesToTransfer - bytesTransferred;
-                if (delta < get.length) {
+                if (delta < page.length) {
                     in = ByteStreams.limit(bais, delta);
                 } else {
                     in = bais;
                 }
-                cachePageOffset = 0;
+                pageOffset = 0;
 
                 // Copy the specified contents - decrypting through input, encrypting through output
                 long bytes = ByteStreams.copy(in, eOut);
                 errorLocation = 6;
                 bytesTransferred += bytes;
-                cachePage += 1;
+                startPage += 1;
             }
             return bytesTransferred;
         } catch (Exception ex) {
-            throw new GeneralStreamingException(sessionId + "Error Location: " + errorLocation + "\n" + ex.toString(), 10);
+            log.error(sessionId + " Error Location: " + errorLocation + "\n" + ex.toString() , ex);
+            throw new GeneralStreamingException(sessionId + " Error Location: " + errorLocation + "\n" + ex.toString(), 10);
         } finally {
             try {
-                // Close all Streams in reverse order (theoretically only the first should be necessary)
-                eOut.close();
+                in.close();
                 encryptedDigestOut.close();
-
-                // Compute Digests
-                byte[] encryptedDigest_ = encryptedDigest.digest();
-                BigInteger bigIntEncrypted = new BigInteger(1, encryptedDigest_);
-                String encryptedHashtext = bigIntEncrypted.toString(16);
-                while (encryptedHashtext.length() < 32) {
-                    encryptedHashtext = "0" + encryptedHashtext;
-                }
-
+                eOut.close();
             } catch (Exception ex) {
-                throw new GeneralStreamingException(sessionId + ex.toString(), 5);
+                log.error(sessionId + " Error Location: " + errorLocation + "\n" + ex.toString(), ex);
+                throw new GeneralStreamingException(sessionId.concat(" ").concat(ex.toString()), 5);
             }
         }
     }
@@ -659,7 +621,8 @@ public class CacheResServiceImpl implements ResService {
         HttpGet request = new HttpGet(url);
 
         fireCommons.addAuthenticationForFireRequest(httpAuth, url, request);
-
+        request.addHeader("Range", "bytes=0-16");
+        
         try (CloseableHttpClient httpclient = HttpClientBuilder.create().build();
                 CloseableHttpResponse response = httpclient.execute(request)) {
             if (response == null || response.getEntity() == null) {

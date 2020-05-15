@@ -3,6 +3,7 @@ package eu.elixir.ega.ebi.reencryptionmvc.util;
 import java.util.Optional;
 
 import org.apache.http.client.methods.HttpGet;
+import org.springframework.cache.annotation.Cacheable;
 
 import lombok.extern.slf4j.Slf4j;
 import uk.ac.ebi.ega.fire.service.IFireService;
@@ -36,6 +37,7 @@ public class FireCommons {
         return getFireSignedUrl(path.toLowerCase().startsWith("/fire/a/") ? path.substring(16) : path, "")[0];
     }
     
+    @Cacheable(cacheNames = "fireSignedUrl", key = "#root.methodName + #path")
     public String[] getFireSignedUrl(String path, String sessionId) {
         if (path.equalsIgnoreCase("Virtual File"))
             return new String[] { "Virtual File" };
@@ -52,6 +54,7 @@ public class FireCommons {
             Optional<FireResponse> fireResponse = Optional.empty();
             do {
                 try {
+                    path = path.replaceAll("#", "%23");
                     fireResponse = fireService.findFile(path);
 
                     if (fireResponse.isPresent()) {

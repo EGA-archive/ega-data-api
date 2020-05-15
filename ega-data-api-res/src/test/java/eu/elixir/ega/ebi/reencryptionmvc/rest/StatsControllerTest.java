@@ -21,8 +21,7 @@ import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 
-import eu.elixir.ega.ebi.reencryptionmvc.dto.CachePage;
-import org.cache2k.Cache;
+import eu.elixir.ega.ebi.reencryptionmvc.cache2k.My2KCachePageFactory;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,7 +46,7 @@ public class StatsControllerTest {
     private MockMvc mockMvc;
     
     @MockBean
-    private Cache<String, CachePage> myPageCache;
+    private My2KCachePageFactory pageDowload;
 
     /**
      * Test {@link StatsController#get()}. Verify the api call returns status is OK.
