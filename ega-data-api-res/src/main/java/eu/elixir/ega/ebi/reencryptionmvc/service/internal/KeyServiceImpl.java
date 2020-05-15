@@ -20,6 +20,7 @@ import eu.elixir.ega.ebi.reencryptionmvc.service.KeyService;
 
 import static eu.elixir.ega.ebi.reencryptionmvc.config.Constants.KEYS_SERVICE;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
@@ -32,6 +33,7 @@ import org.springframework.web.client.RestTemplate;
  */
 @Service
 @EnableDiscoveryClient
+@Slf4j
 public class KeyServiceImpl implements KeyService {
 
     @Autowired
@@ -42,6 +44,9 @@ public class KeyServiceImpl implements KeyService {
     @Cacheable(cacheNames = "key")
     public String getFileKey(String fileId) {
         ResponseEntity<String> forEntity = restTemplate.getForEntity(KEYS_SERVICE + "/keys/filekeys/{fileId}", String.class, fileId);
+        if (forEntity.getStatusCodeValue()!=200){
+            log.error("Error to retrieve decryption keys with HTTP return code {} ",forEntity.getStatusCode());
+        }
         return forEntity.getBody();
     }
 
@@ -49,6 +54,9 @@ public class KeyServiceImpl implements KeyService {
     //@Retryable(maxAttempts = 4, backoff = @Backoff(delay = 5000))
     public KeyPath getKeyPath(String key) {
         ResponseEntity<KeyPath> forEntity = restTemplate.getForEntity(KEYS_SERVICE + "/keys/retrieve/{keyId}/private/path", KeyPath.class, key);
+        if (forEntity.getStatusCodeValue()!=200) {
+            log.error("Error to retrieve decryption path key with HTTP return code {} ", forEntity.getStatusCode());
+        }
         return forEntity.getBody();
     }
 
@@ -60,7 +68,11 @@ public class KeyServiceImpl implements KeyService {
      */
     @Override
     public String getPublicKey(String id) {
-        return restTemplate.getForEntity(KEYS_SERVICE + "/keys/retrieve/{keyId}/public", String.class, id).getBody();
+        final ResponseEntity<String> forEntity = restTemplate.getForEntity(KEYS_SERVICE + "/keys/retrieve/{keyId}/public", String.class, id);
+        if (forEntity.getStatusCodeValue()!=200) {
+            log.error("Error to retrieve decryption public key with HTTP return code {} ", forEntity.getStatusCode());
+        }
+        return forEntity.getBody();
     }
 
     /**
@@ -71,7 +83,11 @@ public class KeyServiceImpl implements KeyService {
      */
     @Override
     public String getPrivateKey(String id) {
-        return restTemplate.getForEntity(KEYS_SERVICE + "/keys/retrieve/{keyId}/private/key", String.class, id).getBody();
+        final ResponseEntity<String> forEntity = restTemplate.getForEntity(KEYS_SERVICE + "/keys/retrieve/{keyId}/private/key", String.class, id);
+        if (forEntity.getStatusCodeValue()!=200) {
+            log.error("Error to retrieve decryption private key with HTTP return code {} ", forEntity.getStatusCode());
+        }
+        return forEntity.getBody();
     }
 
 }

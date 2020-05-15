@@ -24,6 +24,7 @@ import static org.powermock.api.mockito.PowerMockito.when;
 
 import javax.servlet.http.HttpServletResponse;
 
+import eu.elixir.ega.ebi.reencryptionmvc.util.FireObject;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -80,13 +81,11 @@ public class CleversaveArchiveServiceImplTest {
         final EgaFile[] body = new EgaFile[1];
         body[0] = new EgaFile("fileId0", "/fire/0000TR.CEL.gpg", null, 100, "fileStatus0", null);
 
-        final String pathInput = "/EGAZ00001257562/analysis/ALL.chr22.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.vcf.gz.cip";
         final String object_get = "http://egaread:8oAgZc0DH6dR@10.32.25.44/ega/06ca84a54eeadf8acd3cf05691652d5e0014";
-        final String object_length = "214453766";
-        final String object_storage_class = "CLEVERSAFE";
+        final long object_length = 214453766L;
         final String encryptionKey = "encryptionKey";
 
-        final String[] filePath = { object_get, object_length, object_storage_class, pathInput };
+        final FireObject filePath = new FireObject(object_get,object_length);
         when(restTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}", EgaFile[].class, "id"))
                 .thenReturn(mockResponseEntity);
         when(mockResponseEntity.getStatusCode()).thenReturn(HttpStatus.OK);
@@ -97,8 +96,8 @@ public class CleversaveArchiveServiceImplTest {
         final ArchiveSource archiveSource = cleversaveArchiveServiceImpl.getArchiveFile("id",  new MockHttpServletRequest(),
                 new MockHttpServletResponse());
         
-        assertThat(archiveSource.getFileUrl(), equalTo(filePath[0]));
-        assertThat(archiveSource.getSize(), equalTo(Long.valueOf(filePath[1])));
+        assertThat(archiveSource.getFileUrl(), equalTo(filePath.getFileURL()));
+        assertThat(archiveSource.getSize(), equalTo(filePath.getFileSize()));
         assertThat(archiveSource.getEncryptionFormat(), equalTo("symmetricgpg"));
         assertThat(archiveSource.getEncryptionKey(), equalTo(encryptionKey));
 
