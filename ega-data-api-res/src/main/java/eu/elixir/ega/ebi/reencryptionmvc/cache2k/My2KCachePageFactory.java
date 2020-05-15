@@ -199,7 +199,7 @@ public class My2KCachePageFactory {
                     }
                 } catch (Throwable th) {
                     pageSuccess = false;
-                    log.error("FIRE error page " + key + " attempt " + pageCnt + ": " + th.toString());
+                    log.error("FIRE error page " + key + " attempt " + pageCnt + ": " + th.toString(), th);
                 }
             } while (!pageSuccess && pageCnt++ < 3);
 
@@ -209,7 +209,7 @@ public class My2KCachePageFactory {
             if (startCoordinate > 0) byteIncrementFast(newIV, startCoordinate);
             return decrypt(buffer, sourceKey, newIV);
         } catch (Exception ex) {
-            log.error("Error loading page " + ex.toString() + "   -- " + byteRange + "\n" + url);
+            log.error("Error loading page " + ex.toString() + "   -- " + byteRange + "\n" + url, ex);
             throw new ServerErrorException("Error loading page " + ex.toString() + " for ", key);
         } finally {
             request.releaseConnection();
