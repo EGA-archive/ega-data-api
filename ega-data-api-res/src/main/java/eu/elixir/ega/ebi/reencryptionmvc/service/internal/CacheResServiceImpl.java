@@ -22,40 +22,30 @@
  */
 package eu.elixir.ega.ebi.reencryptionmvc.service.internal;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
-import java.io.FileInputStream;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.security.DigestOutputStream;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.SecureRandom;
-import java.security.Security;
-import java.security.spec.AlgorithmParameterSpec;
-import java.util.ArrayList;
-import java.util.Iterator;
-
-import javax.crypto.Cipher;
-import javax.crypto.CipherOutputStream;
-import javax.crypto.NoSuchPaddingException;
-import javax.crypto.SecretKey;
-import javax.crypto.spec.IvParameterSpec;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
+import com.google.common.base.Strings;
+import com.google.common.io.ByteStreams;
+import eu.elixir.ega.ebi.reencryptionmvc.cache2k.My2KCachePageFactory;
+import eu.elixir.ega.ebi.reencryptionmvc.dto.EgaAESFileHeader;
+import eu.elixir.ega.ebi.reencryptionmvc.dto.KeyPath;
+import eu.elixir.ega.ebi.reencryptionmvc.exception.GeneralStreamingException;
+import eu.elixir.ega.ebi.reencryptionmvc.exception.ServerErrorException;
+import eu.elixir.ega.ebi.reencryptionmvc.service.KeyService;
+import eu.elixir.ega.ebi.reencryptionmvc.service.ResService;
+import eu.elixir.ega.ebi.reencryptionmvc.util.DecryptionUtils;
+import eu.elixir.ega.ebi.reencryptionmvc.util.FireCommons;
+import eu.elixir.ega.ebi.reencryptionmvc.util.S3Commons;
+import htsjdk.samtools.seekablestream.FakeSeekableStream;
+import htsjdk.samtools.seekablestream.SeekableBasicAuthHTTPStream;
+import htsjdk.samtools.seekablestream.SeekableHTTPStream;
+import htsjdk.samtools.seekablestream.SeekablePathStream;
+import htsjdk.samtools.seekablestream.SeekableStream;
+import htsjdk.samtools.seekablestream.cipher.ebi.GPGOutputStream;
+import htsjdk.samtools.seekablestream.cipher.ebi.GPGStream;
+import htsjdk.samtools.seekablestream.cipher.ebi.Glue;
+import htsjdk.samtools.seekablestream.cipher.ebi.RemoteSeekableCipherStream;
+import htsjdk.samtools.seekablestream.cipher.ebi.SeekableCipherStream;
+import htsjdk.samtools.seekablestream.ebi.BufferedBackgroundSeekableInputStream;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -82,30 +72,38 @@ import org.bouncycastle.openpgp.operator.bc.BcPGPDigestCalculatorProvider;
 import org.bouncycastle.openpgp.operator.bc.BcPublicKeyDataDecryptorFactory;
 import org.cache2k.Cache;
 
-import com.google.common.base.Strings;
-import com.google.common.io.ByteStreams;
-
-import eu.elixir.ega.ebi.reencryptionmvc.cache2k.My2KCachePageFactory;
-import eu.elixir.ega.ebi.reencryptionmvc.dto.EgaAESFileHeader;
-import eu.elixir.ega.ebi.reencryptionmvc.dto.KeyPath;
-import eu.elixir.ega.ebi.reencryptionmvc.exception.GeneralStreamingException;
-import eu.elixir.ega.ebi.reencryptionmvc.exception.ServerErrorException;
-import eu.elixir.ega.ebi.reencryptionmvc.service.KeyService;
-import eu.elixir.ega.ebi.reencryptionmvc.service.ResService;
-import eu.elixir.ega.ebi.reencryptionmvc.util.FireCommons;
-import eu.elixir.ega.ebi.reencryptionmvc.util.S3Commons;
-import htsjdk.samtools.seekablestream.FakeSeekableStream;
-import htsjdk.samtools.seekablestream.SeekableBasicAuthHTTPStream;
-import htsjdk.samtools.seekablestream.SeekableHTTPStream;
-import htsjdk.samtools.seekablestream.SeekablePathStream;
-import htsjdk.samtools.seekablestream.SeekableStream;
-import htsjdk.samtools.seekablestream.cipher.ebi.GPGOutputStream;
-import htsjdk.samtools.seekablestream.cipher.ebi.GPGStream;
-import htsjdk.samtools.seekablestream.cipher.ebi.Glue;
-import htsjdk.samtools.seekablestream.cipher.ebi.RemoteSeekableCipherStream;
-import htsjdk.samtools.seekablestream.cipher.ebi.SeekableCipherStream;
-import htsjdk.samtools.seekablestream.ebi.BufferedBackgroundSeekableInputStream;
-import lombok.extern.slf4j.Slf4j;
+import javax.crypto.Cipher;
+import javax.crypto.CipherOutputStream;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.IvParameterSpec;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+import java.io.FileInputStream;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.security.DigestOutputStream;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.SecureRandom;
+import java.security.Security;
+import java.security.spec.AlgorithmParameterSpec;
+import java.util.ArrayList;
+import java.util.Iterator;
 
 
 /**
@@ -131,9 +129,9 @@ public class CacheResServiceImpl implements ResService {
     private My2KCachePageFactory pageDowloader;
     private FireCommons fireCommons;
     private S3Commons s3Commons;
-    
+
     public CacheResServiceImpl(KeyService keyService, Cache<String, EgaAESFileHeader> myHeaderCache,
-            My2KCachePageFactory pageDowloader, FireCommons fireCommons, S3Commons s3Commons) {
+                               My2KCachePageFactory pageDowloader, FireCommons fireCommons, S3Commons s3Commons) {
         this.keyService = keyService;
         this.myHeaderCache = myHeaderCache;
         this.pageDowloader = pageDowloader;
@@ -177,45 +175,6 @@ public class CacheResServiceImpl implements ResService {
         return null;
     }
 
-    private static void byte_increment_fast(byte[] data, long increment) {
-        long countdown = increment / 16; // Count number of block updates
-
-        ArrayList<Integer> digits_ = new ArrayList<>();
-        int cnt = 0;
-        long d = 256, cn = 0;
-        while (countdown > cn && d > 0) {
-            int l = (int) ((countdown % d) / (d / 256));
-            digits_.add(l);
-            cn += (l * (d / 256));
-            d *= 256;
-        }
-        int size = digits_.size();
-        int[] digits = new int[size];
-        for (int i = 0; i < size; i++) {
-            digits[size - 1 - i] = digits_.get(i); // intValue()
-        }
-
-        int cur_pos = data.length - 1, carryover = 0, delta = data.length - digits.length;
-
-        for (int i = cur_pos; i >= delta; i--) { // Work on individual digits
-            int digit = digits[i - delta] + carryover; // convert to integer
-            int place = (int) (data[i] & 0xFF); // convert data[] to integer
-            int new_place = digit + place;
-            if (new_place >= 256) carryover = 1;
-            else carryover = 0;
-            data[i] = (byte) (new_place % 256);
-        }
-
-        // Deal with potential last carryovers
-        cur_pos -= digits.length;
-        while (carryover == 1 && cur_pos >= 0) {
-            data[cur_pos]++;
-            if (data[cur_pos] == 0) carryover = 1;
-            else carryover = 0;
-            cur_pos--;
-        }
-    }
-    
     @Override
     public long transfer(String sourceFormat,
                          String sourceKey,
@@ -232,8 +191,8 @@ public class CacheResServiceImpl implements ResService {
                          HttpServletRequest request,
                          HttpServletResponse response) {
 
-		String sessionId= Strings.isNullOrEmpty(request.getHeader("Session-Id"))? "" : request.getHeader("Session-Id") + " ";
-		
+        String sessionId = Strings.isNullOrEmpty(request.getHeader("Session-Id")) ? "" : request.getHeader("Session-Id") + " ";
+
         // Check if File Header is in Cache - otherwise Load it
         if (!myHeaderCache.containsKey(id))
             loadHeaderCleversafe(id, fileLocation, httpAuth, fileSize, request, response, sourceKey);
@@ -244,7 +203,7 @@ public class CacheResServiceImpl implements ResService {
         DigestOutputStream encryptedDigestOut = null;
         OutputStream eOut = null;
         InputStream in = null;
-        
+
         // get MIME type of the file (actually, it's always this for now)
         String mimeType = "application/octet-stream";
 
@@ -290,22 +249,21 @@ public class CacheResServiceImpl implements ResService {
 
             int startPage = (int) (startCoordinate / BUFFER_SIZE);
             int pageOffset = (int) (startCoordinate - ((long) startPage * (long) BUFFER_SIZE));
-            String key = id + "_" + startPage;
 
             while (bytesTransferred < bytesToTransfer) {
                 errorLocation = 3;
 
-                key = id + "_" + startPage;
-                byte[] page = pageDowloader.downloadPage(key);
+                byte[] page = pageDowloader.downloadPage(id, startPage);
                 errorLocation = 4;
                 if (page == null)
-                    throw new GeneralStreamingException(sessionId + " Error getting page " + key);
+                    throw new GeneralStreamingException(sessionId + " Error getting page id '" + id + "' page '"
+                            + startPage + "'");
 
                 ByteArrayInputStream bais = new ByteArrayInputStream(page);
                 bais.skip(pageOffset); // first cache page
 
                 // At this point the plain data is in a cache page
-                
+
                 long delta = bytesToTransfer - bytesTransferred;
                 if (delta < page.length) {
                     in = ByteStreams.limit(bais, delta);
@@ -322,7 +280,7 @@ public class CacheResServiceImpl implements ResService {
             }
             return bytesTransferred;
         } catch (Exception ex) {
-            log.error(sessionId + " Error Location: " + errorLocation + "\n" + ex.toString() , ex);
+            log.error(sessionId + " Error Location: " + errorLocation + "\n" + ex.toString(), ex);
             throw new GeneralStreamingException(sessionId + " Error Location: " + errorLocation + "\n" + ex.toString(), 10);
         } finally {
             try {
@@ -412,7 +370,7 @@ public class CacheResServiceImpl implements ResService {
                 //byte[] dIV = Base64.decode(destinationIV);
                 byte[] dIV = java.util.Base64.getDecoder().decode(destinationIV);
                 System.arraycopy(dIV, 0, random_iv, 0, 16);
-                byte_increment_fast(random_iv, startCoordinate);
+                DecryptionUtils.byteIncrementFast(random_iv, startCoordinate);
             } else {
                 SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
                 random.nextBytes(random_iv);
@@ -452,7 +410,7 @@ public class CacheResServiceImpl implements ResService {
             in = GPGStream.getDecodingGPGInoutStream(in, sourceKey.toCharArray());
 
         } catch (IOException | PGPException | NoSuchProviderException ex) {
-            log.error("GOPG Error " +ex.getMessage(), ex);
+            log.error("GOPG Error " + ex.getMessage(), ex);
         }
 
         return new FakeSeekableStream(in);
@@ -610,7 +568,7 @@ public class CacheResServiceImpl implements ResService {
     }
 
     private void loadHeaderCleversafe(String id, String url, String httpAuth, long fileSize,
-            HttpServletRequest request_, HttpServletResponse response_, String sourceKey) {
+                                      HttpServletRequest request_, HttpServletResponse response_, String sourceKey) {
         String sessionId = Strings.isNullOrEmpty(request_.getHeader("Session-Id")) ? ""
                 : request_.getHeader("Session-Id") + " ";
 
@@ -622,9 +580,9 @@ public class CacheResServiceImpl implements ResService {
 
         fireCommons.addAuthenticationForFireRequest(httpAuth, url, request);
         request.addHeader("Range", "bytes=0-16");
-        
+
         try (CloseableHttpClient httpclient = HttpClientBuilder.create().build();
-                CloseableHttpResponse response = httpclient.execute(request)) {
+             CloseableHttpResponse response = httpclient.execute(request)) {
             if (response == null || response.getEntity() == null) {
                 response_.setStatus(534);
                 throw new ServerErrorException(sessionId + "LoadHeader: Error obtaining input stream for ", url);
