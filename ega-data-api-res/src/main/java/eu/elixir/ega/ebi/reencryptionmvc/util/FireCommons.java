@@ -2,6 +2,7 @@ package eu.elixir.ega.ebi.reencryptionmvc.util;
 
 import java.util.Optional;
 
+import eu.elixir.ega.ebi.reencryptionmvc.exception.ServerErrorException;
 import org.apache.http.client.methods.HttpGet;
 import org.springframework.cache.annotation.Cacheable;
 
@@ -16,7 +17,7 @@ public class FireCommons {
     private final String fireUrl;
     private final String base64EncodedCredentials;
     private final IFireService fireService;
-    
+
     public FireCommons(String fireUrl, String base64EncodedCredentials, IFireService fireService) {
         this.fireUrl = fireUrl;
         this.base64EncodedCredentials = base64EncodedCredentials;
@@ -34,52 +35,43 @@ public class FireCommons {
     }
 
     public String getFireObjectUrl(String path) {
-        return getFireSignedUrl(path.toLowerCase().startsWith("/fire/a/") ? path.substring(16) : path, "")[0];
+        return getFireSignedUrl(path.toLowerCase().startsWith("/fire/a/") ? path.substring(16) : path, "").getFileURL();
     }
-    
+
     @Cacheable(cacheNames = "fireSignedUrl", key = "#root.methodName + #path")
-    public String[] getFireSignedUrl(String path, String sessionId) {
-        if (path.equalsIgnoreCase("Virtual File"))
-            return new String[] { "Virtual File" };
-        
+    public FireObject getFireSignedUrl(String path, String sessionId) {
         log.info(sessionId + "path=" + path);
+        // Sending Request; 4 re-try attempts
+        int reTryCount = 4;
+        Optional<FireResponse> fireResponse = Optional.empty();
+        do {
+            try {
+                path = path.replaceAll("#", "%23");
+                fireResponse = fireService.findFile(path);
 
-        try {
-            String[] result = new String[2];
-            result[0] = "";
-            result[1] = "";
+                if (fireResponse.isPresent()) {
+                    FireResponse fire = fireResponse.get();
+                    return new FireObject(fireUrl + PATH_OBJECTS + path, fire.getObjectSize());
+                }
 
-            // Sending Request; 4 re-try attempts
-            int reTryCount = 4;
-            Optional<FireResponse> fireResponse = Optional.empty();
-            do {
+            } catch (Throwable th) {
+                log.error(sessionId + "FIRE error: " + th.getMessage(), th);
+            }
+            if (!fireResponse.isPresent()) {
                 try {
-                    path = path.replaceAll("#", "%23");
-                    fireResponse = fireService.findFile(path);
-
-                    if (fireResponse.isPresent()) {
-                        FireResponse fire = fireResponse.get();
-                        result[0] = fireUrl + PATH_OBJECTS + path; 
-                        result[1] = String.valueOf(fire.getObjectSize());
-                    }
-
-                } catch (Throwable th) {
-                    log.error(sessionId + "FIRE error: " + th.getMessage(), th);
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    log.error(e.getMessage(), e);
                 }
-                if (!fireResponse.isPresent()) {
-                    Thread.sleep(500);
-                }
-            } while (!fireResponse.isPresent() && --reTryCount > 0);
+            }
+        } while (!fireResponse.isPresent() && --reTryCount > 0);
 
-            return result;
-        } catch (Exception e) {
-            log.error(sessionId + e.getMessage() + " FIRE error path = " + path, e);
-        }
-        return null;
+        throw new ServerErrorException("Session id: " + sessionId + " can't not retrieve FireFileURL");
     }
+
 
     public String getBase64EncodedCredentials() {
         return base64EncodedCredentials;
     }
-    
+
 }

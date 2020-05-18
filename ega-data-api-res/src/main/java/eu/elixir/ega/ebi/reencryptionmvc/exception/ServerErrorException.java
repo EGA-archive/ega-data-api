@@ -26,6 +26,18 @@ public class ServerErrorException extends RuntimeException {
 
     private static final long serialVersionUID = 1L;
 
+    public ServerErrorException(String message, Throwable throwable) {
+        super(message, throwable);
+    }
+
+    public ServerErrorException(Throwable throwable) {
+        super(throwable);
+    }
+
+    public ServerErrorException(String error) {
+        super(error);
+    }
+
     public ServerErrorException(String error, String id) {
         super(error + ": " + id);
     }

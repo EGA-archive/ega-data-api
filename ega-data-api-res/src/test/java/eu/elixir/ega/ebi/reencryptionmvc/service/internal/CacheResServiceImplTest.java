@@ -17,6 +17,7 @@ package eu.elixir.ega.ebi.reencryptionmvc.service.internal;
 
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -100,7 +101,7 @@ public class CacheResServiceImplTest {
             cacheResServiceImpl.transfer("aes256", "sourceKey", "sourceIV", "plain", "destinationKey", "destinationIV",
                     "/EGAZ00001257562/analysis/ALL.chr22.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.vcf.gz.cip",
                     0, 0, 37, "httpAuth", "id", new MockHttpServletRequest(), new MockHttpServletResponse());
-            verify(pageDowloader, times(1)).downloadPage(anyString());
+            verify(pageDowloader, times(1)).downloadPage(anyString(), anyInt());
         } catch (Exception e) {
             fail("Should not have thrown an exception");
         }
@@ -131,7 +132,7 @@ public class CacheResServiceImplTest {
         when(myAwsConfig.getAwsAccessKeyId()).thenReturn("accessKeyId");
         when(myAwsConfig.getAwsSecretAccessKey()).thenReturn("secretAccesskey");
         when(myHeaderCache.containsKey(any())).thenReturn(Boolean.FALSE);
-        when(pageDowloader.downloadPage(anyString())).thenReturn(inputData.getBytes());
+        when(pageDowloader.downloadPage(anyString(),anyInt())).thenReturn(inputData.getBytes());
     }
 
 }

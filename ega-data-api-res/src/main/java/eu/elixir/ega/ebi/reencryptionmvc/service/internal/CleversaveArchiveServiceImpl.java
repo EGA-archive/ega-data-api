@@ -20,6 +20,8 @@ import static eu.elixir.ega.ebi.reencryptionmvc.config.Constants.FILEDATABASE_SE
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import eu.elixir.ega.ebi.reencryptionmvc.util.FireObject;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -38,6 +40,8 @@ import eu.elixir.ega.ebi.reencryptionmvc.util.FireCommons;
 /**
  * @author asenf
  */
+
+@Slf4j
 public class CleversaveArchiveServiceImpl implements ArchiveService {
 
     private RestTemplate restTemplate;
@@ -45,7 +49,7 @@ public class CleversaveArchiveServiceImpl implements ArchiveService {
     private KeyService keyService;
 
     private FireCommons fireCommons;
-    
+
     public CleversaveArchiveServiceImpl(RestTemplate restTemplate, KeyService keyService, FireCommons fireCommons) {
         this.restTemplate = restTemplate;
         this.keyService = keyService;
@@ -55,42 +59,50 @@ public class CleversaveArchiveServiceImpl implements ArchiveService {
     @Override
     @Cacheable(cacheNames = "archive", key = "#root.methodName + #id")
     public ArchiveSource getArchiveFile(String id, HttpServletRequest request, HttpServletResponse response) {
-		
-		String sessionId= Strings.isNullOrEmpty(request.getHeader("Session-Id"))? "" : request.getHeader("Session-Id") + " ";
-        // Get Filename from EgaFile ID - via DATA service (potentially multiple files)
+        String sessionId = Strings.isNullOrEmpty(request.getHeader("Session-Id")) ? "" : request.getHeader("Session-Id") + " ";
+        String fileName = getFilePath(id, response, sessionId);
+        if (fileName.startsWith("/fire")) fileName = fileName.substring(16);
+        // Guess Encryption Format from File
+        String encryptionFormat = fileName.toLowerCase().endsWith("gpg") ? "symmetricgpg" : "aes256";
+        // Get Cleversafe URL from Filename via Fire
+        FireObject fireObject = fireCommons.getFireSignedUrl(fileName, sessionId);
+
+        // Get EgaFile encryption Key
+        log.info("Session Id: {} is starting to get key", sessionId);
+        String encryptionKey = keyService.getFileKey(id);
+        if (encryptionKey == null || encryptionKey.length() == 0) {
+            response.setStatus(500);
+            throw new ServerErrorException(sessionId + "Error in obtaining Archive Key for ", fileName);
+        }
+        log.info("Session Id: {} - They key is obtained successfully", sessionId);
+        // Build result object and return it (auth is 'null' --> it is part of the URL now)
+        return new ArchiveSource(fireObject.getFileURL(), fireObject.getFileSize(), null, encryptionFormat, encryptionKey, null);
+    }
+
+    private String getFilePath(String id, HttpServletResponse response, String sessionId) {
+        log.info("Session id: {} querying FileDataBaseService" + FILEDATABASE_SERVICE + "/file/{}", sessionId, id);
+
         ResponseEntity<EgaFile[]> forEntity = restTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}", EgaFile[].class, id);
         response.setStatus(forEntity.getStatusCodeValue());
         if (forEntity.getStatusCode() != HttpStatus.OK) {
-            return null;
+            final String error = "Session id: " + sessionId + " FileDataBaseService " + FILEDATABASE_SERVICE +
+                    "/file/" + id + " return status code " + forEntity.getStatusCode();
+
+            log.error(error);
+            response.setStatus(500);
+            throw new ServerErrorException(error);
         }
 
         EgaFile[] body = forEntity.getBody();
         String fileName = (body != null && body.length > 0) ? forEntity.getBody()[0].getFileName() : "";
         if ((body == null || body.length == 0)) {
+            log.error("Session id: {} error parsing the body (empty)", sessionId);
             response.setStatus(forEntity.getStatusCodeValue());
             throw new NotFoundException(sessionId + "Can't obtain File data for ID", id);
-        }
-        if (fileName.startsWith("/fire")) fileName = fileName.substring(16);
-        // Guess Encryption Format from File
-        String encryptionFormat = fileName.toLowerCase().endsWith("gpg") ? "symmetricgpg" : "aes256";
-        // Get Cleversafe URL from Filename via Fire
-        String[] filePath = fireCommons.getFireSignedUrl(fileName, sessionId);
-        if (filePath == null || filePath[0] == null) {
-            response.setStatus(530);
-            throw new ServerErrorException(sessionId + "Fire Error in obtaining URL for ", fileName);
-        }
-        String fileUrlString = filePath[0];
-        long size = Long.valueOf(filePath[1]);
 
-        // Get EgaFile encryption Key
-        String encryptionKey = keyService.getFileKey(id);
-        if (encryptionKey == null || encryptionKey.length() == 0) {
-            response.setStatus(532);
-            throw new ServerErrorException(sessionId + "Error in obtaining Archive Key for ", fileName);
         }
-
-        // Build result object and return it (auth is 'null' --> it is part of the URL now)
-        return new ArchiveSource(fileUrlString, size, null, encryptionFormat, encryptionKey, null);
+        log.info("Session id: {} querying FileDataBaseService" + FILEDATABASE_SERVICE + "/file/{} successful", sessionId, id);
+        return fileName;
     }
 
 }

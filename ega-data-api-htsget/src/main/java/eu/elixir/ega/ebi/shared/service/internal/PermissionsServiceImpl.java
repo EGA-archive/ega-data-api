@@ -102,18 +102,7 @@ public class PermissionsServiceImpl implements PermissionsService {
           }
         }
       } catch (Exception ex) {
-        //}
-        //
-        //try {
-        //    List<String> permissions_ = (new VerifyMessage(request.getHeader("X-Permissions"))).getPermissions();
-        //    if (permissions_ != null && permissions_.size() > 0) {
-        //        for (String ds : permissions_) {
-        //            if (ds != null) {
-        //                permissions.add(ds);
-        //            }
-        //        }
-        //    }
-        //} catch (Exception ex) {
+
 
         log.error("getReqFile Error 0: " + ex.toString());
         EventEntry eev = downloaderLogService

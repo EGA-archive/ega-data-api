@@ -34,7 +34,7 @@ public class EgaAESFileHeader implements Serializable {
     private byte[] IV;      // Cipher IV: 1st 16 bytes of File
     private String format;  // aes128 or aes256; possibly gpg
     private long size;      // size of the unencrypted file
-    private String url;     // Cleversafe URL of the ile
+    private String url;     // URL of the file
     private String sourceKey;
 
 }
