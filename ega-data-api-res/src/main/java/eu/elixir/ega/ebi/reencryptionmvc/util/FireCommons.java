@@ -46,7 +46,6 @@ public class FireCommons {
         Optional<FireResponse> fireResponse = Optional.empty();
         do {
             try {
-                path = path.replaceAll("#", "%23");
                 fireResponse = fireService.findFile(path);
 
                 if (fireResponse.isPresent()) {
