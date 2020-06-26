@@ -37,5 +37,6 @@ public class DownloaderFile {
     private String unencryptedChecksum;
     private String unencryptedChecksumType;
     private String fileStatus;
+    private String filePath;
 
 }

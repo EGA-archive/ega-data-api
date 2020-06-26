@@ -49,5 +49,6 @@ public class File {
     private String unencryptedChecksum;
     private String unencryptedChecksumType;
     private String fileStatus;
+    private String filePath;
 
 }

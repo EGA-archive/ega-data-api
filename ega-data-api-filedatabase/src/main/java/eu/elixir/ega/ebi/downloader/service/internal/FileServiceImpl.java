@@ -94,7 +94,8 @@ public class FileServiceImpl implements FileService {
                         file.getFileSize(),
                         file.getUnencryptedChecksum(),
                         file.getUnencryptedChecksumType(),
-                        file.getFileStatus()));
+                        file.getFileStatus(),
+                        file.getFilePath()));
             }
         }
 
