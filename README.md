@@ -29,7 +29,7 @@ Ega Data API is divided into several microservices:
 $ mvn clean install
 ```
 
-To build and push the docker images enable the profile `production` or `debug` respectively
+To build and push the docker ima ges enable the profile `production` or `debug` respectively
 ```
 $ mvn clean install -P production
 ```
