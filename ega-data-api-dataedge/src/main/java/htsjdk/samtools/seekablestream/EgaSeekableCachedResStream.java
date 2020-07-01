@@ -29,12 +29,17 @@ import java.net.Proxy;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.ConnectionPool;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.ResponseBody;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Attach a SeekableStream directly to a RES_MVC microservice.
@@ -45,7 +50,10 @@ import okhttp3.ResponseBody;
  * Assume: File Archive ID specified as part of URL upin instantiation.
  * Destination Format, Key specified upon use; not known upon instantiation.
  */
+
 public class EgaSeekableCachedResStream extends SeekableStream {
+    // Build logger
+    private Logger logger = LoggerFactory.getLogger(EgaSeekableCachedResStream.class);
 
     // HTTP Client to access CleverSafe
     private OkHttpClient client;
@@ -109,10 +117,10 @@ public class EgaSeekableCachedResStream extends SeekableStream {
         final String contentLengthString = HttpUtils.getHeaderField(url, "Content-Length");
         if (contentLengthString != null && contentLength == -1) {
             try {
-                System.out.println("&&& " + contentLengthString);
+                logger.info("this is the content length: {}", contentLengthString);
                 contentLength = Long.parseLong(contentLengthString) - 16;
             } catch (NumberFormatException ignored) {
-                System.err.println("WARNING: Invalid content length (" + contentLengthString + "  for: " + url);
+                logger.warn("WARNING: Invalid content length {} for the: {} ", contentLengthString, url);
                 contentLength = -1;
             }
         }
@@ -191,7 +199,7 @@ public class EgaSeekableCachedResStream extends SeekableStream {
                 this.position += bytesToCopy;
             }
         } catch (ExecutionException e) {
-            System.out.println(e);
+            logger.error("Error message: {}", e);
             return 0;
         }
 
@@ -234,27 +242,20 @@ public class EgaSeekableCachedResStream extends SeekableStream {
     private byte[] get(int page_number) throws ExecutionException {
         int maxPage = (int) (this.contentLength / PAGE_SIZE + 1); // Don'd read past end of stream
 
-        //int firstPage = page_number>9?page_number-10:0; // Get prior cache page, just in case
         int firstPage = page_number > 0 ? page_number - 1 : 0; // Get prior cache page, just in case
         int lastPage = (page_number + NUM_PAGES - 1) > maxPage ? maxPage : (page_number + NUM_PAGES - 1);
+        ExecutorService pool = Executors.newCachedThreadPool();
 
         for (int i = firstPage; i < lastPage; i++) {
-            final int page_i = i;
-            new Thread(() -> {
+            final int pageIndex = i;
+
+            pool.submit(() -> {
                 try {
-                    this.cache.get(page_i);
+                    this.cache.get(pageIndex);
                 } catch (ExecutionException e) {
                 }
-            }).start();
+            });
         }
-
-        //    byte[] get = this.cache.get(page_number);
-        //    while (get[0]==0 && get[1]==0) {
-        //        try {Thread.sleep(50);} catch (InterruptedException ex) {}
-        //        get = this.cache.get(page_number);
-        //    }
-
-        //	return get;
 
         return this.cache.get(page_number);
     }
@@ -285,24 +286,23 @@ public class EgaSeekableCachedResStream extends SeekableStream {
 
                 // Execute the request and retrieve the response.
                 okhttp3.Response response = client.newCall(datasetRequest).execute();
-                ResponseBody body = response.body();
+                try (ResponseBody body = response.body()){
+                    InputStream byteStream = body.byteStream();
+                    byte[] buff = new byte[8000];
+                    ByteArrayOutputStream bao = new ByteArrayOutputStream();
 
-                InputStream byteStream = response.body().byteStream();
-                byte[] buff = new byte[8000];
-                ByteArrayOutputStream bao = new ByteArrayOutputStream();
+                    int bytesRead_ = 0;
+                    while ((bytesRead_ = byteStream.read(buff)) != -1) {
+                        totalBytesRead += bytesRead_;
+                        bao.write(buff, 0, bytesRead_);
+                    }
 
-                int bytesRead_ = 0;
-                while ((bytesRead_ = byteStream.read(buff)) != -1) {
-                    totalBytesRead += bytesRead_;
-                    bao.write(buff, 0, bytesRead_);
+                    byte[] result = bao.toByteArray();
+                    bytesRead = Arrays.copyOf(result, bytesToRead);
                 }
 
-                byte[] result = bao.toByteArray();
-                bytesRead = Arrays.copyOf(result, bytesToRead);
-
-                body.close();
             } catch (Throwable t) {
-                System.out.println("ERROR " + t.toString() + " Page: " + page_number);
+                logger.error("ERROR " + t.toString() + " Page: " + page_number);
             }
         }
         return bytesRead;
