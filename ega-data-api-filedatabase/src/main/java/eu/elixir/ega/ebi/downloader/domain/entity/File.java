@@ -49,7 +49,7 @@ public class File implements Serializable {
 
     @Size(max = 256)
     @Column(name = "file_path", insertable = false, updatable = false, length = 256)
-    private String filePath;
+    private String displayFilePath;
 
     @Size(max = 128)
     @Column(name = "display_file_name", insertable = false, updatable = false, length = 128)

@@ -31,7 +31,7 @@ public class EgaFile {
 
     private String fileId;
     private String fileName;
-    private String filePath;
+    private String displayFilePath;
     private long fileSize;
     private String fileStatus;
     private String header;

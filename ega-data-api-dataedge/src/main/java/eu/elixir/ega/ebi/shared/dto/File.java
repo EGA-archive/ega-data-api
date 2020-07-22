@@ -44,6 +44,7 @@ public class File {
     private String fileId;
     private String datasetId;
     private String displayFileName;
+    private String displayFilePath;
     private String fileName;
     private long fileSize;
     private String unencryptedChecksum;
