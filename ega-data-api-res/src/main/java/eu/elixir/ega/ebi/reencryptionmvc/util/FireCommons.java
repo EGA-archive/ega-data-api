@@ -1,13 +1,16 @@
 package eu.elixir.ega.ebi.reencryptionmvc.util;
 
+import java.net.URISyntaxException;
 import java.util.Optional;
 
 import eu.elixir.ega.ebi.reencryptionmvc.exception.ServerErrorException;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.utils.URIBuilder;
 import org.springframework.cache.annotation.Cacheable;
 
 import lombok.extern.slf4j.Slf4j;
 import uk.ac.ebi.ega.fire.service.IFireService;
+import uk.ac.ebi.ega.fire.exceptions.FireServiceException;
 import uk.ac.ebi.ega.fire.models.FireResponse;
 
 @Slf4j
@@ -50,7 +53,18 @@ public class FireCommons {
 
                 if (fireResponse.isPresent()) {
                     FireResponse fire = fireResponse.get();
-                    return new FireObject(fireUrl + PATH_OBJECTS + path, fire.getObjectSize());
+                    
+                    final String encodedFirePath;
+                    try {
+                        encodedFirePath = new URIBuilder()
+                                .setPath(path)
+                                .build()
+                                .getRawPath();
+                    } catch (URISyntaxException e) {
+                        throw new FireServiceException("Unable to build encoded fire path.", e);
+                    }
+                    
+                    return new FireObject(fireUrl + PATH_OBJECTS + encodedFirePath, fire.getObjectSize());
                 }
 
             } catch (Throwable th) {

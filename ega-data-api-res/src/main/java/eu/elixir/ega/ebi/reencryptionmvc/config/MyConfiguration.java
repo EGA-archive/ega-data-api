@@ -174,7 +174,7 @@ public class MyConfiguration {
 
     @Bean
     public IFireService initFireService(final CloseableHttpClient httpClient) {
-        return new FireService(httpClient, fireURL);
+        return new FireService(httpClient, fireURL, 3);
     }
 
     private String base64EncodedCredentials() {
