@@ -51,6 +51,7 @@
         <dependency>
             <groupId>eu.elixir.ega.ebi</groupId>
             <artifactId>ega-data-api-commons</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
         </dependency>
 
         <!-- Other -->

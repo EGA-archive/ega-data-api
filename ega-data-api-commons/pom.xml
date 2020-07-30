@@ -11,7 +11,7 @@
     </parent>
 
     <artifactId>ega-data-api-commons</artifactId>
-    <version>1.0.1-SNAPSHOT</version>
+    <version>1.0.0-SNAPSHOT</version>
     <name>EGA Data API Commons</name>
     <packaging>jar</packaging>
 
