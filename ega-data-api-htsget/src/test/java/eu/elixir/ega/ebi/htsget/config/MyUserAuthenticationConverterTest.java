@@ -15,20 +15,8 @@
  */
 package eu.elixir.ega.ebi.htsget.config;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.mockito.Matchers.any;
-import static org.powermock.api.mockito.PowerMockito.mock;
-import static org.powermock.api.mockito.PowerMockito.when;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
+import eu.elixir.ega.ebi.commons.config.CustomUsernamePasswordAuthenticationToken;
+import eu.elixir.ega.ebi.commons.config.MyUserAuthenticationConverter;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -45,9 +33,23 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.oauth2.provider.token.AccessTokenConverter;
 import org.springframework.test.context.TestPropertySource;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.mockito.Matchers.any;
+import static org.powermock.api.mockito.PowerMockito.mock;
+import static org.powermock.api.mockito.PowerMockito.when;
+
 /**
  * Test class for {@link MyUserAuthenticationConverter}.
- * 
+ *
  * @author amohan
  */
 @RunWith(PowerMockRunner.class)
@@ -119,7 +121,7 @@ public class MyUserAuthenticationConverterTest {
         final Map<String, Object> input = new HashMap<>();
         input.put(USERNAME, USERNAME_VAL);
         input.put(AUTHORITIES, authorities);
-        input.put(DATASET1, Arrays.asList(new String[] { "F1", "F2", "F3", "F4" }));
+        input.put(DATASET1, Arrays.asList(new String[]{"F1", "F2", "F3", "F4"}));
 
         final CustomUsernamePasswordAuthenticationToken output = (CustomUsernamePasswordAuthenticationToken) myUserAuthenticationConverter
                 .extractAuthentication(input);

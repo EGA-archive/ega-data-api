@@ -29,6 +29,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import eu.elixir.ega.ebi.commons.config.CustomUsernamePasswordAuthenticationToken;
+import eu.elixir.ega.ebi.commons.config.MyUserAuthenticationConverter;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

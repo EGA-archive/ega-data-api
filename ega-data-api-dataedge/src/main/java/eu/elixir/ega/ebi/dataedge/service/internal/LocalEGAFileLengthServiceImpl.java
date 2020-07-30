@@ -15,11 +15,11 @@
  */
 package eu.elixir.ega.ebi.dataedge.service.internal;
 
+import eu.elixir.ega.ebi.commons.shared.dto.File;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import eu.elixir.ega.ebi.dataedge.service.FileLengthService;
-import eu.elixir.ega.ebi.shared.dto.File;
 
 /**
  * @author amohan

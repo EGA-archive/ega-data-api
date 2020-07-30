@@ -15,14 +15,8 @@
  */
 package eu.elixir.ega.ebi.htsget.config;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.mockito.Matchers.any;
-import static org.powermock.api.mockito.PowerMockito.mock;
-import static org.powermock.api.mockito.PowerMockito.when;
-
-import eu.elixir.ega.ebi.htsget.config.CachingMultipleRemoteTokenService;
-import eu.elixir.ega.ebi.htsget.config.CachingRemoteTokenService;
+import eu.elixir.ega.ebi.commons.config.CachingMultipleRemoteTokenService;
+import eu.elixir.ega.ebi.commons.config.CachingRemoteTokenService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -34,9 +28,15 @@ import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.test.context.TestPropertySource;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.mockito.Matchers.any;
+import static org.powermock.api.mockito.PowerMockito.mock;
+import static org.powermock.api.mockito.PowerMockito.when;
+
 /**
  * Test class for {@link CachingMultipleRemoteTokenService}.
- * 
+ *
  * @author amohan
  */
 @RunWith(PowerMockRunner.class)

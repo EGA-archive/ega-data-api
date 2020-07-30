@@ -15,10 +15,8 @@
  */
 package eu.elixir.ega.ebi.dataedge.service.internal;
 
-import eu.elixir.ega.ebi.shared.dto.DownloadEntry;
-import eu.elixir.ega.ebi.shared.dto.File;
-import eu.elixir.ega.ebi.shared.dto.FileDataset;
-import eu.elixir.ega.ebi.shared.service.internal.RemoteDownloaderLogServiceImpl;
+import eu.elixir.ega.ebi.commons.shared.dto.File;
+import eu.elixir.ega.ebi.commons.shared.dto.FileDataset;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -37,7 +35,7 @@ import org.springframework.web.client.RestTemplate;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import static eu.elixir.ega.ebi.dataedge.config.Constants.FILEDATABASE_SERVICE;
+import static eu.elixir.ega.ebi.commons.config.Constants.FILEDATABASE_SERVICE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.powermock.api.mockito.PowerMockito.mock;

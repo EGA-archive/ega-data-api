@@ -18,21 +18,22 @@ package eu.elixir.ega.ebi.dataedge.service.internal;
 import com.google.common.base.Strings;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.CountingOutputStream;
+import eu.elixir.ega.ebi.commons.shared.config.GeneralStreamingException;
+import eu.elixir.ega.ebi.commons.shared.config.IndexNotFoundException;
+import eu.elixir.ega.ebi.commons.shared.config.PermissionDeniedException;
+import eu.elixir.ega.ebi.commons.shared.dto.DownloadEntry;
+import eu.elixir.ega.ebi.commons.shared.dto.EventEntry;
+import eu.elixir.ega.ebi.commons.shared.dto.File;
+import eu.elixir.ega.ebi.commons.shared.dto.FileIndexFile;
+import eu.elixir.ega.ebi.commons.shared.dto.MyExternalConfig;
+import eu.elixir.ega.ebi.commons.shared.service.DownloaderLogService;
+import eu.elixir.ega.ebi.commons.shared.service.FileInfoService;
 import eu.elixir.ega.ebi.dataedge.config.*;
 import eu.elixir.ega.ebi.dataedge.dto.*;
 import eu.elixir.ega.ebi.htsjdk.samtools.seekablestream.EgaSeekableCachedResStream;
 import eu.elixir.ega.ebi.htsjdk.variant.vcf.MyVCFFileReader;
-import eu.elixir.ega.ebi.shared.config.GeneralStreamingException;
-import eu.elixir.ega.ebi.shared.config.PermissionDeniedException;
-import eu.elixir.ega.ebi.shared.dto.DownloadEntry;
-import eu.elixir.ega.ebi.shared.dto.EventEntry;
-import eu.elixir.ega.ebi.shared.service.DownloaderLogService;
-import eu.elixir.ega.ebi.shared.service.FileInfoService;
 import eu.elixir.ega.ebi.dataedge.service.FileLengthService;
 import eu.elixir.ega.ebi.dataedge.service.FileService;
-import eu.elixir.ega.ebi.shared.dto.File;
-import eu.elixir.ega.ebi.shared.dto.FileIndexFile;
-import eu.elixir.ega.ebi.shared.dto.MyExternalConfig;
 import htsjdk.samtools.*;
 import htsjdk.samtools.SamReaderFactory.Option;
 import htsjdk.samtools.cram.ref.CRAMReferenceSource;
@@ -77,8 +78,8 @@ import java.util.*;
 
 import java.util.stream.Stream;
 
-import static eu.elixir.ega.ebi.dataedge.config.Constants.FILEDATABASE_SERVICE;
-import static eu.elixir.ega.ebi.dataedge.config.Constants.RES_SERVICE;
+import static eu.elixir.ega.ebi.commons.config.Constants.FILEDATABASE_SERVICE;
+import static eu.elixir.ega.ebi.commons.config.Constants.RES_SERVICE;
 import static org.apache.catalina.connector.OutputBuffer.DEFAULT_BUFFER_SIZE;
 
 /**
@@ -220,7 +221,7 @@ public class RemoteFileServiceImpl implements FileService {
                         String errorMessage = t.toString();
                         log.error(sessionId + "RemoteFileServiceImpl Error 1: " + errorMessage);
                         throw new GeneralStreamingException(sessionId + errorMessage, 7);
-                    } 
+                    }
 
                     // return number of bytes copied, RES session header, and MD5 of RES input stream
                     return new HttpResult(b, get, inHashtext); // This is the result of the RestTemplate
@@ -399,8 +400,8 @@ public class RemoteFileServiceImpl implements FileService {
                         String destinationKey,
                         HttpServletRequest request,
                         HttpServletResponse response) {
-		
-		String sessionId= Strings.isNullOrEmpty(request.getHeader("Session-Id"))? "" : request.getHeader("Session-Id") + " ";		
+
+		String sessionId= Strings.isNullOrEmpty(request.getHeader("Session-Id"))? "" : request.getHeader("Session-Id") + " ";
         // Adding a content header in the response: binary data
         response.addHeader("Content-Type", MediaType.valueOf("application/octet-stream").toString());
 
@@ -582,7 +583,7 @@ public class RemoteFileServiceImpl implements FileService {
                            String destinationKey,
                            HttpServletRequest request,
                            HttpServletResponse response) {
-                           
+
 		String sessionId= Strings.isNullOrEmpty(request.getHeader("Session-Id"))? "" : request.getHeader("Session-Id") + " ";
         // Adding a content header in the response: binary data
         response.addHeader("Content-Type", MediaType.valueOf("application/octet-stream").toString());

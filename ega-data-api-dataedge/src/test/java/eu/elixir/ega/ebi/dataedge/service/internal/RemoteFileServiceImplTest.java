@@ -15,17 +15,17 @@
  */
 package eu.elixir.ega.ebi.dataedge.service.internal;
 
+import eu.elixir.ega.ebi.commons.shared.dto.File;
+import eu.elixir.ega.ebi.commons.shared.dto.FileDataset;
+import eu.elixir.ega.ebi.commons.shared.dto.FileIndexFile;
+import eu.elixir.ega.ebi.commons.shared.dto.MyExternalConfig;
+import eu.elixir.ega.ebi.commons.shared.service.DownloaderLogService;
+import eu.elixir.ega.ebi.commons.shared.service.FileInfoService;
 import eu.elixir.ega.ebi.dataedge.config.InternalErrorException;
 import eu.elixir.ega.ebi.dataedge.dto.*;
 import eu.elixir.ega.ebi.dataedge.service.FileLengthService;
 import eu.elixir.ega.ebi.htsjdk.samtools.seekablestream.EgaSeekableCachedResStream;
 import eu.elixir.ega.ebi.htsjdk.variant.vcf.MyVCFFileReader;
-import eu.elixir.ega.ebi.shared.service.DownloaderLogService;
-import eu.elixir.ega.ebi.shared.service.FileInfoService;
-import eu.elixir.ega.ebi.shared.dto.File;
-import eu.elixir.ega.ebi.shared.dto.FileDataset;
-import eu.elixir.ega.ebi.shared.dto.FileIndexFile;
-import eu.elixir.ega.ebi.shared.dto.MyExternalConfig;
 import htsjdk.samtools.SAMFileHeader;
 import htsjdk.samtools.SamInputResource;
 import htsjdk.samtools.SamReader;
@@ -61,13 +61,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import static eu.elixir.ega.ebi.dataedge.config.Constants.FILEDATABASE_SERVICE;
-import static eu.elixir.ega.ebi.dataedge.config.Constants.RES_SERVICE;
+import static eu.elixir.ega.ebi.commons.config.Constants.RES_SERVICE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.powermock.api.mockito.PowerMockito.*;
+
+import static eu.elixir.ega.ebi.commons.config.Constants.FILEDATABASE_SERVICE;
 
 /**
  * Test class for {@link RemoteFileServiceImpl}.

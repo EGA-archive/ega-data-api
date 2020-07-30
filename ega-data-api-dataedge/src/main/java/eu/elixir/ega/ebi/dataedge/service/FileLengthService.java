@@ -15,7 +15,8 @@
  */
 package eu.elixir.ega.ebi.dataedge.service;
 
-import eu.elixir.ega.ebi.shared.dto.File;
+
+import eu.elixir.ega.ebi.commons.shared.dto.File;
 
 /**
  * @author amohan
