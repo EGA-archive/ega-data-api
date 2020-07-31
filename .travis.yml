@@ -25,8 +25,8 @@ stages:
 
 jobs:
   include:
-    - stage: unit test
-      script: mvn test
+    #    - stage: unit test
+    #  script: mvn test
     - stage: integ test
       before_script:
         - sudo service postgresql stop
