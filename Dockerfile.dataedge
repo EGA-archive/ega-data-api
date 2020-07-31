@@ -1,7 +1,5 @@
 FROM maven:3.6.0-jdk-8-alpine as builder
 COPY . .
-# Here we skip tests to save time, because if this image is being built - tests have already passed...
-RUN cd ega-data-api-dataedge && mvn clean install -DskipTests=true -P production -Dmaven.javadoc.skip=true -B -V -DskipDockerPush -DskipDockerBuild
 
 FROM openjdk:8-jre-alpine
 ARG BUILD_DATE
