@@ -68,8 +68,8 @@ public class MyVCFFileReader implements Closeable, Iterable<VariantContext> {
     private static String getFile(String fileId) {
 
         RestTemplate rt = new RestTemplate();
-        ResponseEntity<eu.elixir.ega.ebi.shared.dto.File[]> forEntity = rt.getForEntity(downloaderUrl + "/file/{fileId}", eu.elixir.ega.ebi.shared.dto.File[].class, fileId);
-        eu.elixir.ega.ebi.shared.dto.File[] body = forEntity.getBody();
+        ResponseEntity<eu.elixir.ega.ebi.commons.shared.dto.File[]> forEntity = rt.getForEntity(downloaderUrl + "/file/{fileId}", eu.elixir.ega.ebi.commons.shared.dto.File[].class, fileId);
+        eu.elixir.ega.ebi.commons.shared.dto.File[] body = forEntity.getBody();
 
         return body[0].getFileName();
 

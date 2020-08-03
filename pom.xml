@@ -1,71 +1,79 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
-	<parent>
-		<groupId>org.springframework.boot</groupId>
-		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>1.4.7.RELEASE</version>
-		<relativePath /> <!-- lookup parent from repository -->
-	</parent>
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>1.4.7.RELEASE</version>
+        <relativePath/> <!-- lookup parent from repository -->
+    </parent>
 
-	<groupId>eu.elixir.ega.ebi</groupId>
-	<artifactId>ega-data-api</artifactId>
-	<version>1.2.1-SNAPSHOT</version>
-	<packaging>pom</packaging>
-	<name>EGA Data API</name>
-	<description>EGA Data API With Multiple Maven Modules</description>
+    <groupId>eu.elixir.ega.ebi</groupId>
+    <artifactId>ega-data-api</artifactId>
+    <version>1.2.1-SNAPSHOT</version>
+    <packaging>pom</packaging>
+    <name>EGA Data API</name>
+    <description>EGA Data API With Multiple Maven Modules</description>
 
-	<scm>
-		<developerConnection>scm:git:git@github.com:EGA-archive/ega-data-api.git</developerConnection>
-	  <tag>HEAD</tag>
-  </scm>
+    <scm>
+        <developerConnection>scm:git:git@github.com:EGA-archive/ega-data-api.git</developerConnection>
+        <tag>HEAD</tag>
+    </scm>
 
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-		<java.version>1.8</java.version>
-		<maven.compiler.source>1.8</maven.compiler.source>
-		<maven.compiler.target>1.8</maven.compiler.target>
-		<docker.maven.version>1.2.2</docker.maven.version>
-		<debug.config>-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=</debug.config>
-		<debug.filedatabase.port>5050</debug.filedatabase.port>
-		<debug.dataedge.port>5059</debug.dataedge.port>
-		<debug.dataedge.htsget.port>5060</debug.dataedge.htsget.port>
-		<debug.eureka.port>5061</debug.eureka.port>
-		<debug.config.port>5088</debug.config.port>
-		<debug.res.port>5090</debug.res.port>
-		<debug.key.port>5094</debug.key.port>
-		<image.version>1.0</image.version>
-    <dockerRegistry>ega-data-api</dockerRegistry>
-	</properties>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <java.version>1.8</java.version>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <docker.maven.version>1.2.2</docker.maven.version>
+        <debug.config>-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=</debug.config>
+        <debug.filedatabase.port>5050</debug.filedatabase.port>
+        <debug.dataedge.port>5059</debug.dataedge.port>
+        <debug.dataedge.htsget.port>5060</debug.dataedge.htsget.port>
+        <debug.eureka.port>5061</debug.eureka.port>
+        <debug.config.port>5088</debug.config.port>
+        <debug.res.port>5090</debug.res.port>
+        <debug.key.port>5094</debug.key.port>
+        <image.version>1.0</image.version>
+        <dockerRegistry>ega-data-api</dockerRegistry>
+    </properties>
 
-	<modules>
-		<module>ega-data-api-filedatabase</module>
-		<module>ega-data-api-key</module>
-		<module>ega-data-api-res</module>
-		<module>ega-data-api-dataedge</module>
-		<module>ega-data-api-htsget</module>
-		<module>ega-data-api-netflix</module>
+    <modules>
+        <module>ega-data-api-filedatabase</module>
+        <module>ega-data-api-key</module>
+        <module>ega-data-api-res</module>
+        <module>ega-data-api-dataedge</module>
+        <module>ega-data-api-htsget</module>
+        <module>ega-data-api-netflix</module>
+        <module>ega-data-api-commons</module>
     </modules>
 
-	<build>
-		<pluginManagement>
-			<plugins>
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-compiler-plugin</artifactId>
-					<configuration>
-						<source>${maven.compiler.source}</source>
-						<target>${maven.compiler.target}</target>
-					</configuration>
-				</plugin>
-			</plugins>
-		</pluginManagement>
-	</build>
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <configuration>
+                        <source>${maven.compiler.source}</source>
+                        <target>${maven.compiler.target}</target>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <version>3.1.0</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
 
- 	<repositories>
- 		<repository>
+    <repositories>
+        <repository>
             <id>central</id>
             <name>Central Repository</name>
             <url>https://repo.maven.apache.org/maven2</url>
@@ -74,9 +82,9 @@
             <id>gitlab-maven</id>
             <url>https://gitlab.ebi.ac.uk/api/v4/groups/428/-/packages/maven</url>
         </repository>
-		<repository>
-			<id>gitlab-maven2</id>
-			<url>https://gitlab.ebi.ac.uk/api/v4/projects/2047/packages/maven</url>
-		</repository>
+        <repository>
+            <id>gitlab-maven2</id>
+            <url>https://gitlab.ebi.ac.uk/api/v4/projects/2047/packages/maven</url>
+        </repository>
     </repositories>
 </project>

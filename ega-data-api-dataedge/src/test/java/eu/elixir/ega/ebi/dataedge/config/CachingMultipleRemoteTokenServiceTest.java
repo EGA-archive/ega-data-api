@@ -21,6 +21,8 @@ import static org.mockito.Matchers.any;
 import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.when;
 
+import eu.elixir.ega.ebi.commons.config.CachingMultipleRemoteTokenService;
+import eu.elixir.ega.ebi.commons.config.CachingRemoteTokenService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

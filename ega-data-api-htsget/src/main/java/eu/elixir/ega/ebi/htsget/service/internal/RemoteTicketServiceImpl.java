@@ -15,22 +15,18 @@
  */
 package eu.elixir.ega.ebi.htsget.service.internal;
 
-import eu.elixir.ega.ebi.shared.config.NotFoundException;
-import eu.elixir.ega.ebi.shared.dto.File;
-import eu.elixir.ega.ebi.shared.dto.FileIndexFile;
-import eu.elixir.ega.ebi.htsget.config.IndexNotFoundException;
+import eu.elixir.ega.ebi.commons.shared.config.IndexNotFoundException;
+import eu.elixir.ega.ebi.commons.shared.config.NotFoundException;
+import eu.elixir.ega.ebi.commons.shared.dto.File;
+import eu.elixir.ega.ebi.commons.shared.dto.FileIndexFile;
+import eu.elixir.ega.ebi.commons.shared.dto.MyExternalConfig;
+import eu.elixir.ega.ebi.commons.shared.service.FileInfoService;
 import eu.elixir.ega.ebi.htsget.dto.HtsgetContainer;
 import eu.elixir.ega.ebi.htsget.dto.HtsgetErrorResponse;
 import eu.elixir.ega.ebi.htsget.dto.HtsgetHeader;
 import eu.elixir.ega.ebi.htsget.dto.HtsgetResponse;
 import eu.elixir.ega.ebi.htsget.dto.HtsgetUrl;
-import eu.elixir.ega.ebi.shared.dto.MyExternalConfig;
 import eu.elixir.ega.ebi.htsget.service.TicketService;
-import eu.elixir.ega.ebi.shared.service.FileInfoService;
-import htsjdk.samtools.BAMFileSpan;
-import htsjdk.samtools.BAMIndex;
-import htsjdk.samtools.QueryInterval;
-
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
@@ -43,11 +39,11 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.ArrayList;
+import java.util.List;
 
-import static eu.elixir.ega.ebi.htsget.config.Constants.FILEDATABASE_SERVICE;
-import static eu.elixir.ega.ebi.htsget.config.Constants.RES_SERVICE;
-
-import java.util.*;
+import static eu.elixir.ega.ebi.commons.config.Constants.FILEDATABASE_SERVICE;
+import static eu.elixir.ega.ebi.commons.config.Constants.RES_SERVICE;
 
 /**
  * @author asenf
@@ -64,29 +60,6 @@ public class RemoteTicketServiceImpl implements TicketService {
 
     @Autowired
     private FileInfoService fileInfoService;
-
-    /**
-     * Use the index to determine the chunk boundaries for the required intervals.
-     *
-     * @param intervals the intervals to restrict reads to
-     * @param fileIndex the BAM index to use
-     * @return file pointer pairs corresponding to chunk boundaries
-     */
-    public static BAMFileSpan getFileSpan(QueryInterval[] intervals, BAMIndex fileIndex) {
-        final BAMFileSpan[] inputSpans = new BAMFileSpan[intervals.length];
-        for (int i = 0; i < intervals.length; ++i) {
-            final QueryInterval interval = intervals[i];
-            final BAMFileSpan span = fileIndex.getSpanOverlapping(interval.referenceIndex, interval.start, interval.end);
-            inputSpans[i] = span;
-        }
-        final BAMFileSpan span;
-        if (inputSpans.length > 0) {
-            span = BAMFileSpan.merge(inputSpans);
-        } else {
-            span = null;
-        }
-        return span;
-    }
 
     @Override
     public Object getTicket(String fileId,
@@ -119,10 +92,10 @@ public class RemoteTicketServiceImpl implements TicketService {
         }
 
         FileIndexFile fileIndexFile = getFileIndexFile(reqFile.getFileId());
-        if(fileIndexFile == null || StringUtils.isEmpty(fileIndexFile.getIndexFileId())) {
+        if (fileIndexFile == null || StringUtils.isEmpty(fileIndexFile.getIndexFileId())) {
             throw new IndexNotFoundException("IndexFileId not found for file", fileId);
         }
-        
+
         boolean reference;
         reference = (referenceIndex > -1 || (referenceName != null && referenceName.length() > 0) || (referenceMD5 != null && referenceMD5.length() > 0));
         if (!reference && ((start != null && start.length() > 0) || (end != null && end.length() > 0))) {
@@ -209,9 +182,9 @@ public class RemoteTicketServiceImpl implements TicketService {
                     .contentType(MediaType.valueOf("application/vnd.ga4gh.htsget.v1.0+json; charset=utf-8"))
                     .body(new HtsgetContainer(new HtsgetErrorResponse("NotFound", "No such accession '" + fileId + "'")));
         }
-        
+
         FileIndexFile fileIndexFile = getFileIndexFile(reqFile.getFileId());
-        if(fileIndexFile == null || StringUtils.isEmpty(fileIndexFile.getIndexFileId())) {
+        if (fileIndexFile == null || StringUtils.isEmpty(fileIndexFile.getIndexFileId())) {
             throw new IndexNotFoundException("IndexFileId not found for file", fileId);
         }
 
