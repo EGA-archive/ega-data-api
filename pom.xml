@@ -11,14 +11,14 @@
 
 	<groupId>eu.elixir.ega.ebi</groupId>
 	<artifactId>ega-data-api</artifactId>
-	<version>1.2.0</version>
+	<version>1.2.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>EGA Data API</name>
 	<description>EGA Data API With Multiple Maven Modules</description>
 
 	<scm>
 		<developerConnection>scm:git:git@github.com:EGA-archive/ega-data-api.git</developerConnection>
-	  <tag>1.2.0</tag>
+	  <tag>HEAD</tag>
   </scm>
 
 	<properties>
