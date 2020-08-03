@@ -45,6 +45,12 @@ public class KeyController {
     public String getFileKey(@PathVariable String fileId) {
         return keyService.getFileKey(fileId);
     }
+    
+    @GetMapping(value = "/encryptionalgorithm/{fileId}")
+    @ResponseBody
+    public String getEncryptionAlgorithm(@PathVariable String fileId) {
+        return keyService.getEncryptionAlgorithm(fileId);
+    }
 
     /*
      * Getting a Public Key

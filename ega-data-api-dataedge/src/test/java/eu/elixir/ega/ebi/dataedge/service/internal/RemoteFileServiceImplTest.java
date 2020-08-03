@@ -16,8 +16,11 @@
 package eu.elixir.ega.ebi.dataedge.service.internal;
 
 import eu.elixir.ega.ebi.dataedge.config.InternalErrorException;
+import eu.elixir.ega.ebi.dataedge.config.NoContentException;
+import eu.elixir.ega.ebi.dataedge.config.UnavailableForLegalReasonsException;
 import eu.elixir.ega.ebi.dataedge.dto.*;
 import eu.elixir.ega.ebi.dataedge.service.FileLengthService;
+import eu.elixir.ega.ebi.dataedge.service.KeyService;
 import eu.elixir.ega.ebi.htsjdk.samtools.seekablestream.EgaSeekableCachedResStream;
 import eu.elixir.ega.ebi.htsjdk.variant.vcf.MyVCFFileReader;
 import eu.elixir.ega.ebi.shared.service.DownloaderLogService;
@@ -106,6 +109,9 @@ public class RemoteFileServiceImplTest {
     
     @Mock
     private FileLengthService fileLengthService;
+    
+    @Mock
+    private KeyService keyService;
 
     /**
      * Test class for
@@ -120,7 +126,36 @@ public class RemoteFileServiceImplTest {
         } catch (Exception e) {
             fail("Should not have thrown an exception");
         }
+    }
+    
+    /**
+     * Test class for
+     * {@link RemoteFileServiceImpl#getFile(Authentication, String, String, String, String, long, long, HttpServletRequest, HttpServletResponse)}.
+     * Verify code should return NoContentException if file encryption Algorithm is gpg.
+     */
+    @Test(expected = NoContentException.class)
+    public void testGetGPGFile() {
+        when(keyService.getEncryptionAlgorithm(FILEID)).thenReturn("gpg");
+        remoteFileServiceImpl.getFile(FILEID, "plain", "destinationKey", "destinationIV", 0, 0,
+                new MockHttpServletRequest(), new MockHttpServletResponse());
+    }
+    
+    /**
+     * Test class for
+     * {@link RemoteFileServiceImpl#getFile(Authentication, String, String, String, String, long, long, HttpServletRequest, HttpServletResponse)}.
+     * Verify code should return UnavailableForLegalReasonsException if file is legacy.
+     */
+    @Test(expected = UnavailableForLegalReasonsException.class)
+    public void testGetLegacyFile() {
+        final File file = new File();
+        file.setFileId(FILEID);
+        file.setFileName("fileName");
+        file.setFileSize(100L);
+        file.setFileStatus("unavailable");
+        when(fileInfoService.getFileInfo(FILEID)).thenReturn(file);
 
+        remoteFileServiceImpl.getFile(FILEID, "plain", "destinationKey", "destinationIV", 0, 0,
+                new MockHttpServletRequest(), new MockHttpServletResponse());
     }
 
     /**
@@ -294,6 +329,8 @@ public class RemoteFileServiceImplTest {
         when(samReaderFactory.samRecordFactory(any())).thenReturn(samReaderFactory);
         when(samReaderFactory.open(any(SamInputResource.class))).thenReturn(samReader);
         when(samReader.getFileHeader()).thenReturn(samFileHeader);
+        when(keyService.getEncryptionAlgorithm(FILEID)).thenReturn("aes256");
+
         FILEDATABASE_SERVICE = "http://filedatabase/";
         RES_SERVICE = "http://res2/";
 

@@ -18,6 +18,8 @@ package eu.elixir.ega.ebi.keyproviderservice.service.internal;
 import eu.elixir.ega.ebi.keyproviderservice.config.MyCipherConfig;
 import eu.elixir.ega.ebi.keyproviderservice.dto.KeyPath;
 import eu.elixir.ega.ebi.keyproviderservice.service.KeyService;
+
+import org.apache.commons.lang.NotImplementedException;
 import org.bouncycastle.openpgp.PGPPrivateKey;
 import org.bouncycastle.openpgp.PGPPublicKey;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -94,6 +96,11 @@ public class KeyServiceImplNoDB implements KeyService {
     @ResponseBody
     public Set<Long> getKeyIDs(String keyType) {
         return this.myCipherConfig.getKeyIDs();
+    }
+
+    @Override
+    public String getEncryptionAlgorithm(String fileId) {
+        return null;
     }
 
 }

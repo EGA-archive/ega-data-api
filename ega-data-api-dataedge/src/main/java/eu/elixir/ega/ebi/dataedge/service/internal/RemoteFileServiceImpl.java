@@ -30,6 +30,7 @@ import eu.elixir.ega.ebi.shared.service.DownloaderLogService;
 import eu.elixir.ega.ebi.shared.service.FileInfoService;
 import eu.elixir.ega.ebi.dataedge.service.FileLengthService;
 import eu.elixir.ega.ebi.dataedge.service.FileService;
+import eu.elixir.ega.ebi.dataedge.service.KeyService;
 import eu.elixir.ega.ebi.shared.dto.File;
 import eu.elixir.ega.ebi.shared.dto.FileIndexFile;
 import eu.elixir.ega.ebi.shared.dto.MyExternalConfig;
@@ -108,6 +109,9 @@ public class RemoteFileServiceImpl implements FileService {
 
     @Autowired
     private FileLengthService fileLengthService;
+    
+    @Autowired
+    private KeyService keyService;
 
     /**
      * Writes a requested file, or part of file from the FileService to the
@@ -138,6 +142,7 @@ public class RemoteFileServiceImpl implements FileService {
 		String sessionId= Strings.isNullOrEmpty(request.getHeader("Session-Id"))? "" : request.getHeader("Session-Id") + " ";
         // Ascertain Access Permissions for specified File ID
         File reqFile = fileInfoService.getFileInfo(fileId); // request added for ELIXIR
+        String encryptionAlgorithm = keyService.getEncryptionAlgorithm(fileId);
         if (reqFile == null) {
             try {
                 Thread.sleep(2500);
@@ -149,8 +154,16 @@ public class RemoteFileServiceImpl implements FileService {
             endCoordinate = reqFile.getFileSize();
 
         // File Archive Type - Reject GPG
-        if (reqFile.getFileName().toLowerCase().endsWith("gpg")) {
-            throw new NotImplementedException(sessionId + "Please contact EGA to download this file.");
+        if (reqFile.getFileName().toLowerCase().endsWith("gpg") || (encryptionAlgorithm != null && !"aes256".equals(encryptionAlgorithm))) {
+            String noContentExceptionMessage = sessionId + "Please contact EGA to download this file.";
+            log.error(noContentExceptionMessage);
+            throw new NoContentException(noContentExceptionMessage);
+        }
+
+        if (reqFile.getFileStatus() != null && !"available".equals(reqFile.getFileStatus())) {
+            String unavailableForLegalReasonsExceptionMessage = sessionId + "Unavailable for legal reasons.";
+            log.error(unavailableForLegalReasonsExceptionMessage);
+            throw new UnavailableForLegalReasonsException(unavailableForLegalReasonsExceptionMessage);
         }
 
         // Variables needed for responses at the end of the function
