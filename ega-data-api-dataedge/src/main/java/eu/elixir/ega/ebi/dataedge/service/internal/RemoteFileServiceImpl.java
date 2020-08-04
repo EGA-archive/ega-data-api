@@ -155,14 +155,14 @@ public class RemoteFileServiceImpl implements FileService {
 
         // File Archive Type - Reject GPG
         if (reqFile.getFileName().toLowerCase().endsWith("gpg") || (encryptionAlgorithm != null && !"aes256".equals(encryptionAlgorithm))) {
-            String noContentExceptionMessage = sessionId + "Please contact EGA to download this file.";
-            log.error(noContentExceptionMessage);
+            String noContentExceptionMessage = "Please contact EGA to download this file ".concat(fileId);
+            log.error(sessionId.concat(noContentExceptionMessage));
             throw new NoContentException(noContentExceptionMessage);
         }
 
-        if (reqFile.getFileStatus() != null && !"available".equals(reqFile.getFileStatus())) {
-            String unavailableForLegalReasonsExceptionMessage = sessionId + "Unavailable for legal reasons.";
-            log.error(unavailableForLegalReasonsExceptionMessage);
+        if (!"available".equals(reqFile.getFileStatus())) {
+            String unavailableForLegalReasonsExceptionMessage = "Unavailable for legal reasons file ".concat(fileId);
+            log.error(sessionId.concat(unavailableForLegalReasonsExceptionMessage));
             throw new UnavailableForLegalReasonsException(unavailableForLegalReasonsExceptionMessage);
         }
 

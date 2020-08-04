@@ -128,25 +128,15 @@ public class RemoteFileServiceImplTest {
         }
     }
     
-    /**
-     * Test class for
-     * {@link RemoteFileServiceImpl#getFile(Authentication, String, String, String, String, long, long, HttpServletRequest, HttpServletResponse)}.
-     * Verify code should return NoContentException if file encryption Algorithm is gpg.
-     */
     @Test(expected = NoContentException.class)
-    public void testGetGPGFile() {
+    public void getFile_WhenGivenFileEncryptionAlgorithmGpg_ThenThrowsNoContentException() {
         when(keyService.getEncryptionAlgorithm(FILEID)).thenReturn("gpg");
         remoteFileServiceImpl.getFile(FILEID, "plain", "destinationKey", "destinationIV", 0, 0,
                 new MockHttpServletRequest(), new MockHttpServletResponse());
     }
     
-    /**
-     * Test class for
-     * {@link RemoteFileServiceImpl#getFile(Authentication, String, String, String, String, long, long, HttpServletRequest, HttpServletResponse)}.
-     * Verify code should return UnavailableForLegalReasonsException if file is legacy.
-     */
     @Test(expected = UnavailableForLegalReasonsException.class)
-    public void testGetLegacyFile() {
+    public void getFile_WhenGivenFileStatusUnavailable_ThenThrowsUnavailableForLegalReasonsException() {
         final File file = new File();
         file.setFileId(FILEID);
         file.setFileName("fileName");
@@ -298,6 +288,7 @@ public class RemoteFileServiceImplTest {
         final File f = new File();
         f.setFileId(FILEID);
         f.setFileName("fileName");
+        f.setFileStatus("available");
         f.setFileSize(100L);
         final File[] file = {f};
         authentication = mock(Authentication.class);
