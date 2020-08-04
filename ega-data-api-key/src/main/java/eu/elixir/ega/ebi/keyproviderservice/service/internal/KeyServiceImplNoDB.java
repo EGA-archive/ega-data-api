@@ -44,6 +44,11 @@ public class KeyServiceImplNoDB implements KeyService {
     public String getFileKey(String id) {
         return myCipherConfig.getFileKey(id);
     }
+    
+    @Override
+    public String getEncryptionAlgorithm(String fileId) {
+        return "available";
+    }
 
     @Override
     @ResponseBody
