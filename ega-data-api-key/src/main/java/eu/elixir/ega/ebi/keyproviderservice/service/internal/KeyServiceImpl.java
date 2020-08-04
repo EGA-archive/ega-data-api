@@ -87,6 +87,16 @@ public class KeyServiceImpl implements KeyService {
         }
         return key;
     }
+    
+    @Override
+    public String getEncryptionAlgorithm(String fileId) {
+        Iterable<FileKey> fileKeys = fileKeyRepository.findByFileId(fileId);
+        if (fileKeys.iterator().hasNext()) {
+            FileKey fileKey = fileKeys.iterator().next();
+            return fileKey.getEncryptionAlgorithm();
+        }
+        return null;
+    }
 
     @Override
     @ResponseBody

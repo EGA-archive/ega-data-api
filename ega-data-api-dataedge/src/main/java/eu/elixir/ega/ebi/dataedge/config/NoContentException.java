@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 ELIXIR EGA
+ * Copyright 2020 ELIXIR EGA
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,21 +18,11 @@ package eu.elixir.ega.ebi.dataedge.config;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-/**
- * @author asenf
- */
-@ResponseStatus(HttpStatus.NOT_IMPLEMENTED)
-public class NotImplementedException extends RuntimeException {
-
+@ResponseStatus(HttpStatus.NO_CONTENT)
+public class NoContentException extends RuntimeException {
     private static final long serialVersionUID = 1L;
 
-    /**
-     * Thrown when a .gpg file is requested.
-     *
-     * @param code Exception description.
-     */
-    public NotImplementedException(String code) {
+    public NoContentException(String code) {
         super("Legacy GPG Archive Format not Supported : " + code);
     }
-
 }

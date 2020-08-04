@@ -28,6 +28,8 @@ public interface KeyService {
 
     String getFileKey(String fileId);
 
+    String getEncryptionAlgorithm(String fileId);
+
     PGPPrivateKey getPrivateKey(String keyId);
 
     KeyPath getPrivateKeyPath(String keyId);
