@@ -15,28 +15,13 @@
  */
 package eu.elixir.ega.ebi.htsget.service.internal;
 
-import static eu.elixir.ega.ebi.htsget.config.Constants.FILEDATABASE_SERVICE;
-import static eu.elixir.ega.ebi.htsget.config.Constants.RES_SERVICE;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.mockito.Matchers.any;
-import static org.powermock.api.mockito.PowerMockito.mock;
-import static org.powermock.api.mockito.PowerMockito.when;
-
-import eu.elixir.ega.ebi.shared.dto.File;
-import eu.elixir.ega.ebi.shared.dto.FileDataset;
-import eu.elixir.ega.ebi.shared.dto.FileIndexFile;
+import eu.elixir.ega.ebi.commons.shared.dto.File;
+import eu.elixir.ega.ebi.commons.shared.dto.FileDataset;
+import eu.elixir.ega.ebi.commons.shared.dto.FileIndexFile;
+import eu.elixir.ega.ebi.commons.shared.dto.MyExternalConfig;
+import eu.elixir.ega.ebi.commons.shared.service.FileInfoService;
 import eu.elixir.ega.ebi.htsget.dto.HtsgetContainer;
 import eu.elixir.ega.ebi.htsget.dto.HtsgetResponse;
-import eu.elixir.ega.ebi.shared.dto.MyExternalConfig;
-import eu.elixir.ega.ebi.htsget.service.internal.RemoteTicketServiceImpl;
-import eu.elixir.ega.ebi.shared.service.FileInfoService;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -52,6 +37,21 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.web.client.RestTemplate;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+
+import static eu.elixir.ega.ebi.commons.config.Constants.FILEDATABASE_SERVICE;
+import static eu.elixir.ega.ebi.commons.config.Constants.RES_SERVICE;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.mockito.Matchers.any;
+import static org.powermock.api.mockito.PowerMockito.mock;
+import static org.powermock.api.mockito.PowerMockito.when;
 
 /**
  * Test class for {@link RemoteTicketServiceImpl}.
@@ -161,7 +161,7 @@ public class RemoteTicketServiceImplTest {
         fi.setFileId(FILEID);
         fi.setIndexFileId("indexFileId");
         final FileIndexFile[] fileIndexFiles = {fi};
-        
+
         final ResponseEntity<FileIndexFile[]> forResponseEntity = mock(ResponseEntity.class);
         final ResponseEntity<File[]> forEntity = mock(ResponseEntity.class);
         final File file = new File();
@@ -181,7 +181,7 @@ public class RemoteTicketServiceImplTest {
         when(restTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}/datasets", FileDataset[].class, FILEID))
                 .thenReturn(forEntityDataset);
         when(restTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}/index", FileIndexFile[].class, FILEID))
-        .thenReturn(forResponseEntity);
+                .thenReturn(forResponseEntity);
 
         when(restTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}", File[].class, FILEID)).thenReturn(forEntity);
     }

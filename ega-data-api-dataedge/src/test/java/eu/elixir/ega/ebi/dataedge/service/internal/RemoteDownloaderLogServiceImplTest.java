@@ -15,7 +15,7 @@
  */
 package eu.elixir.ega.ebi.dataedge.service.internal;
 
-import static eu.elixir.ega.ebi.dataedge.config.Constants.FILEDATABASE_SERVICE;
+import static eu.elixir.ega.ebi.commons.config.Constants.FILEDATABASE_SERVICE;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
@@ -25,6 +25,9 @@ import static org.powermock.api.mockito.PowerMockito.whenNew;
 
 import java.net.URI;
 
+import eu.elixir.ega.ebi.commons.shared.dto.DownloadEntry;
+import eu.elixir.ega.ebi.commons.shared.dto.EventEntry;
+import eu.elixir.ega.ebi.commons.shared.service.internal.RemoteDownloaderLogServiceImpl;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -38,10 +41,6 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-import eu.elixir.ega.ebi.shared.dto.DownloadEntry;
-import eu.elixir.ega.ebi.shared.dto.EventEntry;
-import eu.elixir.ega.ebi.shared.service.internal.RemoteDownloaderLogServiceImpl;
 
 /**
  * Test class for {@link RemoteDownloaderLogServiceImpl}.

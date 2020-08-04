@@ -15,6 +15,10 @@
  */
 package eu.elixir.ega.ebi.dataedge.config;
 
+import eu.elixir.ega.ebi.commons.config.CachingMultipleRemoteTokenService;
+import eu.elixir.ega.ebi.commons.config.CachingRemoteTokenService;
+import eu.elixir.ega.ebi.commons.config.MyAccessTokenConverter;
+import eu.elixir.ega.ebi.commons.config.MyUserAuthenticationConverter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;

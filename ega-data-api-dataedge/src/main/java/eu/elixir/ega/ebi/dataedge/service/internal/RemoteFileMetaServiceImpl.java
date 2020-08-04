@@ -15,8 +15,8 @@
  */
 package eu.elixir.ega.ebi.dataedge.service.internal;
 
-import eu.elixir.ega.ebi.shared.dto.File;
-import eu.elixir.ega.ebi.shared.dto.FileDataset;
+import eu.elixir.ega.ebi.commons.shared.dto.File;
+import eu.elixir.ega.ebi.commons.shared.dto.FileDataset;
 import eu.elixir.ega.ebi.dataedge.service.FileMetaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
@@ -27,7 +27,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import static eu.elixir.ega.ebi.dataedge.config.Constants.FILEDATABASE_SERVICE;
+import static eu.elixir.ega.ebi.commons.config.Constants.FILEDATABASE_SERVICE;
 
 import java.util.Arrays;
 import java.util.Collection;
