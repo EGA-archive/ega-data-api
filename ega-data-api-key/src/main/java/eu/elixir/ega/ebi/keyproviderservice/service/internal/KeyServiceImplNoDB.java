@@ -47,7 +47,7 @@ public class KeyServiceImplNoDB implements KeyService {
     
     @Override
     public String getEncryptionAlgorithm(String fileId) {
-        return "available";
+        return "aes256";
     }
 
     @Override
