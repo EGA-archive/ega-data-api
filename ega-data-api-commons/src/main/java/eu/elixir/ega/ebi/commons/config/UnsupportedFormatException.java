@@ -18,9 +18,6 @@ package eu.elixir.ega.ebi.commons.config;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-/**
- * @author asenf
- */
 @ResponseStatus(HttpStatus.CONFLICT)
 public class UnsupportedFormatException extends RuntimeException {
 

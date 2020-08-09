@@ -103,6 +103,24 @@
             <version>2.0.103-beta</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.openapi4j</groupId>
+            <artifactId>openapi-schema-validator</artifactId>
+            <version>1.0.3</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.openapi4j</groupId>
+            <artifactId>openapi-parser</artifactId>
+            <version>1.0.3</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.openapi4j</groupId>
+            <artifactId>openapi-operation-validator</artifactId>
+            <version>1.0.3</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <dependencyManagement>
