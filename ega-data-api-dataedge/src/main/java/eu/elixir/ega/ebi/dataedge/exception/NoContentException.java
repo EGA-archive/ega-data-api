@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 ELIXIR EGA
+ * Copyright 2020 ELIXIR EGA
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,26 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package eu.elixir.ega.ebi.dataedge.config;
+package eu.elixir.ega.ebi.dataedge.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-/**
- * @author asenf
- */
-@ResponseStatus(HttpStatus.UNAUTHORIZED)
-public class InvalidAuthenticationException extends RuntimeException {
-
+@ResponseStatus(HttpStatus.NO_CONTENT)
+public class NoContentException extends RuntimeException {
     private static final long serialVersionUID = 1L;
 
-    /**
-     * Exception thrown when authentication fails for a requested resource.
-     *
-     * @param code Accession number or id of the requested resource
-     */
-    public InvalidAuthenticationException(String code) {
-        super("Invalid Authentication : " + code);
+    public NoContentException(String code) {
+        super("Legacy GPG Archive Format not Supported : " + code);
     }
-
 }
