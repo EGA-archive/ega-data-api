@@ -17,6 +17,7 @@ package eu.elixir.ega.ebi.dataedge.service.internal;
 
 import eu.elixir.ega.ebi.commons.shared.dto.File;
 import eu.elixir.ega.ebi.commons.shared.dto.FileDataset;
+import eu.elixir.ega.ebi.dataedge.exception.MethodNotAllowedException;
 import eu.elixir.ega.ebi.dataedge.service.FileMetaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
@@ -56,6 +57,13 @@ public class RemoteFileMetaServiceImpl implements FileMetaService {
     @Override
     @Cacheable(cacheNames = "fileFile")
     public File getFile(Authentication auth, String fileId) {
+        ResponseEntity<File[]> forEntity = restTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}", File[].class, fileId);
+        File[] body = forEntity.getBody();
+        
+        if (body == null || body.length == 0) {
+            throw new MethodNotAllowedException();
+        }
+        
         ResponseEntity<FileDataset[]> forEntityDataset = restTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}/datasets", FileDataset[].class, fileId);
         FileDataset[] bodyDataset = forEntityDataset.getBody();
 
@@ -68,9 +76,7 @@ public class RemoteFileMetaServiceImpl implements FileMetaService {
             permissions.add(next.getAuthority());
         }
 
-        // Is this File in at least one Authorised Dataset?
-        ResponseEntity<File[]> forEntity = restTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}", File[].class, fileId);
-        File[] body = forEntity.getBody();
+        
         if (body != null && bodyDataset != null) {
             for (FileDataset f : bodyDataset) {
                 String datasetId = f.getDatasetId();
