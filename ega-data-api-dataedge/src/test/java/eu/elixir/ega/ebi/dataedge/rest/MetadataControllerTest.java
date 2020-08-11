@@ -49,6 +49,7 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
+import eu.elixir.ega.ebi.dataedge.exception.ForbiddenException;
 import eu.elixir.ega.ebi.dataedge.service.FileMetaService;
 
 /**
@@ -111,6 +112,13 @@ public class MetadataControllerTest {
                 .perform(get("/metadata/datasets/DATASET1/files").session(new MockHttpSession())).andReturn().getResponse();
         assertThat(response.getStatus(), equalTo(OK.value()));
         assertTrue(response.getContentAsString().contains(f1.getFileId()));
+    }
+    
+    @Test
+    public void getDatasetFiles_WhenDatasetDoesNotExistInUserAuthorisedDatasets_ThenThrowsForbiddenException()
+            throws Exception {
+        mockMvc.perform(get("/metadata/datasets/DATASET3/files").session(new MockHttpSession()))
+                .andExpect(result -> assertTrue(result.getResolvedException() instanceof ForbiddenException));
     }
     
     /**

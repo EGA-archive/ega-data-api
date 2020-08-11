@@ -1,6 +1,7 @@
 package eu.elixir.ega.ebi.it.dataedge;
 
 import static org.apache.http.HttpStatus.SC_OK;
+import static org.apache.http.HttpStatus.SC_FORBIDDEN;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.everyItem;
 import static org.junit.Assert.assertThat;
@@ -55,9 +56,7 @@ public class MetadataControllerIntgTest extends DataedgeBase {
     @Test
     public void testGetDatasetFilesForZeroDatasetId() {
         final Response response = REQUEST_ZERO_DATASETID.get(METADATA_DATASET_PATH + datasetId + "/files");
-        response.then().assertThat().statusCode(SC_OK);
-        final List<String> data = response.body().jsonPath().getList("");
-        assertThat(data.size(), equalTo(0));
+        response.then().assertThat().statusCode(SC_FORBIDDEN);
     }
 
     /**

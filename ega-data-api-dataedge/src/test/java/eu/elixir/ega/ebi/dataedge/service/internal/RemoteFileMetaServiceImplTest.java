@@ -17,6 +17,8 @@ package eu.elixir.ega.ebi.dataedge.service.internal;
 
 import eu.elixir.ega.ebi.commons.shared.dto.File;
 import eu.elixir.ega.ebi.commons.shared.dto.FileDataset;
+import eu.elixir.ega.ebi.dataedge.exception.MethodNotAllowedException;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -96,6 +98,19 @@ public class RemoteFileMetaServiceImplTest {
         final File fileOutput = remoteFileMetaServiceImpl.getFile(auth, FILEID);
 
         assertThat(fileOutput.getDatasetId(), equalTo(DATASET1));
+    }
+
+    @Test(expected = MethodNotAllowedException.class)
+    public void getFile_WhenFileDOesNotExist_ThenThrowsMethodNotAllowedException() {
+        final Authentication auth = mock(Authentication.class);
+        final ResponseEntity<File[]> forEntity = mock(ResponseEntity.class);
+        final File[] files = {};
+
+        when(syncRestTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}", File[].class, FILEID))
+                .thenReturn(forEntity);
+        when(forEntity.getBody()).thenReturn(files);
+
+        remoteFileMetaServiceImpl.getFile(auth, FILEID);
     }
 
     /**
