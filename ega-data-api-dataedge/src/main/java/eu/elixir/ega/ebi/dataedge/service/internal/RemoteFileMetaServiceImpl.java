@@ -19,6 +19,8 @@ import eu.elixir.ega.ebi.commons.shared.dto.File;
 import eu.elixir.ega.ebi.commons.shared.dto.FileDataset;
 import eu.elixir.ega.ebi.dataedge.exception.MethodNotAllowedException;
 import eu.elixir.ega.ebi.dataedge.service.FileMetaService;
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
@@ -40,6 +42,7 @@ import java.util.Iterator;
  */
 @Service
 @EnableDiscoveryClient
+@Slf4j
 public class RemoteFileMetaServiceImpl implements FileMetaService {
 
     @Autowired
@@ -56,12 +59,14 @@ public class RemoteFileMetaServiceImpl implements FileMetaService {
      */
     @Override
     @Cacheable(cacheNames = "fileFile")
-    public File getFile(Authentication auth, String fileId) {
+    public File getFile(Authentication auth, String fileId, String sessionId) {
         ResponseEntity<File[]> forEntity = restTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}", File[].class, fileId);
         File[] body = forEntity.getBody();
         
         if (body == null || body.length == 0) {
-            throw new MethodNotAllowedException();
+            String message = sessionId.concat("Method Not Allowed fileId: ").concat(fileId);
+            log.error(message);
+            throw new MethodNotAllowedException(message);
         }
         
         ResponseEntity<FileDataset[]> forEntityDataset = restTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}/datasets", FileDataset[].class, fileId);

@@ -131,7 +131,7 @@ public class MetadataControllerTest {
     public void testGetFile() throws Exception {
         final File f1 = new File();
         f1.setFileId("fileId");
-        when(fileService.getFile(any(Authentication.class), any(String.class))).thenReturn(f1);
+        when(fileService.getFile(any(Authentication.class), any(String.class), any(String.class))).thenReturn(f1);
         
         final MockHttpServletResponse response = mockMvc
                 .perform(get("/metadata/files/fileId").session(new MockHttpSession())).andReturn().getResponse();

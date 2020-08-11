@@ -95,7 +95,7 @@ public class RemoteFileMetaServiceImplTest {
         when(forEntityDataset.getBody()).thenReturn(datasets);
         when(forEntity.getBody()).thenReturn(files);
 
-        final File fileOutput = remoteFileMetaServiceImpl.getFile(auth, FILEID);
+        final File fileOutput = remoteFileMetaServiceImpl.getFile(auth, FILEID, "");
 
         assertThat(fileOutput.getDatasetId(), equalTo(DATASET1));
     }
@@ -110,7 +110,7 @@ public class RemoteFileMetaServiceImplTest {
                 .thenReturn(forEntity);
         when(forEntity.getBody()).thenReturn(files);
 
-        remoteFileMetaServiceImpl.getFile(auth, FILEID);
+        remoteFileMetaServiceImpl.getFile(auth, FILEID, "");
     }
 
     /**
