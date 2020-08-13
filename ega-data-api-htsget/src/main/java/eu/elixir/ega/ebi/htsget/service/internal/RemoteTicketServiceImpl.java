@@ -45,9 +45,6 @@ import java.util.List;
 import static eu.elixir.ega.ebi.commons.config.Constants.FILEDATABASE_SERVICE;
 import static eu.elixir.ega.ebi.commons.config.Constants.RES_SERVICE;
 
-/**
- * @author asenf
- */
 @Service
 @EnableDiscoveryClient
 public class RemoteTicketServiceImpl implements TicketService {

@@ -15,6 +15,8 @@
  */
 package eu.elixir.ega.ebi.htsget.dto;
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.JsonTypeName;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -25,6 +27,8 @@ import lombok.Setter;
 @AllArgsConstructor
 @Setter
 @Getter
+@JsonTypeName("htsget")
+@JsonTypeInfo(include=JsonTypeInfo.As.WRAPPER_OBJECT, use = JsonTypeInfo.Id.NAME)
 public class HtsgetErrorResponse implements HtsgetResponseInterface {
 
     private String error;

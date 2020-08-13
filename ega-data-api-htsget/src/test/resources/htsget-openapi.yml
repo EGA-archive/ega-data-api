@@ -105,7 +105,7 @@ paths:
         '200':
           description: results matching criteria
           content:
-            application/json:
+            application/vnd.ga4gh.htsget.v1.0.0+json:
               schema:
                 $ref: '#/components/schemas/IdResponse'
               example:
@@ -129,7 +129,7 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
+                anyOf:
                   - $ref: '#/components/schemas/UnsupportedFormat'
                   - $ref: '#/components/schemas/InvalidInput'
                   - $ref: '#/components/schemas/InvalidRange'
@@ -220,7 +220,7 @@ paths:
         '200':
           description: results matching criteria
           content:
-            application/json:
+            application/vnd.ga4gh.htsget.v1.0.0+json:
               schema:
                 $ref: '#/components/schemas/IdResponse'
               example:
@@ -270,6 +270,8 @@ components:
 
     htsgetResponse:
       type: object
+      required:
+        - htsget
       properties:
         htsget:
           type: object

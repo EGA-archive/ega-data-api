@@ -2,6 +2,7 @@ package eu.elixir.ega.ebi.commons.shared.service;
 
 
 import eu.elixir.ega.ebi.commons.shared.dto.File;
+import eu.elixir.ega.ebi.commons.shared.dto.FileIndexFile;
 
 public interface FileInfoService {
 
@@ -13,5 +14,7 @@ public interface FileInfoService {
    *     {@code fileId}
    */
   File getFileInfo(String filestableId);
+
+  FileIndexFile getFileIndexFile(String fileId);
 
 }

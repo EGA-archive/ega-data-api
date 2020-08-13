@@ -33,7 +33,6 @@ import lombok.Setter;
  * @param unencryptedChecksumType checksum algorithm
  * @param fileStatus file status description
  *
- * @author asenf
  */
 @NoArgsConstructor
 @AllArgsConstructor

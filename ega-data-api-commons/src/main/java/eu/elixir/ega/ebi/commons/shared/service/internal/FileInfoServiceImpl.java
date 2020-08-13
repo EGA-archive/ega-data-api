@@ -2,6 +2,7 @@ package eu.elixir.ega.ebi.commons.shared.service.internal;
 
 import eu.elixir.ega.ebi.commons.exception.NotFoundException;
 import eu.elixir.ega.ebi.commons.shared.dto.File;
+import eu.elixir.ega.ebi.commons.shared.dto.FileIndexFile;
 import eu.elixir.ega.ebi.commons.shared.service.FileInfoService;
 import eu.elixir.ega.ebi.commons.shared.service.PermissionsService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,6 +55,17 @@ public class FileInfoServiceImpl implements FileInfoService {
       throw new NotFoundException(fileId, "4");
     }
     return reqFile;
+  }
+
+  @Cacheable(cacheNames = "indexFile")
+  public FileIndexFile getFileIndexFile(String fileId) {
+    FileIndexFile indexFile = null;
+    ResponseEntity<FileIndexFile[]> forEntity = restTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}/index", FileIndexFile[].class, fileId);
+    FileIndexFile[] body = forEntity.getBody();
+    if (body != null && body.length >= 1) {
+      indexFile = body[0];
+    }
+    return indexFile;
   }
 
 }

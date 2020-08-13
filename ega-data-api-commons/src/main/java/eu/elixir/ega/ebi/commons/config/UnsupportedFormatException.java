@@ -19,7 +19,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 @ResponseStatus(HttpStatus.CONFLICT)
-public class UnsupportedFormatException extends RuntimeException {
+public class UnsupportedFormatException extends HtsgetException {
 
     private static final long serialVersionUID = 1L;
 
@@ -30,6 +30,16 @@ public class UnsupportedFormatException extends RuntimeException {
      */
     public UnsupportedFormatException(String code) {
         super("Unsupported Format : " + code);
+    }
+
+    @Override
+    public int getStatusCode() {
+        return 400;
+    }
+
+    @Override
+    public String getHtsgetErrorCode() {
+        return "UnsupportedFormat";
     }
 
 }
