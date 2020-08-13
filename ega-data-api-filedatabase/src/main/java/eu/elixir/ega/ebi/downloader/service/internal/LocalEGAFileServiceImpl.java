@@ -92,17 +92,17 @@ public class LocalEGAFileServiceImpl implements FileService {
     public Iterable<FileIndexFile> getFileIndexByFileId(String fileID) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
-
-    @Value("${localega.fileserver.url:http://localhost:8443}")
-    public void setFileServiceURL(String fileServiceURL) {
-        this.fileServiceURL = fileServiceURL;
-    }
     
     @Override
     public Iterable<Dataset> getDataset(String datasetId) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Value("${localega.fileserver.url:http://localhost:8443}")
+    public void setFileServiceURL(String fileServiceURL) {
+        this.fileServiceURL = fileServiceURL;
+    }
+    
     @Autowired
     public void setRestTemplate(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;

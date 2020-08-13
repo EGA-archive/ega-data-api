@@ -67,6 +67,15 @@ CREATE TABLE dev_ega_file.file (
     last_updated  timestamp NOT NULL DEFAULT now()
 );
 
+CREATE TABLE dev_ega_file.dataset (
+	dataset_id varchar(128) NOT NULL,
+	description text NULL,
+	dac_stable_id varchar(128) NULL,
+	double_signature varchar(3) NULL,
+	created_at timestamptz NOT NULL DEFAULT now(),
+	updated_at timestamptz NOT NULL DEFAULT now(),
+);
+
 -- Event
 CREATE TABLE dev_ega_file.event (
        event_id  int8 NOT NULL DEFAULT nextval('dev_ega_file.event_event_id_seq'::regclass),
@@ -94,6 +103,8 @@ CREATE TABLE dev_ega_file.download_log (
        created timestamp NOT NULL DEFAULT now(),
        token_source varchar(255) NOT NULL
 );
+
+INSERT INTO dev_ega_file.dataset(dataset_id) values('EGAD00010000919');
 
 INSERT INTO dev_ega_file.file_dataset(file_id, dataset_id) values('EGAF00000000014', 'EGAD00010000919');
 

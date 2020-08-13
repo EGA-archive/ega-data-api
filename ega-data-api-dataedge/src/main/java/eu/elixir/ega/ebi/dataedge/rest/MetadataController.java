@@ -144,7 +144,7 @@ public class MetadataController {
         }
         
         if(!permission) {
-            String message = sessionId.concat("Forbidden dataset: ").concat(datasetId);
+            String message = sessionId.concat("Forbidden dataset ").concat(datasetId);
             log.error(message);
             throw new PermissionDeniedException(message);
         }
