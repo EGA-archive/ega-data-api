@@ -16,9 +16,10 @@
 package eu.elixir.ega.ebi.dataedge.rest;
 
 import com.google.common.base.Strings;
+
+import eu.elixir.ega.ebi.commons.exception.InvalidAuthenticationException;
 import eu.elixir.ega.ebi.commons.shared.service.AuthenticationService;
 import lombok.extern.slf4j.Slf4j;
-import eu.elixir.ega.ebi.dataedge.exception.InvalidAuthenticationException;
 import eu.elixir.ega.ebi.dataedge.service.FileService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;

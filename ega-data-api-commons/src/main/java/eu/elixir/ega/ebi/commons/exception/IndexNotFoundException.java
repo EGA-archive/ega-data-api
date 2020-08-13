@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 ELIXIR EGA
+ * Copyright 2016 ELIXIR EGA
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,16 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package eu.elixir.ega.ebi.dataedge.exception;
+package eu.elixir.ega.ebi.commons.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-@ResponseStatus(HttpStatus.UNAVAILABLE_FOR_LEGAL_REASONS)
-public class UnavailableForLegalReasonsException extends RuntimeException {
+/**
+ * @author amohan
+ */
+@ResponseStatus(HttpStatus.NOT_FOUND)
+public class IndexNotFoundException extends RuntimeException {
+
     private static final long serialVersionUID = 1L;
 
-    public UnavailableForLegalReasonsException(String msg) {
-        super(msg);
+    /**
+     * Exception thrown when an index file is not found.
+     *
+     * @param error Error description.
+     * @param id file ID of the index file.
+     */
+    public IndexNotFoundException(String error, String id) {
+        super(error + ": " + id);
     }
+
 }

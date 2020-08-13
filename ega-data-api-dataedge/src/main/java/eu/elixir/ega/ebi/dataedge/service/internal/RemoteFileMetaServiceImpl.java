@@ -15,9 +15,9 @@
  */
 package eu.elixir.ega.ebi.dataedge.service.internal;
 
+import eu.elixir.ega.ebi.commons.exception.NotFoundException;
 import eu.elixir.ega.ebi.commons.shared.dto.File;
 import eu.elixir.ega.ebi.commons.shared.dto.FileDataset;
-import eu.elixir.ega.ebi.dataedge.exception.MethodNotAllowedException;
 import eu.elixir.ega.ebi.dataedge.service.FileMetaService;
 import lombok.extern.slf4j.Slf4j;
 
@@ -64,9 +64,9 @@ public class RemoteFileMetaServiceImpl implements FileMetaService {
         File[] body = forEntity.getBody();
         
         if (body == null || body.length == 0) {
-            String message = sessionId.concat("Method Not Allowed fileId: ").concat(fileId);
+            String message = sessionId.concat("fileId not found : ").concat(fileId);
             log.error(message);
-            throw new MethodNotAllowedException(message);
+            throw new NotFoundException(message);
         }
         
         ResponseEntity<FileDataset[]> forEntityDataset = restTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}/datasets", FileDataset[].class, fileId);

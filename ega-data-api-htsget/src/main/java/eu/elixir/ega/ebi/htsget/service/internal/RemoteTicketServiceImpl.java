@@ -15,8 +15,8 @@
  */
 package eu.elixir.ega.ebi.htsget.service.internal;
 
-import eu.elixir.ega.ebi.commons.shared.config.IndexNotFoundException;
-import eu.elixir.ega.ebi.commons.shared.config.NotFoundException;
+import eu.elixir.ega.ebi.commons.exception.IndexNotFoundException;
+import eu.elixir.ega.ebi.commons.exception.NotFoundException;
 import eu.elixir.ega.ebi.commons.shared.dto.File;
 import eu.elixir.ega.ebi.commons.shared.dto.FileIndexFile;
 import eu.elixir.ega.ebi.commons.shared.dto.MyExternalConfig;

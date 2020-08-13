@@ -17,9 +17,9 @@ package eu.elixir.ega.ebi.dataedge.rest;
 
 
 import eu.elixir.ega.ebi.commons.config.VerifyMessage;
+import eu.elixir.ega.ebi.commons.exception.PermissionDeniedException;
 import eu.elixir.ega.ebi.commons.shared.config.VerifyMessageNew;
 import eu.elixir.ega.ebi.commons.shared.dto.File;
-import eu.elixir.ega.ebi.dataedge.exception.ForbiddenException;
 import eu.elixir.ega.ebi.dataedge.service.FileMetaService;
 import lombok.extern.slf4j.Slf4j;
 
@@ -135,7 +135,7 @@ public class MetadataController {
         if(!permission) {
             String message = sessionId.concat("Forbidden dataset: ").concat(datasetId);
             log.error(message);
-            throw new ForbiddenException(message);
+            throw new PermissionDeniedException(message);
         }
 
         return fileService.getDatasetFiles(datasetId);

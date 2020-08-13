@@ -31,6 +31,7 @@ import java.util.Collection;
 
 import javax.servlet.http.HttpServletRequest;
 
+import eu.elixir.ega.ebi.commons.exception.PermissionDeniedException;
 import eu.elixir.ega.ebi.commons.shared.dto.File;
 import org.junit.Before;
 import org.junit.Test;
@@ -49,7 +50,6 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
-import eu.elixir.ega.ebi.dataedge.exception.ForbiddenException;
 import eu.elixir.ega.ebi.dataedge.service.FileMetaService;
 
 /**
@@ -118,7 +118,7 @@ public class MetadataControllerTest {
     public void getDatasetFiles_WhenDatasetDoesNotExistInUserAuthorisedDatasets_ThenThrowsForbiddenException()
             throws Exception {
         mockMvc.perform(get("/metadata/datasets/DATASET3/files").session(new MockHttpSession()))
-                .andExpect(result -> assertTrue(result.getResolvedException() instanceof ForbiddenException));
+                .andExpect(result -> assertTrue(result.getResolvedException() instanceof PermissionDeniedException));
     }
     
     /**

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package eu.elixir.ega.ebi.commons.shared.config;
+package eu.elixir.ega.ebi.commons.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -21,20 +21,18 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 /**
  * @author asenf
  */
-@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-public class GeneralStreamingException extends RuntimeException {
+@ResponseStatus(HttpStatus.FORBIDDEN)
+public class PermissionDeniedException extends RuntimeException {
 
     private static final long serialVersionUID = 1L;
 
     /**
-     * Thrown when a data stream fails, providing the stream stage and error
-     * description.
+     * Thrown when a resource is requested with insufficient permissions.
      *
-     * @param error Error description.
-     * @param stage Stage number.
+     * @param code ID of the requested resource.
      */
-    public GeneralStreamingException(String error, int stage) {
-        super("Error processing Stream at stage : " + stage + " (with error " + error + ")");
+    public PermissionDeniedException(String code) {
+        super("Permission Denied : " + code);
     }
 
 }

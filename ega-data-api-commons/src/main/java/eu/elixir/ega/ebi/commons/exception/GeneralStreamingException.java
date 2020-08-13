@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 ELIXIR EGA
+ * Copyright 2016 ELIXIR EGA
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,14 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package eu.elixir.ega.ebi.dataedge.exception;
+package eu.elixir.ega.ebi.commons.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-@ResponseStatus(HttpStatus.FORBIDDEN)
-public class ForbiddenException extends RuntimeException {
-    public ForbiddenException(String message) {
-        super(message);
+/**
+ * @author asenf
+ */
+@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+public class GeneralStreamingException extends RuntimeException {
+
+    private static final long serialVersionUID = 1L;
+
+    /**
+     * Thrown when a data stream fails, providing the stream stage and error
+     * description.
+     *
+     * @param error Error description.
+     * @param stage Stage number.
+     */
+    public GeneralStreamingException(String error, int stage) {
+        super("Error processing Stream at stage : " + stage + " (with error " + error + ")");
     }
+
 }

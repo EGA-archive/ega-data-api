@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 ELIXIR EGA
+ * Copyright 2020 ELIXIR EGA
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,26 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package eu.elixir.ega.ebi.commons.shared.config;
+package eu.elixir.ega.ebi.commons.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-/**
- * @author asenf
- */
-@ResponseStatus(HttpStatus.FORBIDDEN)
-public class PermissionDeniedException extends RuntimeException {
-
+@ResponseStatus(HttpStatus.UNAVAILABLE_FOR_LEGAL_REASONS)
+public class UnavailableForLegalReasonsException extends RuntimeException {
     private static final long serialVersionUID = 1L;
 
-    /**
-     * Thrown when a resource is requested with insufficient permissions.
-     *
-     * @param code ID of the requested resource.
-     */
-    public PermissionDeniedException(String code) {
-        super("Permission Denied : " + code);
+    public UnavailableForLegalReasonsException(String msg) {
+        super(msg);
     }
-
 }

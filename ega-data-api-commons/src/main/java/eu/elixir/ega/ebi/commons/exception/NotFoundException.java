@@ -13,27 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package eu.elixir.ega.ebi.commons.shared.config;
+package eu.elixir.ega.ebi.commons.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 /**
- * @author amohan
+ * @author asenf
  */
 @ResponseStatus(HttpStatus.NOT_FOUND)
-public class IndexNotFoundException extends RuntimeException {
+public class NotFoundException extends RuntimeException {
 
     private static final long serialVersionUID = 1L;
 
     /**
-     * Exception thrown when an index file is not found.
+     * Exception thrown when an piece of data is not found.
      *
-     * @param error Error description.
-     * @param id file ID of the index file.
+     * @param error Error description
+     * @param id ID of the data that could not be found
      */
-    public IndexNotFoundException(String error, String id) {
+    public NotFoundException(String error, String id) {
         super(error + ": " + id);
+    }
+    
+    public NotFoundException(String message) {
+        super(message);
     }
 
 }
