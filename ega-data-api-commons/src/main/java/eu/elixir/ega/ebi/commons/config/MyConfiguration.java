@@ -104,9 +104,12 @@ public class MyConfiguration {
         GuavaCache fileDatasetFile = new GuavaCache("fileDatasetFile", CacheBuilder.newBuilder()
                 .expireAfterWrite(24, TimeUnit.HOURS)
                 .build());
+        GuavaCache datasetFile = new GuavaCache("datasetFile", CacheBuilder.newBuilder()
+                .expireAfterWrite(24, TimeUnit.HOURS)
+                .build());        
 
         simpleCacheManager.setCaches(Arrays.asList(tokens, access, reqFile, index,
-                fileHead, headerFile, fileSize, fileFile, fileDatasetFile));
+                fileHead, headerFile, fileSize, fileFile, fileDatasetFile, datasetFile));
         return simpleCacheManager;
     }
 

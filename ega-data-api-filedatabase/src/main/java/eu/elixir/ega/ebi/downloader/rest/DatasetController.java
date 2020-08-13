@@ -15,6 +15,7 @@
  */
 package eu.elixir.ega.ebi.downloader.rest;
 
+import eu.elixir.ega.ebi.downloader.domain.entity.Dataset;
 import eu.elixir.ega.ebi.downloader.dto.DownloaderFile;
 import eu.elixir.ega.ebi.downloader.service.FileService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,7 +35,13 @@ public class DatasetController {
 
     @Autowired
     private FileService fileService;
-
+    
+    @RequestMapping(value = "/{datasetId}", method = GET)
+    @ResponseBody
+    public Iterable<Dataset> getDataset(@PathVariable String datasetId) {
+        return fileService.getDataset(datasetId);
+    }
+    
     @RequestMapping(value = "/{datasetId}/files", method = GET)
     @ResponseBody
     public Iterable<DownloaderFile> getDatasetFiles(@PathVariable String datasetId) {

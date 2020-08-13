@@ -16,6 +16,7 @@
 package eu.elixir.ega.ebi.dataedge.service.internal;
 
 import eu.elixir.ega.ebi.commons.exception.NotFoundException;
+import eu.elixir.ega.ebi.commons.shared.dto.Dataset;
 import eu.elixir.ega.ebi.commons.shared.dto.File;
 import eu.elixir.ega.ebi.commons.shared.dto.FileDataset;
 import eu.elixir.ega.ebi.dataedge.service.FileMetaService;
@@ -36,6 +37,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * @author asenf
@@ -64,7 +66,7 @@ public class RemoteFileMetaServiceImpl implements FileMetaService {
         File[] body = forEntity.getBody();
         
         if (body == null || body.length == 0) {
-            String message = sessionId.concat("fileId not found : ").concat(fileId);
+            String message = sessionId.concat("file not found : ").concat(fileId);
             log.error(message);
             throw new NotFoundException(message);
         }
@@ -94,6 +96,13 @@ public class RemoteFileMetaServiceImpl implements FileMetaService {
         }
 
         return (new File());
+    }
+    
+    @Override
+    @Cacheable(cacheNames = "datasetFile")
+    public List<Dataset> getDataset(String datasetId) {
+        Dataset[] response = restTemplate.getForObject(FILEDATABASE_SERVICE + "/datasets/{datasetId}", Dataset[].class, datasetId);
+        return Arrays.asList(response);
     }
 
     /**

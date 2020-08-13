@@ -32,9 +32,11 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import eu.elixir.ega.ebi.downloader.domain.entity.Dataset;
 import eu.elixir.ega.ebi.downloader.domain.entity.File;
 import eu.elixir.ega.ebi.downloader.domain.entity.FileDataset;
 import eu.elixir.ega.ebi.downloader.domain.entity.FileIndexFile;
+import eu.elixir.ega.ebi.downloader.domain.repository.DatasetRepository;
 import eu.elixir.ega.ebi.downloader.domain.repository.FileDatasetRepository;
 import eu.elixir.ega.ebi.downloader.domain.repository.FileIndexFileRepository;
 import eu.elixir.ega.ebi.downloader.domain.repository.FileRepository;
@@ -59,12 +61,16 @@ public class FileServiceImplTest {
 
 	@MockBean
 	private FileIndexFileRepository fileIndexFileRepository;
+	
+	@MockBean
+    private DatasetRepository datasetRepository;
 
 	@Before
 	public void setup() {
 		when(fileRepository.findByFileId(any(String.class))).thenReturn(getFile());
 		when(fileDatasetRepository.findByFileId(any(String.class))).thenReturn(getFileDataset());
 		when(fileDatasetRepository.findByDatasetId(any(String.class))).thenReturn(getFileDataset());
+		when(datasetRepository.findByDatasetId(any(String.class))).thenReturn(getDataset());
 		when(fileIndexFileRepository.findByFileId(any(String.class))).thenReturn(getFileIndexFile());
 	}
 
@@ -118,6 +124,10 @@ public class FileServiceImplTest {
 	private Iterable<FileDataset> getFileDataset() {
 		return Arrays.asList(new FileDataset("fileId", "datasetId"));
 	}
+	
+    private Iterable<Dataset> getDataset() {
+        return Arrays.asList(new Dataset("datasetId", "description", "dacStableId", "no"));
+    }
 
 	private Iterable<FileIndexFile> getFileIndexFile() {
 		return Arrays.asList(new FileIndexFile("fileId", "indexFileId"));

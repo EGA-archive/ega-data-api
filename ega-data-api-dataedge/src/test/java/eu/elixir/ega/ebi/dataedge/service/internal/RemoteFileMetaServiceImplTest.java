@@ -101,7 +101,7 @@ public class RemoteFileMetaServiceImplTest {
     }
 
     @Test(expected = NotFoundException.class)
-    public void getFile_WhenFileDOesNotExist_ThenThrowsMethodNotAllowedException() {
+    public void getFile_WhenFileDOesNotExist_ThenThrowsNotFoundException() {
         final Authentication auth = mock(Authentication.class);
         final ResponseEntity<File[]> forEntity = mock(ResponseEntity.class);
         final File[] files = {};

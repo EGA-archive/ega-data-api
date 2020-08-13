@@ -20,6 +20,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.HttpStatus.OK;
@@ -31,7 +32,9 @@ import java.util.Collection;
 
 import javax.servlet.http.HttpServletRequest;
 
+import eu.elixir.ega.ebi.commons.exception.NotFoundException;
 import eu.elixir.ega.ebi.commons.exception.PermissionDeniedException;
+import eu.elixir.ega.ebi.commons.shared.dto.Dataset;
 import eu.elixir.ega.ebi.commons.shared.dto.File;
 import org.junit.Before;
 import org.junit.Test;
@@ -79,6 +82,7 @@ public class MetadataControllerTest {
         when(authentication.getAuthorities()).thenReturn(authorities);
         when(securityContext.getAuthentication()).thenReturn(authentication);
         SecurityContextHolder.setContext(securityContext);
+        when(fileService.getDataset(anyString())).thenReturn(Arrays.asList(new Dataset()));
     }
 
     /**
@@ -115,10 +119,19 @@ public class MetadataControllerTest {
     }
     
     @Test
-    public void getDatasetFiles_WhenDatasetDoesNotExistInUserAuthorisedDatasets_ThenThrowsForbiddenException()
+    public void getDatasetFiles_WhenDatasetDoesNotExistInUserAuthorisedDatasets_ThenThrowsPermissionDeniedException()
             throws Exception {
         mockMvc.perform(get("/metadata/datasets/DATASET3/files").session(new MockHttpSession()))
                 .andExpect(result -> assertTrue(result.getResolvedException() instanceof PermissionDeniedException));
+    }
+    
+    @Test
+    public void getDatasetFiles_WhenDatasetDoesNotExistInDatabase_ThenThrowsNotFoundException()
+            throws Exception {
+        when(fileService.getDataset("DATASET4")).thenReturn(null);
+
+        mockMvc.perform(get("/metadata/datasets/DATASET4/files").session(new MockHttpSession()))
+                .andExpect(result -> assertTrue(result.getResolvedException() instanceof NotFoundException));
     }
     
     /**

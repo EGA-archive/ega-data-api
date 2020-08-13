@@ -15,7 +15,11 @@
  */
 package eu.elixir.ega.ebi.dataedge.service;
 
+import eu.elixir.ega.ebi.commons.shared.dto.Dataset;
 import eu.elixir.ega.ebi.commons.shared.dto.File;
+
+import java.util.List;
+
 import org.springframework.security.core.Authentication;
 
 /**
@@ -43,4 +47,5 @@ public interface FileMetaService {
      */
     Iterable<File> getDatasetFiles(String datasetId);
 
+    List<Dataset> getDataset(String datasetId);
 }

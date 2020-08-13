@@ -16,6 +16,8 @@
 package eu.elixir.ega.ebi.downloader.service.internal;
 
 import com.google.gson.Gson;
+
+import eu.elixir.ega.ebi.downloader.domain.entity.Dataset;
 import eu.elixir.ega.ebi.downloader.domain.entity.File;
 import eu.elixir.ega.ebi.downloader.domain.entity.FileDataset;
 import eu.elixir.ega.ebi.downloader.domain.entity.FileIndexFile;
@@ -94,6 +96,11 @@ public class LocalEGAFileServiceImpl implements FileService {
     @Value("${localega.fileserver.url:http://localhost:8443}")
     public void setFileServiceURL(String fileServiceURL) {
         this.fileServiceURL = fileServiceURL;
+    }
+    
+    @Override
+    public Iterable<Dataset> getDataset(String datasetId) {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Autowired

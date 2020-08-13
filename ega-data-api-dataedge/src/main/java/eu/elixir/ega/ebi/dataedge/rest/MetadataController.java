@@ -17,8 +17,10 @@ package eu.elixir.ega.ebi.dataedge.rest;
 
 
 import eu.elixir.ega.ebi.commons.config.VerifyMessage;
+import eu.elixir.ega.ebi.commons.exception.NotFoundException;
 import eu.elixir.ega.ebi.commons.exception.PermissionDeniedException;
 import eu.elixir.ega.ebi.commons.shared.config.VerifyMessageNew;
+import eu.elixir.ega.ebi.commons.shared.dto.Dataset;
 import eu.elixir.ega.ebi.commons.shared.dto.File;
 import eu.elixir.ega.ebi.dataedge.service.FileMetaService;
 import lombok.extern.slf4j.Slf4j;
@@ -101,6 +103,15 @@ public class MetadataController {
                                    HttpServletRequest request) {
         String sessionId = Strings.isNullOrEmpty(request.getHeader("Session-Id")) ? ""
                 : request.getHeader("Session-Id") + " ";
+        
+        
+        List<Dataset> dataset = fileService.getDataset(datasetId);
+        if (dataset == null || dataset.size() == 0) {
+            String message = sessionId.concat("dataset not found : ").concat(datasetId);
+            log.error(message);
+            throw new NotFoundException(message);
+        }
+        
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
         // Validate Dataset Access
