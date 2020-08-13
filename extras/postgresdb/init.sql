@@ -73,7 +73,7 @@ CREATE TABLE dev_ega_file.dataset (
 	dac_stable_id varchar(128) NULL,
 	double_signature varchar(3) NULL,
 	created_at timestamptz NOT NULL DEFAULT now(),
-	updated_at timestamptz NOT NULL DEFAULT now(),
+	updated_at timestamptz NOT NULL DEFAULT now()
 );
 
 -- Event
