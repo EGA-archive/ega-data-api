@@ -1,25 +1,48 @@
 package eu.elixir.ega.ebi.htsget.rest;
 
 import eu.elixir.ega.ebi.commons.config.InvalidInputException;
+import eu.elixir.ega.ebi.commons.config.UnsupportedFormatException;
 import eu.elixir.ega.ebi.commons.shared.config.NotFoundException;
+import eu.elixir.ega.ebi.commons.shared.dto.File;
+import eu.elixir.ega.ebi.commons.shared.dto.FileIndexFile;
 import eu.elixir.ega.ebi.commons.shared.dto.MyExternalConfig;
 import eu.elixir.ega.ebi.commons.shared.service.FileInfoService;
+import eu.elixir.ega.ebi.htsget.config.LocalTestData;
 import eu.elixir.ega.ebi.htsget.service.TicketServiceV2;
+import eu.elixir.ega.ebi.htsget.service.internal.DataProvider;
+import eu.elixir.ega.ebi.htsget.service.internal.DataProviderFactory;
+import eu.elixir.ega.ebi.htsget.service.internal.ResClient;
 import eu.elixir.ega.ebi.htsget.service.internal.TicketServiceV2Impl;
+import htsjdk.samtools.SAMFileHeader;
+import htsjdk.samtools.SAMSequenceDictionary;
+import htsjdk.samtools.SAMSequenceRecord;
+import htsjdk.samtools.seekablestream.SeekableFileStream;
+import htsjdk.samtools.util.BlockCompressedStreamConstants;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.cloud.client.loadbalancer.LoadBalanced;
-import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
 import org.springframework.context.annotation.Bean;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpRange;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Base64;
 import java.util.Optional;
+
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.*;
 
 @RunWith(SpringRunner.class)
 public class TicketServiceV2Test {
@@ -34,24 +57,52 @@ public class TicketServiceV2Test {
     private MyExternalConfig externalConfig;
 
     @MockBean
-    private LoadBalancerClient loadBalancer;
+    private ResClient resClient;
+
+    @MockBean
+    private DataProviderFactory dataProviderFactory;
+
+    @MockBean
+    private DataProvider dataProvider;
 
     @TestConfiguration
     public static class Config {
         @Bean
-        public TicketServiceV2 ticketService(FileInfoService fileInfoService, MyExternalConfig externalConfig, LoadBalancerClient loadBalancer){
-            return new TicketServiceV2Impl(fileInfoService, externalConfig, loadBalancer);
+        public TicketServiceV2 ticketService(FileInfoService fileInfoService, MyExternalConfig externalConfig, ResClient resClient, DataProviderFactory dataProviderFactory){
+            return new TicketServiceV2Impl(fileInfoService, externalConfig, resClient, dataProviderFactory);
         }
     }
 
-    @Test
-    public void readWithIdenticalStartAndEndReturnsValidResponseInRequestedFormat() {
+    @Before
+    public void setUpCommonMocks() throws MalformedURLException, FileNotFoundException {
+        Mockito.reset(externalConfig);
+        when(externalConfig.getEgaExternalUrl())
+                .thenReturn("https://test.Htsget.ega.url/");
 
+        Mockito.reset(fileInfoService);
+        File dataFile = new File();
+        dataFile.setFileId(LocalTestData.BAM_FILE_ID);
+        dataFile.setFileName("NA12891.bam.cip");
+        when(fileInfoService.getFileInfo(LocalTestData.BAM_FILE_ID))
+                .thenReturn(dataFile);
+        when(fileInfoService.getFileIndexFile(LocalTestData.BAM_FILE_ID))
+                .thenReturn(new FileIndexFile(LocalTestData.BAM_FILE_ID, LocalTestData.BAM_INDEX_FILE_ID));
+
+        Mockito.reset(resClient);
+        when(resClient.getStreamForFile(LocalTestData.BAM_FILE_ID))
+                .thenReturn(new SeekableFileStream(new java.io.File(LocalTestData.BAM_FILE_PATH)));
+        when(resClient.getStreamForFile(LocalTestData.BAM_INDEX_FILE_ID))
+                .thenReturn(new SeekableFileStream(new java.io.File(LocalTestData.BAM_INDEX_FILE_PATH)));
+
+        Mockito.reset(dataProviderFactory);
+        doThrow(UnsupportedFormatException.class).when(dataProviderFactory).getProviderForFormat(any());
+        doReturn(dataProvider).when(dataProviderFactory).getProviderForFormat("BAM");
+        doReturn(dataProvider).when(dataProviderFactory).getProviderForFormat("CRAM");
     }
 
     @Test(expected = InvalidInputException.class)
-    public void requestForHeaderWithOtherParametersReturnsInvalidInput() throws MalformedURLException {
-        service.getRead("1",
+    public void requestForHeaderWithOtherParametersReturnsInvalidInput() throws IOException, URISyntaxException {
+        service.getRead(LocalTestData.BAM_FILE_ID,
                 "BAM",
                 Optional.of("header"),
                 Optional.of("ChromosomeName"),
@@ -64,8 +115,10 @@ public class TicketServiceV2Test {
     }
 
     @Test(expected = NotFoundException.class)
-    public void requestForNonExistingReferenceReturnsNotFound() throws MalformedURLException {
-        service.getRead("2",
+    public void requestForNonExistingReferenceReturnsNotFound() throws IOException, URISyntaxException {
+        doReturn(true).when(dataProvider).supportsFileType(any());
+        doReturn(new SAMFileHeader()).when(dataProvider).getHeader();
+        service.getRead(LocalTestData.BAM_FILE_ID,
                 "BAM",
                 Optional.empty(),
                 Optional.of("DoesNotExist"),
@@ -77,8 +130,8 @@ public class TicketServiceV2Test {
     }
 
     @Test(expected = InvalidInputException.class)
-    public void requestWithStartButNoReferenceNameReturnsInvalidInput() throws MalformedURLException {
-        service.getRead("3",
+    public void requestWithStartButNoReferenceNameReturnsInvalidInput() throws IOException, URISyntaxException {
+        service.getRead(LocalTestData.BAM_FILE_ID,
                 "BAM",
                 Optional.empty(),
                 Optional.empty(),
@@ -90,8 +143,8 @@ public class TicketServiceV2Test {
     }
 
     @Test(expected = InvalidInputException.class)
-    public void requestWithStartAndUnplacedReadsReturnsInvalidInput() throws MalformedURLException {
-        service.getRead("3",
+    public void requestWithStartAndUnplacedReadsReturnsInvalidInput() throws IOException, URISyntaxException {
+        service.getRead(LocalTestData.BAM_FILE_ID,
                 "BAM",
                 Optional.empty(),
                 Optional.of("*"),
@@ -104,9 +157,9 @@ public class TicketServiceV2Test {
     }
 
     @Test
-    public void requestingEntireFileHasSingleURL() throws MalformedURLException {
-        Mockito.when(externalConfig.getEgaExternalUrl()).thenReturn("https://test.Htsget.ega.url/");
-        HtsgetResponse response = service.getRead("4",
+    public void requestingEntireFileHasSingleURL() throws IOException, URISyntaxException {
+        doReturn(true).when(dataProvider).supportsFileType(any());
+        HtsgetResponse response = service.getRead(LocalTestData.BAM_FILE_ID,
                 "BAM",
                 Optional.empty(),
                 Optional.empty(),
@@ -115,15 +168,18 @@ public class TicketServiceV2Test {
                 Optional.empty(),
                 Optional.empty(),
                 Optional.empty());
-        Assert.assertEquals(1, response.getUrls().length);
         Assert.assertEquals("BAM", response.getFormat());
-        Assert.assertEquals("/4", response.getUrls()[0].getUrl().getPath());
+        Assert.assertEquals(1, response.getUrls().size());
+
+        HtsgetUrl url = response.getUrls().get(0);
+        Assert.assertEquals("/" + LocalTestData.BAM_FILE_ID, url.getUrl().getPath());
     }
 
     @Test
-    public void requestingOnlyHeaderHasSingleURLForHeader() throws MalformedURLException {
-        Mockito.when(externalConfig.getEgaExternalUrl()).thenReturn("https://test.Htsget.ega.url/");
-        HtsgetResponse response = service.getRead("4",
+    public void requestingOnlyHeaderHasSingleURLForHeader() throws IOException, URISyntaxException {
+        doReturn(true).when(dataProvider).supportsFileType(any());
+        doReturn(new URI("data:123")).when(dataProvider).getHeaderAsDataUri();
+        HtsgetResponse response = service.getRead(LocalTestData.BAM_FILE_ID,
                 "BAM",
                 Optional.of("header"),
                 Optional.empty(),
@@ -132,9 +188,55 @@ public class TicketServiceV2Test {
                 Optional.empty(),
                 Optional.empty(),
                 Optional.empty());
-        Assert.assertEquals(1, response.getUrls().length);
+        Assert.assertEquals(1, response.getUrls().size());
         Assert.assertEquals("BAM", response.getFormat());
-        Assert.assertEquals("/4/header", response.getUrls()[0].getUrl().getPath());
+
+        HtsgetUrl url = response.getUrls().get(0);
+        Assert.assertEquals("data", url.getUrl().getScheme());
+        Assert.assertEquals("header", url.getUrlClass());
+    }
+
+    @Test
+    public void byteRangesAreLessThan1GB() throws IOException, URISyntaxException {
+        long mockDataLength = 35L * 1024 * 1024 * 1024;
+        doReturn(true).when(dataProvider).supportsFileType(any());
+        doAnswer(i -> {
+            HtsgetUrl bigByteRange = new HtsgetUrl(new URI("https://test.data/"));
+            bigByteRange.setHeader(HttpHeaders.RANGE, "bytes=" + HttpRange.createByteRange(0, mockDataLength).toString());
+            i.getArgumentAt(4, HtsgetResponse.class).addUrl(bigByteRange);
+            return null;
+        }).when(dataProvider).addContentUris(anyInt(), any(), any(), any(), any(), any(), any());
+        doAnswer(invocationOnMock -> {
+            SAMFileHeader header = new SAMFileHeader();
+            SAMSequenceDictionary dictionary = new SAMSequenceDictionary();
+            dictionary.addSequence(new SAMSequenceRecord("chrM", 1000));
+            header.setSequenceDictionary(dictionary);
+            return header;
+        }).when(dataProvider).getHeader();
+        doReturn(new URI("data:123")).when(dataProvider).getHeaderAsDataUri();
+        doReturn(new URI("data:321")).when(dataProvider).getFooterAsDataUri();
+
+        HtsgetResponse response = service.getRead(LocalTestData.BAM_FILE_ID,
+                "BAM",
+                Optional.empty(),
+                Optional.of("chrM"),
+                Optional.of(1L),
+                Optional.of(16545L),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty());
+        long totalLength = 0;
+        for (HtsgetUrl url : response.getUrls()) {
+            if (url.getUrl().getScheme().equalsIgnoreCase("data"))
+                continue;
+
+            for (HttpRange range : HttpRange.parseRanges(url.getHeaders().get(HttpHeaders.RANGE))) {
+                long rangeLength = range.getRangeEnd(mockDataLength) - range.getRangeStart(mockDataLength) + 1;
+                Assert.assertTrue(rangeLength <= TicketServiceV2Impl.MAX_BYTES_PER_DATA_BLOCK );
+                totalLength += rangeLength;
+            }
+        }
+        Assert.assertEquals(mockDataLength, totalLength);
     }
 
 }

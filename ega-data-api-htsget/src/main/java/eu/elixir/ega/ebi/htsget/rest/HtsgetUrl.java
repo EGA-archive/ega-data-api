@@ -1,40 +1,44 @@
 package eu.elixir.ega.ebi.htsget.rest;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.HashMap;
 
 public class HtsgetUrl {
-    private URL url;
+    private URI url;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private HashMap<String, String> headers;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String urlClass;
 
-    public HtsgetUrl(URI baseURI) throws MalformedURLException {
-        this.url = baseURI.toURL();
+    public HtsgetUrl(URI baseURI) {
+        this(baseURI, null);
     }
 
-    public URL getUrl() {
+    public HtsgetUrl(URI baseURI, String urlClass) {
+        this.url = baseURI;
+        this.urlClass = urlClass;
+    }
+
+    public URI getUrl() {
         return url;
-    }
-
-    public void setUrl(URL url) {
-        this.url = url;
     }
 
     public HashMap<String, String> getHeaders() {
         return headers;
     }
 
-    public void setHeaders(HashMap<String, String> headers) {
-        this.headers = headers;
-    }
-
     public String getUrlClass() {
         return urlClass;
     }
 
-    public void setUrlClass(String urlClass) {
-        this.urlClass = urlClass;
+    public void setHeader(String name, String value) {
+        if (this.headers == null) {
+            this.headers = new HashMap<>();
+        }
+        this.headers.put(name, value);
     }
 }

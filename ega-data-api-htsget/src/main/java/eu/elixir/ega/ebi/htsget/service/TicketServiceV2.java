@@ -6,7 +6,9 @@ import eu.elixir.ega.ebi.commons.shared.config.PermissionDeniedException;
 import eu.elixir.ega.ebi.htsget.rest.HtsgetResponse;
 import org.omg.CosNaming.NamingContextPackage.NotFound;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,7 +23,7 @@ public interface TicketServiceV2 {
                            Optional<List<Field>> fields,
                            Optional<List<String>> tags,
                            Optional<List<String>> notags)
-            throws HtsgetException, NotFoundException, PermissionDeniedException, MalformedURLException;
+            throws HtsgetException, NotFoundException, PermissionDeniedException, IOException, URISyntaxException;
 
     HtsgetResponse getVariant(String id,
                               String format,

@@ -5,12 +5,16 @@ import eu.elixir.ega.ebi.commons.shared.config.NotFoundException;
 import eu.elixir.ega.ebi.commons.shared.config.PermissionDeniedException;
 import eu.elixir.ega.ebi.htsget.dto.HtsgetErrorResponse;
 import eu.elixir.ega.ebi.htsget.service.TicketServiceV2;
+import org.apache.http.HttpHeaders;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.ServletRequestBindingException;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Optional;
 
@@ -25,6 +29,12 @@ public class TicketControllerV2 {
     @Autowired
     private TicketServiceV2 service;
 
+    @RequestMapping(value="/version", method = GET)
+    @ResponseBody
+    public String getVersion() {
+        return "v1.0.0";
+    }
+
     @RequestMapping(value = "/reads/{id}", method = GET, produces="application/vnd.ga4gh.htsget.v1.0.0+json")
     public HtsgetResponse getRead(@PathVariable String id,
                                   @RequestParam(defaultValue = "BAM") String format,
@@ -34,9 +44,14 @@ public class TicketControllerV2 {
                                   @RequestParam Optional<Long> end,
                                   @RequestParam Optional<List<TicketServiceV2.Field>> fields,
                                   @RequestParam Optional<List<String>> tags,
-                                  @RequestParam Optional<List<String>> notags
-                                  ) throws MalformedURLException {
-        return service.getRead(id, format, requestClass, referenceName, start, end, fields, tags, notags);
+                                  @RequestParam Optional<List<String>> notags,
+                                  @RequestHeader String authorization
+                                  ) throws IOException, URISyntaxException {
+        HtsgetResponse response = service.getRead(id, format, requestClass, referenceName, start, end, fields, tags, notags);
+        for(HtsgetUrl url : response.getUrls()) {
+            url.setHeader(HttpHeaders.AUTHORIZATION, authorization);
+        }
+        return response;
     }
 
     @RequestMapping(value = "/variants/{id}", method = GET)
@@ -48,8 +63,13 @@ public class TicketControllerV2 {
                                      @RequestParam Optional<Long> end,
                                      @RequestParam Optional<List<TicketServiceV2.Field>> fields,
                                      @RequestParam Optional<List<String>> tags,
-                                     @RequestParam Optional<List<String>> notags) {
-        return service.getVariant(id, format, requestClass, referenceName, start, end, fields, tags, notags);
+                                     @RequestParam Optional<List<String>> notags,
+                                     @RequestHeader String authorization) {
+        HtsgetResponse response = service.getVariant(id, format, requestClass, referenceName, start, end, fields, tags, notags);
+        for(HtsgetUrl url : response.getUrls()) {
+            url.setHeader(HttpHeaders.AUTHORIZATION, authorization);
+        }
+        return response;
     }
 
     @RequestMapping(value = "/files/{id}", method = GET)
@@ -61,16 +81,21 @@ public class TicketControllerV2 {
                                   @RequestParam Optional<Long> end,
                                   @RequestParam Optional<List<TicketServiceV2.Field>> fields,
                                   @RequestParam Optional<List<String>> tags,
-                                  @RequestParam Optional<List<String>> notags) throws MalformedURLException {
+                                  @RequestParam Optional<List<String>> notags,
+                                  @RequestHeader String authorization) throws IOException, URISyntaxException {
+        HtsgetResponse response;
         if (format.equalsIgnoreCase("BAM") || format.equalsIgnoreCase("CRAM")){
-            return service.getRead(id, format, requestClass, referenceName, start, end, fields, tags, notags);
+            response = service.getRead(id, format, requestClass, referenceName, start, end, fields, tags, notags);
+        } else if (format.equalsIgnoreCase("VCF") || format.equalsIgnoreCase("BCF")){
+            response = service.getVariant(id, format, requestClass, referenceName, start, end, fields, tags, notags);
+        } else {
+            throw new UnsupportedFormatException(format);
         }
 
-        if (format.equalsIgnoreCase("VCF") || format.equalsIgnoreCase("BCF")){
-            return service.getVariant(id, format, requestClass, referenceName, start, end, fields, tags, notags);
+        for(HtsgetUrl url : response.getUrls()) {
+            url.setHeader(HttpHeaders.AUTHORIZATION, authorization);
         }
-
-        throw new UnsupportedFormatException(format);
+        return response;
     }
 
     @ExceptionHandler
@@ -105,4 +130,11 @@ public class TicketControllerV2 {
                 .body(new HtsgetErrorResponse("InvalidAuthentication", exception.getMessage()));
     }
 
+    @ExceptionHandler
+    public ResponseEntity<HtsgetErrorResponse> handleServletRequestBindingException(ServletRequestBindingException exception) {
+        return ResponseEntity
+                .status(401)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(new HtsgetErrorResponse("InvalidAuthentication", "Request missing Authorization header"));
+    }
 }

@@ -7,6 +7,7 @@ import eu.elixir.ega.ebi.commons.config.UnsupportedFormatException;
 import eu.elixir.ega.ebi.commons.shared.config.NotFoundException;
 import eu.elixir.ega.ebi.commons.shared.config.PermissionDeniedException;
 import eu.elixir.ega.ebi.htsget.service.TicketServiceV2;
+import org.apache.http.HttpHeaders;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -27,10 +28,10 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultMatcher;
 
 
+import java.net.URI;
 import java.net.URL;
 import java.util.Collection;
 import java.util.HashMap;
@@ -38,11 +39,9 @@ import java.util.Map;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.any;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @RunWith(SpringRunner.class)
 @WebMvcTest(controllers = TicketControllerV2.class, secure = false)
@@ -99,9 +98,17 @@ public class TicketControllerV2Test {
     }
 
     @Test
+    public void canGetVersion() throws Exception {
+        mvc.perform(get("/htsget/version"))
+                .andExpect(status().isOk())
+                .andExpect(content().string("v1.0.0"));
+    }
+
+    @Test
     public void nameTBD() throws Exception {
-        Mockito.when(service.getRead(anyString(), anyString(), any(), any(), any(), any(), any(), any(), any())).thenReturn(new HtsgetResponse());
-        mvc.perform(get("/htsget/reads/1"))
+        Mockito.when(service.getRead(anyString(), anyString(), any(), any(), any(), any(), any(), any(), any())).thenReturn(new HtsgetResponse("BAM"));
+        mvc.perform(get("/htsget/reads/1")
+                        .header(HttpHeaders.AUTHORIZATION, "dummy"))
                 .andExpect(status().isOk())
                 .andExpect(conformsToOperation("searchReadId"));
     }
@@ -109,7 +116,8 @@ public class TicketControllerV2Test {
     @Test
     public void unknownFormatReturnsUnsupportedFormatError() throws Exception {
         Mockito.when(service.getRead(anyString(), anyString(), any(), any(), any(), any(), any(), any(), any())).thenThrow(new UnsupportedFormatException("sushi"));
-        mvc.perform(get("/htsget/reads/1?format=sushi"))
+        mvc.perform(get("/htsget/reads/1?format=sushi")
+                        .header(HttpHeaders.AUTHORIZATION, "dummy"))
                 .andExpect(status().is(400))
                 .andExpect(conformsToOperation("searchReadId"))
                 .andExpect(content().json("{\n" +
@@ -123,7 +131,8 @@ public class TicketControllerV2Test {
     @Test
     public void wrongInputReturnsInvalidInput() throws Exception {
         Mockito.when(service.getRead(anyString(), anyString(), any(), any(), any(), any(), any(), any(), any())).thenThrow(new InvalidInputException("sushi"));
-        mvc.perform(get("/htsget/reads/1?format=sushi"))
+        mvc.perform(get("/htsget/reads/1?format=sushi")
+                        .header(HttpHeaders.AUTHORIZATION, "dummy"))
                 .andExpect(status().is(400))
                 .andExpect(conformsToOperation("searchReadId"))
                 .andExpect(content().json("{\n" +
@@ -137,7 +146,8 @@ public class TicketControllerV2Test {
     @Test
     public void wrongRangeReturnsInvalidRange() throws Exception {
         Mockito.when(service.getRead(anyString(), anyString(), any(), any(), any(), any(), any(), any(), any())).thenThrow(new InvalidRangeException("sushi"));
-        mvc.perform(get("/htsget/reads/1?format=sushi"))
+        mvc.perform(get("/htsget/reads/1?format=sushi")
+                        .header(HttpHeaders.AUTHORIZATION, "dummy"))
                 .andExpect(status().is(400))
                 .andExpect(conformsToOperation("searchReadId"))
                 .andExpect(content().json("{\n" +
@@ -149,14 +159,14 @@ public class TicketControllerV2Test {
     }
 
     @Test
-    public void wrongCredentialsReturnInvalidAuthentication() throws Exception {
+    public void missingCredentialsReturnInvalidAuthentication() throws Exception {
         Mockito.when(service.getRead(anyString(), anyString(), any(), any(), any(), any(), any(), any(), any())).thenThrow(new InvalidAuthenticationException("sushi"));
         mvc.perform(get("/htsget/reads/1?format=sushi"))
                 .andExpect(status().is(401))
                 .andExpect(content().json("{\n" +
                         "   \"htsget\" : {\n" +
                         "      \"error\": \"InvalidAuthentication\",\n" +
-                        "      \"message\": \"Invalid Authentication : sushi\"\n" +
+                        "      \"message\": \"Request missing Authorization header\"\n" +
                         "   }\n" +
                         "}"));
 
@@ -165,7 +175,8 @@ public class TicketControllerV2Test {
     @Test
     public void wrongCredentialsReturnPermissionDenied() throws Exception {
         Mockito.when(service.getRead(anyString(), anyString(), any(), any(), any(), any(), any(), any(), any())).thenThrow(new PermissionDeniedException("sushi"));
-        mvc.perform(get("/htsget/reads/1?format=sushi"))
+        mvc.perform(get("/htsget/reads/1?format=sushi")
+                        .header(HttpHeaders.AUTHORIZATION, "invalid"))
                 .andExpect(status().is(403))
                 .andExpect(content().json("{\n" +
                         "   \"htsget\" : {\n" +
@@ -179,7 +190,8 @@ public class TicketControllerV2Test {
     @Test
     public void requestedResourceNotFoundReturnsNotFound() throws Exception {
         Mockito.when(service.getRead(anyString(), anyString(), any(), any(), any(), any(), any(), any(), any())).thenThrow(new NotFoundException("Not Found", "sushi"));
-        mvc.perform(get("/htsget/reads/1?format=sushi"))
+        mvc.perform(get("/htsget/reads/1?format=sushi")
+                        .header(HttpHeaders.AUTHORIZATION, "dummy"))
                 .andExpect(status().is(404))
                 .andExpect(content().json("{\n" +
                         "   \"htsget\" : {\n" +
@@ -213,7 +225,16 @@ public class TicketControllerV2Test {
                 .andExpect(header().string("Access-Control-Max-Age", String.valueOf(30*24*60*60)));
     }
 
-
+    @Test
+    public void authoriationHeaderIsCopiedToDataEdgeRequests() throws Exception {
+        HtsgetResponse response = new HtsgetResponse("BAM");
+        response.addUrl(new HtsgetUrl(URI.create("http://test.uri")));
+        Mockito.when(service.getRead(anyString(), anyString(), any(), any(), any(), any(), any(), any(), any())).thenReturn(response);
+        mvc.perform(get("/htsget/reads/1")
+                .header(HttpHeaders.AUTHORIZATION, "sushi"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.htsget.urls[*].headers.Authorization").value("sushi"));
+    }
 
 
 }
