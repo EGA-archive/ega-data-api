@@ -13,7 +13,6 @@ import eu.elixir.ega.ebi.commons.shared.service.FileInfoService;
 import eu.elixir.ega.ebi.htsget.rest.HtsgetResponse;
 import eu.elixir.ega.ebi.htsget.rest.HtsgetUrl;
 import eu.elixir.ega.ebi.htsget.service.TicketServiceV2;
-import htsjdk.samtools.*;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpHeaders;
@@ -28,14 +27,15 @@ import java.util.*;
 
 public class TicketServiceV2Impl implements TicketServiceV2 {
 
-    public static final int MAX_BYTES_PER_DATA_BLOCK = 1 * 1024 * 1024 * 1024;
-    private FileInfoService fileInfoService;
+    public static final int MAX_BYTES_PER_DATA_BLOCK = 1024 * 1024 * 1024;
 
-    private MyExternalConfig externalConfig;
+    private final FileInfoService fileInfoService;
 
-    private ResClient resClient;
+    private final MyExternalConfig externalConfig;
 
-    private DataProviderFactory dataProviderFactory;
+    private final ResClient resClient;
+
+    private final DataProviderFactory dataProviderFactory;
 
 
     public TicketServiceV2Impl(FileInfoService fileInfoService, MyExternalConfig externalConfig, ResClient resClient, DataProviderFactory dataProviderFactory) {
@@ -110,12 +110,7 @@ public class TicketServiceV2Impl implements TicketServiceV2 {
                         throw new NotImplementedException("Unplaced unmapped reads not implemented yet");
                     }
 
-                    // look up this sequence in the dictionary
-                    SAMSequenceDictionary sequenceDictionary = reader.getHeader().getSequenceDictionary();
-                    int sequenceIndex = sequenceDictionary.getSequenceIndex(referenceName.get());
-                    if (sequenceIndex == SAMSequenceRecord.UNAVAILABLE_SEQUENCE_INDEX) {
-                        throw new NotFoundException("sequence not found", referenceName.get());
-                    }
+
 
                     // Download the indexFile as we are going to look at it
                     FileIndexFile fileIndexFile = fileInfoService.getFileIndexFile(reqFile.getFileId());
@@ -124,7 +119,7 @@ public class TicketServiceV2Impl implements TicketServiceV2 {
                     }
 
                     try (SeekableStream indexStream = resClient.getStreamForFile(fileIndexFile.getIndexFileId())) {
-                        reader.addContentUris(sequenceIndex, start.get(), end.get(), baseURI, result, dataStream, indexStream);
+                        reader.addContentUris(referenceName.get(), start.get(), end.get(), baseURI, result, dataStream, indexStream);
                     }
 
                     result.addUrl(new HtsgetUrl(reader.getFooterAsDataUri(), "body"));

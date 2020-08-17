@@ -9,22 +9,16 @@ import eu.elixir.ega.ebi.commons.shared.dto.MyExternalConfig;
 import eu.elixir.ega.ebi.commons.shared.service.FileInfoService;
 import eu.elixir.ega.ebi.htsget.config.LocalTestData;
 import eu.elixir.ega.ebi.htsget.service.TicketServiceV2;
-import eu.elixir.ega.ebi.htsget.service.internal.DataProvider;
-import eu.elixir.ega.ebi.htsget.service.internal.DataProviderFactory;
-import eu.elixir.ega.ebi.htsget.service.internal.ResClient;
-import eu.elixir.ega.ebi.htsget.service.internal.TicketServiceV2Impl;
+import eu.elixir.ega.ebi.htsget.service.internal.*;
 import htsjdk.samtools.SAMFileHeader;
 import htsjdk.samtools.SAMSequenceDictionary;
 import htsjdk.samtools.SAMSequenceRecord;
 import htsjdk.samtools.seekablestream.SeekableFileStream;
-import htsjdk.samtools.util.BlockCompressedStreamConstants;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -38,7 +32,6 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Base64;
 import java.util.Optional;
 
 import static org.mockito.Matchers.any;
@@ -117,13 +110,13 @@ public class TicketServiceV2Test {
     @Test(expected = NotFoundException.class)
     public void requestForNonExistingReferenceReturnsNotFound() throws IOException, URISyntaxException {
         doReturn(true).when(dataProvider).supportsFileType(any());
-        doReturn(new SAMFileHeader()).when(dataProvider).getHeader();
+        doThrow(NotFoundException.class).when(dataProvider).addContentUris(anyString(), any(), any(), any(), any(), any(), any());
         service.getRead(LocalTestData.BAM_FILE_ID,
                 "BAM",
                 Optional.empty(),
                 Optional.of("DoesNotExist"),
-                Optional.empty(),
-                Optional.empty(),
+                Optional.of(1L),
+                Optional.of(2L),
                 Optional.empty(),
                 Optional.empty(),
                 Optional.empty());
@@ -205,14 +198,7 @@ public class TicketServiceV2Test {
             bigByteRange.setHeader(HttpHeaders.RANGE, "bytes=" + HttpRange.createByteRange(0, mockDataLength).toString());
             i.getArgumentAt(4, HtsgetResponse.class).addUrl(bigByteRange);
             return null;
-        }).when(dataProvider).addContentUris(anyInt(), any(), any(), any(), any(), any(), any());
-        doAnswer(invocationOnMock -> {
-            SAMFileHeader header = new SAMFileHeader();
-            SAMSequenceDictionary dictionary = new SAMSequenceDictionary();
-            dictionary.addSequence(new SAMSequenceRecord("chrM", 1000));
-            header.setSequenceDictionary(dictionary);
-            return header;
-        }).when(dataProvider).getHeader();
+        }).when(dataProvider).addContentUris(anyString(), any(), any(), any(), any(), any(), any());
         doReturn(new URI("data:123")).when(dataProvider).getHeaderAsDataUri();
         doReturn(new URI("data:321")).when(dataProvider).getFooterAsDataUri();
 

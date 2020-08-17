@@ -57,7 +57,7 @@ public class CRAMDataProviderTest {
             bamDataProvider.readHeader(dataStream);
             response.addUrl(new HtsgetUrl(bamDataProvider.getHeaderAsDataUri(), "header"));
 
-            bamDataProvider.addContentUris(bamDataProvider.getHeader().getSequenceIndex(CHROMOSOME_NAME),
+            bamDataProvider.addContentUris(CHROMOSOME_NAME,
                     START_POSITION, END_POSITION,
                     new URI("file://" + LocalTestData.BAM_FILE_PATH),
                     response,

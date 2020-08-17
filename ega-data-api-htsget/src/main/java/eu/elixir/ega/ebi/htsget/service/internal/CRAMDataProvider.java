@@ -1,9 +1,12 @@
 package eu.elixir.ega.ebi.htsget.service.internal;
 
+import eu.elixir.ega.ebi.commons.shared.config.NotFoundException;
 import eu.elixir.ega.ebi.htsget.rest.HtsgetResponse;
 import eu.elixir.ega.ebi.htsget.rest.HtsgetUrl;
 import htsjdk.samtools.CRAMCRAIIndexer;
 import htsjdk.samtools.SAMFileHeader;
+import htsjdk.samtools.SAMSequenceDictionary;
+import htsjdk.samtools.SAMSequenceRecord;
 import htsjdk.samtools.cram.CRAIEntry;
 import htsjdk.samtools.cram.CRAIIndex;
 import htsjdk.samtools.cram.build.CramIO;
@@ -19,7 +22,7 @@ import java.net.URISyntaxException;
 import java.util.Base64;
 import java.util.List;
 
-public class CRAMDataProvider implements DataProvider {
+public class CRAMDataProvider extends AbstractDataProvider implements DataProvider {
 
     CramHeader cramHeader;
     SAMFileHeader samHeader;
@@ -30,14 +33,9 @@ public class CRAMDataProvider implements DataProvider {
     }
 
     @Override
-    public void readHeader(SeekableStream stream) throws IOException {
+    public void readHeader(SeekableStream stream) {
         cramHeader = CramIO.readCramHeader(stream);
         samHeader = Container.readSAMFileHeaderContainer(cramHeader.getCRAMVersion(), stream, new String(cramHeader.getId()));
-    }
-
-    @Override
-    public SAMFileHeader getHeader() {
-        return samHeader;
     }
 
     @Override
@@ -52,7 +50,14 @@ public class CRAMDataProvider implements DataProvider {
     }
 
     @Override
-    public void addContentUris(int sequenceIndex, Long start, Long end, URI baseURI, HtsgetResponse urls, SeekableStream dataStream, SeekableStream indexStream) throws IOException, URISyntaxException {
+    public void addContentUris(String referenceName, Long start, Long end, URI baseURI, HtsgetResponse urls, SeekableStream dataStream, SeekableStream indexStream) throws IOException {
+        // look up this sequence in the dictionary
+        SAMSequenceDictionary sequenceDictionary = samHeader.getSequenceDictionary();
+        int sequenceIndex = sequenceDictionary.getSequenceIndex(referenceName);
+        if (sequenceIndex == SAMSequenceRecord.UNAVAILABLE_SEQUENCE_INDEX) {
+            throw new NotFoundException("sequence not found", referenceName);
+        }
+
         CRAIIndex index = CRAMCRAIIndexer.readIndex(indexStream);
         List<CRAIEntry> indexEntries = CRAIIndex.find(index.getCRAIEntries(), sequenceIndex, start.intValue(), ((Long)(end - start)).intValue());
         for(CRAIEntry entry : indexEntries) {
@@ -73,9 +78,7 @@ public class CRAMDataProvider implements DataProvider {
     @Override
     public URI getFooterAsDataUri() throws IOException, URISyntaxException {
         try(ByteArrayOutputStream footerOutputStream = new ByteArrayOutputStream()) {
-
             CramIO.writeCramEOF(cramHeader.getCRAMVersion(), footerOutputStream);
-
             return new URI(String.format("data:base64,%s", Base64.getEncoder().encodeToString(footerOutputStream.toByteArray())));
         }
     }
