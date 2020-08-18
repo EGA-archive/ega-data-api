@@ -10,20 +10,23 @@ import eu.elixir.ega.ebi.commons.shared.dto.File;
 import eu.elixir.ega.ebi.commons.shared.dto.FileIndexFile;
 import eu.elixir.ega.ebi.commons.shared.dto.MyExternalConfig;
 import eu.elixir.ega.ebi.commons.shared.service.FileInfoService;
-import eu.elixir.ega.ebi.htsget.rest.HtsgetResponse;
-import eu.elixir.ega.ebi.htsget.rest.HtsgetUrl;
+import eu.elixir.ega.ebi.htsget.dto.HtsgetResponseV2;
+import eu.elixir.ega.ebi.htsget.dto.HtsgetUrlV2;
+import eu.elixir.ega.ebi.htsget.formats.DataProvider;
+import eu.elixir.ega.ebi.htsget.formats.DataProviderFactory;
 import eu.elixir.ega.ebi.htsget.service.TicketServiceV2;
+import htsjdk.samtools.seekablestream.SeekableStream;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpHeaders;
 import org.springframework.http.HttpRange;
 import org.springframework.web.util.UriComponentsBuilder;
-import htsjdk.samtools.seekablestream.SeekableStream;
 
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
 
 public class TicketServiceV2Impl implements TicketServiceV2 {
 
@@ -46,23 +49,23 @@ public class TicketServiceV2Impl implements TicketServiceV2 {
     }
 
     @Override
-    public HtsgetResponse getRead(String id,
-                                  String format,
-                                  Optional<String> requestClass,
-                                  Optional<String> referenceName,
-                                  Optional<Long> start,
-                                  Optional<Long> end,
-                                  Optional<List<Field>> fields,
-                                  Optional<List<String>> tags,
-                                  Optional<List<String>> notags)
+    public HtsgetResponseV2 getRead(String id,
+                                    String format,
+                                    Optional<String> requestClass,
+                                    Optional<String> referenceName,
+                                    Optional<Long> start,
+                                    Optional<Long> end,
+                                    Optional<List<Field>> fields,
+                                    Optional<List<String>> tags,
+                                    Optional<List<String>> notags)
             throws HtsgetException, NotFoundException, PermissionDeniedException, IOException, URISyntaxException {
 
         boolean onlyHeader = false;
-        if(requestClass.isPresent()) {
-            if(!requestClass.get().equalsIgnoreCase("Header"))
+        if (requestClass.isPresent()) {
+            if (!requestClass.get().equalsIgnoreCase("Header"))
                 throw new InvalidInputException("Invalid class parameter");
             onlyHeader = true;
-            if(referenceName.isPresent() ||
+            if (referenceName.isPresent() ||
                     start.isPresent() ||
                     end.isPresent() ||
                     fields.isPresent() ||
@@ -92,16 +95,19 @@ public class TicketServiceV2Impl implements TicketServiceV2 {
                 .queryParam("destinationFormat", "plain")
                 .build().toUri();
 
-        HtsgetResponse result = new HtsgetResponse(format);
+        HtsgetResponseV2 result = new HtsgetResponseV2(format);
 
         if (!onlyHeader && !referenceName.isPresent()) {
             // user is requesting the entire file
-            result.addUrl(new HtsgetUrl(baseURI));
+            result.addUrl(new HtsgetUrlV2(baseURI));
+            if (reqFile.getUnencryptedChecksumType().equalsIgnoreCase("md5"))
+                result.setMd5(reqFile.getUnencryptedChecksum());
+
         } else {
 
-            try(SeekableStream dataStream = resClient.getStreamForFile(id)) {
+            try (SeekableStream dataStream = resClient.getStreamForFile(id)) {
                 reader.readHeader(dataStream);
-                result.addUrl(new HtsgetUrl(reader.getHeaderAsDataUri(), "header"));
+                result.addUrl(new HtsgetUrlV2(reader.getHeaderAsDataUri(), "header"));
 
                 if (!onlyHeader) {
 
@@ -109,8 +115,6 @@ public class TicketServiceV2Impl implements TicketServiceV2 {
                         // TODO
                         throw new NotImplementedException("Unplaced unmapped reads not implemented yet");
                     }
-
-
 
                     // Download the indexFile as we are going to look at it
                     FileIndexFile fileIndexFile = fileInfoService.getFileIndexFile(reqFile.getFileId());
@@ -122,7 +126,7 @@ public class TicketServiceV2Impl implements TicketServiceV2 {
                         reader.addContentUris(referenceName.get(), start.get(), end.get(), baseURI, result, dataStream, indexStream);
                     }
 
-                    result.addUrl(new HtsgetUrl(reader.getFooterAsDataUri(), "body"));
+                    result.addUrl(new HtsgetUrlV2(reader.getFooterAsDataUri(), "body"));
                 }
                 splitLargeDataBlocks(result);
 
@@ -132,11 +136,10 @@ public class TicketServiceV2Impl implements TicketServiceV2 {
         return result;
     }
 
-    private void splitLargeDataBlocks(HtsgetResponse result) {
+    private void splitLargeDataBlocks(HtsgetResponseV2 result) {
         // HtsGet spec recommends that data blocks should not exceed 1GB so split Urls that are too big
-        for (int i = 0; i < result.getUrls().size(); ++i)
-        {
-            HtsgetUrl url = result.getUrls().get(i);
+        for (int i = 0; i < result.getUrls().size(); ++i) {
+            HtsgetUrlV2 url = result.getUrls().get(i);
             if (url.getHeaders() == null)
                 continue;
             String rangeHeader = url.getHeaders().getOrDefault(HttpHeaders.RANGE, null);
@@ -152,7 +155,7 @@ public class TicketServiceV2Impl implements TicketServiceV2 {
 
             while (rangeEnd - rangeStart + 1 > MAX_BYTES_PER_DATA_BLOCK) {
                 HttpRange subRange = HttpRange.createByteRange(rangeStart, rangeStart + MAX_BYTES_PER_DATA_BLOCK - 1);
-                HtsgetUrl splitUrl = new HtsgetUrl(result.getUrls().get(i).getUrl(), result.getUrls().get(i).getUrlClass());
+                HtsgetUrlV2 splitUrl = new HtsgetUrlV2(result.getUrls().get(i).getUrl(), result.getUrls().get(i).getUrlClass());
                 splitUrl.setHeader(HttpHeaders.RANGE, "bytes=" + subRange.toString());
                 result.getUrls().add(i, splitUrl);
                 rangeStart += MAX_BYTES_PER_DATA_BLOCK;
@@ -164,14 +167,14 @@ public class TicketServiceV2Impl implements TicketServiceV2 {
     }
 
     @Override
-    public HtsgetResponse getVariant(String id,
-                                     String format,
-                                     Optional<String> requestClass,
-                                     Optional<String> referenceName,
-                                     Optional<Long> start, Optional<Long> end,
-                                     Optional<List<Field>> fields,
-                                     Optional<List<String>> tags,
-                                     Optional<List<String>> notags)
+    public HtsgetResponseV2 getVariant(String id,
+                                       String format,
+                                       Optional<String> requestClass,
+                                       Optional<String> referenceName,
+                                       Optional<Long> start, Optional<Long> end,
+                                       Optional<List<Field>> fields,
+                                       Optional<List<String>> tags,
+                                       Optional<List<String>> notags)
             throws HtsgetException, NotFoundException, PermissionDeniedException {
         return null;
     }

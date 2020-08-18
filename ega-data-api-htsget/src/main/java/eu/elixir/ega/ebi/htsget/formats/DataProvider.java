@@ -1,6 +1,6 @@
-package eu.elixir.ega.ebi.htsget.service.internal;
+package eu.elixir.ega.ebi.htsget.formats;
 
-import eu.elixir.ega.ebi.htsget.rest.HtsgetResponse;
+import eu.elixir.ega.ebi.htsget.dto.HtsgetResponseV2;
 import htsjdk.samtools.seekablestream.SeekableStream;
 
 import java.io.IOException;
@@ -14,7 +14,7 @@ public interface DataProvider {
 
     URI getHeaderAsDataUri() throws IOException, URISyntaxException;
 
-    void addContentUris(String sequenceIndex, Long start, Long end, URI baseURI, HtsgetResponse urls, SeekableStream dataStream, SeekableStream indexStream) throws IOException, URISyntaxException;
+    void addContentUris(String sequenceIndex, Long start, Long end, URI baseURI, HtsgetResponseV2 urls, SeekableStream dataStream, SeekableStream indexStream) throws IOException, URISyntaxException;
 
     URI getFooterAsDataUri() throws IOException, URISyntaxException;
 }

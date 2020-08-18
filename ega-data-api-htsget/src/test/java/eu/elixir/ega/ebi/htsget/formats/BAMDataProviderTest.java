@@ -1,8 +1,8 @@
-package eu.elixir.ega.ebi.htsget.service.internal;
+package eu.elixir.ega.ebi.htsget.formats;
 
 import eu.elixir.ega.ebi.htsget.config.LocalTestData;
-import eu.elixir.ega.ebi.htsget.rest.HtsgetResponse;
-import eu.elixir.ega.ebi.htsget.rest.HtsgetUrl;
+import eu.elixir.ega.ebi.htsget.dto.HtsgetResponseV2;
+import eu.elixir.ega.ebi.htsget.dto.HtsgetUrlV2;
 import htsjdk.samtools.*;
 import htsjdk.samtools.seekablestream.SeekableFileStream;
 import htsjdk.samtools.seekablestream.SeekableStream;
@@ -47,12 +47,12 @@ public class BAMDataProviderTest extends DataProviderTest {
         BAMDataProvider bamDataProvider = new BAMDataProvider();
 
         // Use the data file and index to make a response with URIs for all the pieces
-        HtsgetResponse response = new HtsgetResponse("BAM");
+        HtsgetResponseV2 response = new HtsgetResponseV2("BAM");
         try (SeekableStream dataStream = new SeekableFileStream(new File(LocalTestData.BAM_FILE_PATH));
              SeekableStream indexStream = new SeekableFileStream(new File(LocalTestData.BAM_INDEX_FILE_PATH))) {
 
             bamDataProvider.readHeader(dataStream);
-            response.addUrl(new HtsgetUrl(bamDataProvider.getHeaderAsDataUri(), "header"));
+            response.addUrl(new HtsgetUrlV2(bamDataProvider.getHeaderAsDataUri(), "header"));
 
             bamDataProvider.addContentUris(CHROMOSOME_NAME,
                     START_POSITION, END_POSITION,
@@ -62,7 +62,7 @@ public class BAMDataProviderTest extends DataProviderTest {
                     indexStream);
 
 
-            response.addUrl(new HtsgetUrl(bamDataProvider.getFooterAsDataUri()));
+            response.addUrl(new HtsgetUrlV2(bamDataProvider.getFooterAsDataUri()));
         }
 
         int expectedRecordCount = countRecordsInOriginalFile(new Interval(CHROMOSOME_NAME, START_POSITION.intValue(), END_POSITION.intValue()));
@@ -78,7 +78,7 @@ public class BAMDataProviderTest extends DataProviderTest {
         Assert.assertArrayEquals(BlockCompressedStreamConstants.EMPTY_GZIP_BLOCK, Base64.getDecoder().decode(base64Data));
     }
 
-    private int countMatchingRecordsInResponse(HtsgetResponse response, Interval interval) throws IOException {
+    private int countMatchingRecordsInResponse(HtsgetResponseV2 response, Interval interval) throws IOException {
         try (ByteArrayInputStream stream = new ByteArrayInputStream(makeDataFileFromResponse(response, LocalTestData.BAM_FILE_PATH))) {
             SamInputResource inputResource = SamInputResource.of(stream);
             try (SamReader reader = SamReaderFactory.makeDefault().open(inputResource)) {

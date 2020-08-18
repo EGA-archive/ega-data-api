@@ -7,8 +7,8 @@ import eu.elixir.ega.ebi.commons.shared.dto.MyExternalConfig;
 import eu.elixir.ega.ebi.commons.shared.service.FileInfoService;
 import eu.elixir.ega.ebi.htsget.HtsgetServiceApplication;
 import eu.elixir.ega.ebi.htsget.config.LocalTestData;
+import eu.elixir.ega.ebi.htsget.formats.DataProviderFactory;
 import eu.elixir.ega.ebi.htsget.service.TicketServiceV2;
-import eu.elixir.ega.ebi.htsget.service.internal.DataProviderFactory;
 import eu.elixir.ega.ebi.htsget.service.internal.ResClient;
 import eu.elixir.ega.ebi.htsget.service.internal.TicketServiceV2Impl;
 import htsjdk.samtools.seekablestream.SeekableFileStream;
@@ -31,11 +31,10 @@ import java.net.MalformedURLException;
 
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.doThrow;
 
 @RunWith(SpringRunner.class)
 @AutoConfigureWebMvc
-@SpringBootTest(webEnvironment=SpringBootTest.WebEnvironment.DEFINED_PORT, classes={HtsgetServiceApplication.class})
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT, classes = {HtsgetServiceApplication.class})
 @TestPropertySource(locations = "classpath:application-test.properties")
 public class V2IntegrationTest {
 
@@ -45,10 +44,22 @@ public class V2IntegrationTest {
     @Autowired
     TestRestTemplate restTemplate;
 
+    @Test
+    @Ignore
+    public void runService() {
+
+        String versionStr = restTemplate.getForObject("/htsget/version", String.class);
+        Assert.assertEquals("v1.0.0", versionStr);
+
+        while (true) {
+
+        }
+    }
+
     @TestConfiguration
     public static class Config {
         @Bean
-        public TicketServiceV2 ticketService(FileInfoService fileInfoService, MyExternalConfig externalConfig, ResClient resClient, DataProviderFactory dataProviderFactory){
+        public TicketServiceV2 ticketService(FileInfoService fileInfoService, MyExternalConfig externalConfig, ResClient resClient, DataProviderFactory dataProviderFactory) {
             return new TicketServiceV2Impl(fileInfoService, externalConfig, resClient, dataProviderFactory);
         }
 
@@ -85,18 +96,6 @@ public class V2IntegrationTest {
         @Bean
         public DataProviderFactory dataProviderFactory() {
             return new DataProviderFactory();
-        }
-    }
-
-    @Test
-    @Ignore
-    public void runService() {
-
-        String versionStr = restTemplate.getForObject("/htsget/version", String.class);
-        Assert.assertEquals("v1.0.0", versionStr);
-
-        while(true) {
-
         }
     }
 }

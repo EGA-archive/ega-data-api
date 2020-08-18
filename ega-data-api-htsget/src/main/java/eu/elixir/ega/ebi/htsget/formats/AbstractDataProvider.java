@@ -1,7 +1,7 @@
-package eu.elixir.ega.ebi.htsget.service.internal;
+package eu.elixir.ega.ebi.htsget.formats;
 
-import eu.elixir.ega.ebi.htsget.rest.HtsgetResponse;
-import eu.elixir.ega.ebi.htsget.rest.HtsgetUrl;
+import eu.elixir.ega.ebi.htsget.dto.HtsgetResponseV2;
+import eu.elixir.ega.ebi.htsget.dto.HtsgetUrlV2;
 import htsjdk.samtools.seekablestream.SeekableStream;
 import htsjdk.samtools.util.BlockCompressedFilePointerUtil;
 import htsjdk.samtools.util.BlockCompressedInputStream;
@@ -34,7 +34,7 @@ public class AbstractDataProvider {
         return (highByte << 8 | lowByte) + 1;
     }
 
-    protected void makeUrlsForBGZFBlocks(URI baseURI, HtsgetResponse urls, SeekableStream dataStream, long chunkStart, long chunkEnd) throws IOException, URISyntaxException {
+    protected void makeUrlsForBGZFBlocks(URI baseURI, HtsgetResponseV2 urls, SeekableStream dataStream, long chunkStart, long chunkEnd) throws IOException, URISyntaxException {
         // For all the blocks we return, the first and last one we have to be careful, because
         // there might be records that are split across the edge of the block.
         long startBlockPosition = BlockCompressedFilePointerUtil.getBlockAddress(chunkStart);
@@ -47,7 +47,7 @@ public class AbstractDataProvider {
             startBlockEndTrim = Optional.of(BlockCompressedFilePointerUtil.getBlockOffset(chunkEnd));
         }
 
-        urls.addUrl(new HtsgetUrl(getTrimmedBlockAsDataUri(startBlockPosition,
+        urls.addUrl(new HtsgetUrlV2(getTrimmedBlockAsDataUri(startBlockPosition,
                 startBlockLength,
                 startBlockStartTrim,
                 startBlockEndTrim,
@@ -61,7 +61,7 @@ public class AbstractDataProvider {
         // is OK to return one big range of bytes.
         long midBlockPosition = startBlockPosition + startBlockLength;
         if (midBlockPosition < endBlockPosition) {
-            HtsgetUrl chunkURL = new HtsgetUrl(baseURI, "body");
+            HtsgetUrlV2 chunkURL = new HtsgetUrlV2(baseURI, "body");
             HttpRange range = HttpRange.createByteRange(midBlockPosition, endBlockPosition - 1);
             chunkURL.setHeader("Range", "bytes=" + range.toString());
             urls.addUrl(chunkURL);
@@ -71,7 +71,7 @@ public class AbstractDataProvider {
         int endBlockLength = AbstractDataProvider.getBlockSize(dataStream, endBlockPosition);
         Optional<Integer> endBlockEndTrim = Optional.of(BlockCompressedFilePointerUtil.getBlockOffset(chunkEnd) + 1);
 
-        urls.addUrl(new HtsgetUrl(getTrimmedBlockAsDataUri(endBlockPosition,
+        urls.addUrl(new HtsgetUrlV2(getTrimmedBlockAsDataUri(endBlockPosition,
                 endBlockLength,
                 Optional.empty(),
                 endBlockEndTrim,
@@ -86,14 +86,14 @@ public class AbstractDataProvider {
         if (dataStream.read(originalBlock) != blockSize)
             throw new IOException("Failed to read block");
 
-        if((((int)originalBlock[0])&0xff) != BlockCompressedStreamConstants.GZIP_ID1 || (((int)originalBlock[1])&0xff) != BlockCompressedStreamConstants.GZIP_ID2)
+        if ((((int) originalBlock[0]) & 0xff) != BlockCompressedStreamConstants.GZIP_ID1 || (((int) originalBlock[1]) & 0xff) != BlockCompressedStreamConstants.GZIP_ID2)
             throw new RuntimeException("Invalid block (expected header bytes " + BlockCompressedStreamConstants.GZIP_ID1 + "," + BlockCompressedStreamConstants.GZIP_ID2 + " but got " + originalBlock[0] + "," + originalBlock[1]);
 
         // Decompress it
         byte[] uncompressedData;
         try (ByteArrayInputStream input = new ByteArrayInputStream(originalBlock);
              BlockCompressedInputStream inputStream = new BlockCompressedInputStream(input)) {
-                uncompressedData = IOUtils.toByteArray(inputStream);
+            uncompressedData = IOUtils.toByteArray(inputStream);
         }
 
         // Trim it
@@ -103,8 +103,8 @@ public class AbstractDataProvider {
             uncompressedData = Arrays.copyOfRange(uncompressedData, startTrim.get(), uncompressedData.length);
 
         // Compress it again
-        try(ByteArrayOutputStream output = new ByteArrayOutputStream()) {
-            try (BlockCompressedOutputStream blockStream = new BlockCompressedOutputStream(output, (File)null)) {
+        try (ByteArrayOutputStream output = new ByteArrayOutputStream()) {
+            try (BlockCompressedOutputStream blockStream = new BlockCompressedOutputStream(output, (File) null)) {
                 blockStream.write(uncompressedData);
             }
 

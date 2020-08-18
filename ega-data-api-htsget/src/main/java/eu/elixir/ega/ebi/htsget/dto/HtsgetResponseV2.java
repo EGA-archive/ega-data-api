@@ -1,4 +1,4 @@
-package eu.elixir.ega.ebi.htsget.rest;
+package eu.elixir.ega.ebi.htsget.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -8,15 +8,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 @JsonTypeName("htsget")
-@JsonTypeInfo(include=JsonTypeInfo.As.WRAPPER_OBJECT, use = JsonTypeInfo.Id.NAME)
-public class HtsgetResponse {
+@JsonTypeInfo(include = JsonTypeInfo.As.WRAPPER_OBJECT, use = JsonTypeInfo.Id.NAME)
+public class HtsgetResponseV2 {
     private String format;
-    private List<HtsgetUrl> urls;
+    private List<HtsgetUrlV2> urls;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String md5;
 
-    public HtsgetResponse(String format) {
+    public HtsgetResponseV2(String format) {
         this.format = format;
         this.urls = new ArrayList<>();
     }
@@ -25,11 +25,11 @@ public class HtsgetResponse {
         return format;
     }
 
-    public List<HtsgetUrl> getUrls() {
+    public List<HtsgetUrlV2> getUrls() {
         return urls;
     }
 
-    public void addUrl(HtsgetUrl url) {
+    public void addUrl(HtsgetUrlV2 url) {
         this.urls.add(url);
     }
 

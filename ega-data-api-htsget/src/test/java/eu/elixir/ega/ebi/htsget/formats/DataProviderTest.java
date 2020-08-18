@@ -1,7 +1,7 @@
-package eu.elixir.ega.ebi.htsget.service.internal;
+package eu.elixir.ega.ebi.htsget.formats;
 
-import eu.elixir.ega.ebi.htsget.rest.HtsgetResponse;
-import eu.elixir.ega.ebi.htsget.rest.HtsgetUrl;
+import eu.elixir.ega.ebi.htsget.dto.HtsgetResponseV2;
+import eu.elixir.ega.ebi.htsget.dto.HtsgetUrlV2;
 import htsjdk.samtools.cram.io.InputStreamUtils;
 import htsjdk.samtools.seekablestream.SeekableFileStream;
 import htsjdk.samtools.seekablestream.SeekableStream;
@@ -15,7 +15,7 @@ import java.net.URI;
 import java.util.Base64;
 import java.util.List;
 
-public class DataProviderTest {
+public abstract class DataProviderTest {
     private static byte[] dataUriToByteArray(URI uri) {
         if (!uri.getScheme().equalsIgnoreCase("data"))
             throw new IllegalArgumentException();
@@ -23,11 +23,11 @@ public class DataProviderTest {
         return Base64.getDecoder().decode(uri.getSchemeSpecificPart().substring("base64,".length()));
     }
 
-    protected byte[] makeDataFileFromResponse(HtsgetResponse response, String dataFilePath) throws IOException {
+    protected byte[] makeDataFileFromResponse(HtsgetResponseV2 response, String dataFilePath) throws IOException {
         try (ByteArrayOutputStream stream = new ByteArrayOutputStream();
              SeekableStream dataStream = new SeekableFileStream(new File(dataFilePath))) {
 
-            for (HtsgetUrl url : response.getUrls()) {
+            for (HtsgetUrlV2 url : response.getUrls()) {
                 if (url.getUrl().getScheme().equalsIgnoreCase("data")) {
                     stream.write(DataProviderTest.dataUriToByteArray(url.getUrl()));
                 } else {

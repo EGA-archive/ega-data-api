@@ -1,6 +1,6 @@
-package eu.elixir.ega.ebi.htsget.service.internal;
+package eu.elixir.ega.ebi.htsget.formats;
 
-import eu.elixir.ega.ebi.htsget.rest.HtsgetResponse;
+import eu.elixir.ega.ebi.htsget.dto.HtsgetResponseV2;
 import htsjdk.samtools.seekablestream.SeekableStream;
 import htsjdk.samtools.util.BlockCompressedInputStream;
 import htsjdk.samtools.util.BlockCompressedOutputStream;
@@ -10,9 +10,9 @@ import htsjdk.tribble.index.Block;
 import htsjdk.tribble.index.tabix.TabixIndex;
 import htsjdk.variant.variantcontext.writer.Options;
 import htsjdk.variant.variantcontext.writer.VariantContextWriter;
+import htsjdk.variant.variantcontext.writer.VariantContextWriterBuilder;
 import htsjdk.variant.vcf.VCFCodec;
 import htsjdk.variant.vcf.VCFHeader;
-import htsjdk.variant.variantcontext.writer.VariantContextWriterBuilder;
 import org.apache.commons.io.input.CloseShieldInputStream;
 
 import java.io.ByteArrayOutputStream;
@@ -35,20 +35,20 @@ public class VCFDataProvider extends AbstractDataProvider implements DataProvide
         VCFCodec codec = new VCFCodec();
         try (CloseShieldInputStream shield = new CloseShieldInputStream(stream);
              BlockCompressedInputStream blockStream = new BlockCompressedInputStream(shield)) {
-             FeatureCodecHeader featureCodecHeader = codec.readHeader(codec.makeSourceFromStream(blockStream));
-             header = (VCFHeader)featureCodecHeader.getHeaderValue();
+            FeatureCodecHeader featureCodecHeader = codec.readHeader(codec.makeSourceFromStream(blockStream));
+            header = (VCFHeader) featureCodecHeader.getHeaderValue();
         }
     }
 
     @Override
     public URI getHeaderAsDataUri() throws IOException, URISyntaxException {
         try (ByteArrayOutputStream headerOutputStream = new ByteArrayOutputStream()) {
-            try(BlockCompressedOutputStream compressedOutputStream = new BlockCompressedOutputStream(headerOutputStream, (File)null);
-                VariantContextWriter writer = new VariantContextWriterBuilder()
-                     .unsetOption(Options.INDEX_ON_THE_FLY)
-                     .setOutputVCFStream(compressedOutputStream)
-                     .setReferenceDictionary(header.getSequenceDictionary())
-                     .build()) {
+            try (BlockCompressedOutputStream compressedOutputStream = new BlockCompressedOutputStream(headerOutputStream, (File) null);
+                 VariantContextWriter writer = new VariantContextWriterBuilder()
+                         .unsetOption(Options.INDEX_ON_THE_FLY)
+                         .setOutputVCFStream(compressedOutputStream)
+                         .setReferenceDictionary(header.getSequenceDictionary())
+                         .build()) {
                 writer.writeHeader(header);
             }
             return makeDataUriFromBytes(headerOutputStream.toByteArray());
@@ -56,9 +56,9 @@ public class VCFDataProvider extends AbstractDataProvider implements DataProvide
     }
 
     @Override
-    public void addContentUris(String referenceName, Long start, Long end, URI baseURI, HtsgetResponse urls, SeekableStream dataStream, SeekableStream indexStream) throws IOException, URISyntaxException {
+    public void addContentUris(String referenceName, Long start, Long end, URI baseURI, HtsgetResponseV2 urls, SeekableStream dataStream, SeekableStream indexStream) throws IOException, URISyntaxException {
 
-        try(BlockCompressedInputStream compressedIndexStream = new BlockCompressedInputStream(indexStream)) {
+        try (BlockCompressedInputStream compressedIndexStream = new BlockCompressedInputStream(indexStream)) {
             TabixIndex index = new TabixIndex(compressedIndexStream);
             List<Block> blocks = index.getBlocks(referenceName, start.intValue(), end.intValue());
 

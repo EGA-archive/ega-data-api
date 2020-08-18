@@ -1,4 +1,4 @@
-package eu.elixir.ega.ebi.htsget.rest;
+package eu.elixir.ega.ebi.htsget.service.internal;
 
 import eu.elixir.ega.ebi.commons.config.InvalidInputException;
 import eu.elixir.ega.ebi.commons.config.UnsupportedFormatException;
@@ -8,11 +8,11 @@ import eu.elixir.ega.ebi.commons.shared.dto.FileIndexFile;
 import eu.elixir.ega.ebi.commons.shared.dto.MyExternalConfig;
 import eu.elixir.ega.ebi.commons.shared.service.FileInfoService;
 import eu.elixir.ega.ebi.htsget.config.LocalTestData;
+import eu.elixir.ega.ebi.htsget.dto.HtsgetResponseV2;
+import eu.elixir.ega.ebi.htsget.dto.HtsgetUrlV2;
+import eu.elixir.ega.ebi.htsget.formats.DataProvider;
+import eu.elixir.ega.ebi.htsget.formats.DataProviderFactory;
 import eu.elixir.ega.ebi.htsget.service.TicketServiceV2;
-import eu.elixir.ega.ebi.htsget.service.internal.*;
-import htsjdk.samtools.SAMFileHeader;
-import htsjdk.samtools.SAMSequenceDictionary;
-import htsjdk.samtools.SAMSequenceRecord;
 import htsjdk.samtools.seekablestream.SeekableFileStream;
 import org.junit.Assert;
 import org.junit.Before;
@@ -57,14 +57,6 @@ public class TicketServiceV2Test {
 
     @MockBean
     private DataProvider dataProvider;
-
-    @TestConfiguration
-    public static class Config {
-        @Bean
-        public TicketServiceV2 ticketService(FileInfoService fileInfoService, MyExternalConfig externalConfig, ResClient resClient, DataProviderFactory dataProviderFactory){
-            return new TicketServiceV2Impl(fileInfoService, externalConfig, resClient, dataProviderFactory);
-        }
-    }
 
     @Before
     public void setUpCommonMocks() throws MalformedURLException, FileNotFoundException {
@@ -152,7 +144,7 @@ public class TicketServiceV2Test {
     @Test
     public void requestingEntireFileHasSingleURL() throws IOException, URISyntaxException {
         doReturn(true).when(dataProvider).supportsFileType(any());
-        HtsgetResponse response = service.getRead(LocalTestData.BAM_FILE_ID,
+        HtsgetResponseV2 response = service.getRead(LocalTestData.BAM_FILE_ID,
                 "BAM",
                 Optional.empty(),
                 Optional.empty(),
@@ -164,7 +156,7 @@ public class TicketServiceV2Test {
         Assert.assertEquals("BAM", response.getFormat());
         Assert.assertEquals(1, response.getUrls().size());
 
-        HtsgetUrl url = response.getUrls().get(0);
+        HtsgetUrlV2 url = response.getUrls().get(0);
         Assert.assertEquals("/" + LocalTestData.BAM_FILE_ID, url.getUrl().getPath());
     }
 
@@ -172,7 +164,7 @@ public class TicketServiceV2Test {
     public void requestingOnlyHeaderHasSingleURLForHeader() throws IOException, URISyntaxException {
         doReturn(true).when(dataProvider).supportsFileType(any());
         doReturn(new URI("data:123")).when(dataProvider).getHeaderAsDataUri();
-        HtsgetResponse response = service.getRead(LocalTestData.BAM_FILE_ID,
+        HtsgetResponseV2 response = service.getRead(LocalTestData.BAM_FILE_ID,
                 "BAM",
                 Optional.of("header"),
                 Optional.empty(),
@@ -184,7 +176,7 @@ public class TicketServiceV2Test {
         Assert.assertEquals(1, response.getUrls().size());
         Assert.assertEquals("BAM", response.getFormat());
 
-        HtsgetUrl url = response.getUrls().get(0);
+        HtsgetUrlV2 url = response.getUrls().get(0);
         Assert.assertEquals("data", url.getUrl().getScheme());
         Assert.assertEquals("header", url.getUrlClass());
     }
@@ -194,15 +186,15 @@ public class TicketServiceV2Test {
         long mockDataLength = 35L * 1024 * 1024 * 1024;
         doReturn(true).when(dataProvider).supportsFileType(any());
         doAnswer(i -> {
-            HtsgetUrl bigByteRange = new HtsgetUrl(new URI("https://test.data/"));
+            HtsgetUrlV2 bigByteRange = new HtsgetUrlV2(new URI("https://test.data/"));
             bigByteRange.setHeader(HttpHeaders.RANGE, "bytes=" + HttpRange.createByteRange(0, mockDataLength).toString());
-            i.getArgumentAt(4, HtsgetResponse.class).addUrl(bigByteRange);
+            i.getArgumentAt(4, HtsgetResponseV2.class).addUrl(bigByteRange);
             return null;
         }).when(dataProvider).addContentUris(anyString(), any(), any(), any(), any(), any(), any());
         doReturn(new URI("data:123")).when(dataProvider).getHeaderAsDataUri();
         doReturn(new URI("data:321")).when(dataProvider).getFooterAsDataUri();
 
-        HtsgetResponse response = service.getRead(LocalTestData.BAM_FILE_ID,
+        HtsgetResponseV2 response = service.getRead(LocalTestData.BAM_FILE_ID,
                 "BAM",
                 Optional.empty(),
                 Optional.of("chrM"),
@@ -212,17 +204,25 @@ public class TicketServiceV2Test {
                 Optional.empty(),
                 Optional.empty());
         long totalLength = 0;
-        for (HtsgetUrl url : response.getUrls()) {
+        for (HtsgetUrlV2 url : response.getUrls()) {
             if (url.getUrl().getScheme().equalsIgnoreCase("data"))
                 continue;
 
             for (HttpRange range : HttpRange.parseRanges(url.getHeaders().get(HttpHeaders.RANGE))) {
                 long rangeLength = range.getRangeEnd(mockDataLength) - range.getRangeStart(mockDataLength) + 1;
-                Assert.assertTrue(rangeLength <= TicketServiceV2Impl.MAX_BYTES_PER_DATA_BLOCK );
+                Assert.assertTrue(rangeLength <= TicketServiceV2Impl.MAX_BYTES_PER_DATA_BLOCK);
                 totalLength += rangeLength;
             }
         }
         Assert.assertEquals(mockDataLength, totalLength);
+    }
+
+    @TestConfiguration
+    public static class Config {
+        @Bean
+        public TicketServiceV2 ticketService(FileInfoService fileInfoService, MyExternalConfig externalConfig, ResClient resClient, DataProviderFactory dataProviderFactory) {
+            return new TicketServiceV2Impl(fileInfoService, externalConfig, resClient, dataProviderFactory);
+        }
     }
 
 }

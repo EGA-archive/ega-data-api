@@ -1,8 +1,8 @@
-package eu.elixir.ega.ebi.htsget.service.internal;
+package eu.elixir.ega.ebi.htsget.formats;
 
 import eu.elixir.ega.ebi.htsget.config.LocalTestData;
-import eu.elixir.ega.ebi.htsget.rest.HtsgetResponse;
-import eu.elixir.ega.ebi.htsget.rest.HtsgetUrl;
+import eu.elixir.ega.ebi.htsget.dto.HtsgetResponseV2;
+import eu.elixir.ega.ebi.htsget.dto.HtsgetUrlV2;
 import htsjdk.samtools.*;
 import htsjdk.samtools.cram.io.InputStreamUtils;
 import htsjdk.samtools.seekablestream.SeekableFileStream;
@@ -29,6 +29,13 @@ public class CRAMDataProviderTest {
     public static final Long END_POSITION = 16545L;
     public static final int EXPECTED_RECORDS_IN_QUERY = 655;
 
+    private static byte[] dataUriToByteArray(URI uri) {
+        if (!uri.getScheme().equalsIgnoreCase("data"))
+            throw new IllegalArgumentException();
+
+        return Base64.getDecoder().decode(uri.getSchemeSpecificPart().substring("base64,".length()));
+    }
+
     @Test
     public void canGetBytePositionsWithHtsJdkNormally() throws IOException {
         try (SamReader reader = SamReaderFactory.makeDefault().open(new File(LocalTestData.BAM_FILE_PATH))) {
@@ -50,12 +57,12 @@ public class CRAMDataProviderTest {
         BAMDataProvider bamDataProvider = new BAMDataProvider();
 
         // Use the data file and index to make a response with URIs for all the pieces
-        HtsgetResponse response = new HtsgetResponse("BAM");
+        HtsgetResponseV2 response = new HtsgetResponseV2("BAM");
         try (SeekableStream dataStream = new SeekableFileStream(new File(LocalTestData.BAM_FILE_PATH));
              SeekableStream indexStream = new SeekableFileStream(new File(LocalTestData.BAM_INDEX_FILE_PATH))) {
 
             bamDataProvider.readHeader(dataStream);
-            response.addUrl(new HtsgetUrl(bamDataProvider.getHeaderAsDataUri(), "header"));
+            response.addUrl(new HtsgetUrlV2(bamDataProvider.getHeaderAsDataUri(), "header"));
 
             bamDataProvider.addContentUris(CHROMOSOME_NAME,
                     START_POSITION, END_POSITION,
@@ -65,14 +72,14 @@ public class CRAMDataProviderTest {
                     indexStream);
 
 
-            response.addUrl(new HtsgetUrl(bamDataProvider.getFooterAsDataUri()));
+            response.addUrl(new HtsgetUrlV2(bamDataProvider.getFooterAsDataUri()));
         }
 
         Assert.assertEquals(EXPECTED_RECORDS_IN_QUERY, countMatchingRecordsInResponse(response,
                 new Interval(CHROMOSOME_NAME, START_POSITION.intValue(), END_POSITION.intValue())));
     }
 
-    private int countMatchingRecordsInResponse(HtsgetResponse response, Interval interval) throws IOException {
+    private int countMatchingRecordsInResponse(HtsgetResponseV2 response, Interval interval) throws IOException {
         try (ByteArrayInputStream stream = new ByteArrayInputStream(makeBAMFileFromResponse(response))) {
             SamInputResource inputResource = SamInputResource.of(stream);
             try (SamReader reader = SamReaderFactory.makeDefault().open(inputResource)) {
@@ -91,11 +98,11 @@ public class CRAMDataProviderTest {
         }
     }
 
-    private byte[] makeBAMFileFromResponse(HtsgetResponse response) throws IOException {
+    private byte[] makeBAMFileFromResponse(HtsgetResponseV2 response) throws IOException {
         try (ByteArrayOutputStream stream = new ByteArrayOutputStream();
              SeekableStream dataStream = new SeekableFileStream(new File(LocalTestData.BAM_FILE_PATH))) {
 
-            for (HtsgetUrl url : response.getUrls()) {
+            for (HtsgetUrlV2 url : response.getUrls()) {
                 if (url.getUrl().getScheme().equalsIgnoreCase("data")) {
                     stream.write(dataUriToByteArray(url.getUrl()));
                 } else {
@@ -114,12 +121,5 @@ public class CRAMDataProviderTest {
             byte[] content = InputStreamUtils.readFully(dataStream, ((Long) (range.getRangeEnd(length) - range.getRangeStart(length) + 1)).intValue());
             outputStream.write(content);
         }
-    }
-
-    private static byte[] dataUriToByteArray(URI uri) {
-        if (!uri.getScheme().equalsIgnoreCase("data"))
-            throw new IllegalArgumentException();
-
-        return Base64.getDecoder().decode(uri.getSchemeSpecificPart().substring("base64,".length()));
     }
 }

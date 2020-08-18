@@ -1,24 +1,22 @@
-package eu.elixir.ega.ebi.htsget.rest;
+package eu.elixir.ega.ebi.htsget.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
-import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URL;
 import java.util.HashMap;
 
-public class HtsgetUrl {
+public class HtsgetUrlV2 {
     private URI url;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private HashMap<String, String> headers;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String urlClass;
 
-    public HtsgetUrl(URI baseURI) {
+    public HtsgetUrlV2(URI baseURI) {
         this(baseURI, null);
     }
 
-    public HtsgetUrl(URI baseURI, String urlClass) {
+    public HtsgetUrlV2(URI baseURI, String urlClass) {
         this.url = baseURI;
         this.urlClass = urlClass;
     }
