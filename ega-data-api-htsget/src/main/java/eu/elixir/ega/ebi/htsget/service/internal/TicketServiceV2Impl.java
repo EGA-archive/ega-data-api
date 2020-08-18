@@ -84,10 +84,6 @@ public class TicketServiceV2Impl implements TicketServiceV2 {
         // Ascertain Access Permissions for specified File ID
         File reqFile = fileInfoService.getFileInfo(id);
 
-        DataProvider reader = dataProviderFactory.getProviderForFormat(format);
-        if (!reader.supportsFileType(reqFile.getFileName()))
-            throw new UnsupportedFormatException("Conversion not supported");
-
         // Start Building the URL for the file on DataEdge
         URI baseURI = UriComponentsBuilder
                 .fromUriString(externalConfig.getEgaExternalUrl() + id)
@@ -103,6 +99,10 @@ public class TicketServiceV2Impl implements TicketServiceV2 {
                 result.setMd5(reqFile.getUnencryptedChecksum());
 
         } else {
+
+            DataProvider reader = dataProviderFactory.getProviderForFormat(format);
+            if (!reader.supportsFileType(reqFile.getFileName()))
+                throw new UnsupportedFormatException("Conversion not supported");
 
             try (SeekableStream dataStream = resClient.getStreamForFile(id)) {
                 reader.readHeader(dataStream);

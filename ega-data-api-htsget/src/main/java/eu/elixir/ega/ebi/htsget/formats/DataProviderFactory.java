@@ -14,7 +14,7 @@ public class DataProviderFactory {
             return new VCFDataProvider();
 
         if (format.equalsIgnoreCase("bcf"))
-            return new BCFDataProvider();
+            throw new UnsupportedFormatException("Slicing BCF is not currently supported");
 
         throw new UnsupportedFormatException(format);
     }
