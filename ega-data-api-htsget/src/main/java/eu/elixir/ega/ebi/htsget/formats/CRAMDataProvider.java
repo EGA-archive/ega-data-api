@@ -70,7 +70,7 @@ public class CRAMDataProvider extends AbstractDataProvider implements DataProvid
             long byteEnd = dataStream.position() + containerHeader.getContainerBlocksByteSize();
 
             HtsgetUrlV2 chunkURL = new HtsgetUrlV2(baseURI, "body");
-            chunkURL.setHeader("Range", String.format("bytes=%d-%d", byteStart, byteEnd));
+            chunkURL.setHeader("Range", String.format("bytes=%d-%d", byteStart, byteEnd - 1));
             urls.addUrl(chunkURL);
         }
     }
