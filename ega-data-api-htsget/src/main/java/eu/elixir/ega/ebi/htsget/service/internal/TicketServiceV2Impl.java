@@ -48,8 +48,7 @@ public class TicketServiceV2Impl implements TicketServiceV2 {
         this.dataProviderFactory = dataProviderFactory;
     }
 
-    @Override
-    public HtsgetResponseV2 getRead(String id,
+    public HtsgetResponseV2 getFile(String id,
                                     String format,
                                     Optional<String> requestClass,
                                     Optional<String> referenceName,
@@ -100,7 +99,7 @@ public class TicketServiceV2Impl implements TicketServiceV2 {
         if (!onlyHeader && !referenceName.isPresent()) {
             // user is requesting the entire file
             result.addUrl(new HtsgetUrlV2(baseURI));
-            if (reqFile.getUnencryptedChecksumType().equalsIgnoreCase("md5"))
+            if (reqFile.getUnencryptedChecksumType() != null && reqFile.getUnencryptedChecksumType().equalsIgnoreCase("md5"))
                 result.setMd5(reqFile.getUnencryptedChecksum());
 
         } else {
@@ -123,7 +122,7 @@ public class TicketServiceV2Impl implements TicketServiceV2 {
                     }
 
                     try (SeekableStream indexStream = resClient.getStreamForFile(fileIndexFile.getIndexFileId())) {
-                        reader.addContentUris(referenceName.get(), start.get(), end.get(), baseURI, result, dataStream, indexStream);
+                        reader.addContentUris(referenceName.get(), start.orElse(0L), end.orElse(Long.MAX_VALUE), baseURI, result, dataStream, indexStream);
                     }
 
                     result.addUrl(new HtsgetUrlV2(reader.getFooterAsDataUri(), "body"));
@@ -167,15 +166,38 @@ public class TicketServiceV2Impl implements TicketServiceV2 {
     }
 
     @Override
+    public HtsgetResponseV2 getRead(String id,
+                                    String format,
+                                    Optional<String> requestClass,
+                                    Optional<String> referenceName,
+                                    Optional<Long> start,
+                                    Optional<Long> end,
+                                    Optional<List<Field>> fields,
+                                    Optional<List<String>> tags,
+                                    Optional<List<String>> notags)
+            throws HtsgetException, NotFoundException, PermissionDeniedException, IOException, URISyntaxException {
+
+        if (!(format.equalsIgnoreCase("bam") || format.equalsIgnoreCase("cram")))
+            throw new UnsupportedFormatException(format);
+
+        return getFile(id, format, requestClass, referenceName, start, end, fields, tags, notags);
+    }
+
+    @Override
     public HtsgetResponseV2 getVariant(String id,
                                        String format,
                                        Optional<String> requestClass,
                                        Optional<String> referenceName,
-                                       Optional<Long> start, Optional<Long> end,
+                                       Optional<Long> start,
+                                       Optional<Long> end,
                                        Optional<List<Field>> fields,
                                        Optional<List<String>> tags,
                                        Optional<List<String>> notags)
-            throws HtsgetException, NotFoundException, PermissionDeniedException {
-        return null;
+            throws HtsgetException, NotFoundException, PermissionDeniedException, IOException, URISyntaxException {
+
+        if (!(format.equalsIgnoreCase("vcf") || format.equalsIgnoreCase("bcf")))
+            throw new UnsupportedFormatException(format);
+
+        return getFile(id, format, requestClass, referenceName, start, end, fields, tags, notags);
     }
 }

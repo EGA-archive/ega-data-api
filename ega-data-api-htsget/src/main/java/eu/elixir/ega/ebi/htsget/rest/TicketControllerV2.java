@@ -67,7 +67,7 @@ public class TicketControllerV2 {
                                        @RequestParam Optional<List<TicketServiceV2.Field>> fields,
                                        @RequestParam Optional<List<String>> tags,
                                        @RequestParam Optional<List<String>> notags,
-                                       @RequestHeader String authorization) {
+                                       @RequestHeader String authorization) throws IOException, URISyntaxException {
         HtsgetResponseV2 response = service.getVariant(id, format, requestClass, referenceName, start, end, fields, tags, notags);
         for (HtsgetUrlV2 url : response.getUrls()) {
             url.setHeader(HttpHeaders.AUTHORIZATION, authorization);

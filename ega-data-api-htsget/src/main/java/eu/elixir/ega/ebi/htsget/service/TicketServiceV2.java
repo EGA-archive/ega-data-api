@@ -32,9 +32,7 @@ public interface TicketServiceV2 {
                                 Optional<List<Field>> fields,
                                 Optional<List<String>> tags,
                                 Optional<List<String>> notags)
-            throws HtsgetException, NotFoundException, PermissionDeniedException;
-
-    ;
+            throws HtsgetException, NotFoundException, PermissionDeniedException, IOException, URISyntaxException;
 
     enum Field {
         QNAME,

@@ -104,12 +104,21 @@ public class TicketControllerV2Test {
     }
 
     @Test
-    public void nameTBD() throws Exception {
+    public void canGetRead() throws Exception {
         Mockito.when(service.getRead(anyString(), anyString(), any(), any(), any(), any(), any(), any(), any())).thenReturn(new HtsgetResponseV2("BAM"));
         mvc.perform(get("/htsget/reads/1")
                 .header(HttpHeaders.AUTHORIZATION, "dummy"))
                 .andExpect(status().isOk())
                 .andExpect(conformsToOperation("searchReadId"));
+    }
+
+    @Test
+    public void canGetVariant() throws Exception {
+        Mockito.when(service.getVariant(anyString(), anyString(), any(), any(), any(), any(), any(), any(), any())).thenReturn(new HtsgetResponseV2("VCF"));
+        mvc.perform(get("/htsget/variants/1")
+                .header(HttpHeaders.AUTHORIZATION, "dummy"))
+                .andExpect(status().isOk())
+                .andExpect(conformsToOperation("searchVariantId"));
     }
 
     @Test

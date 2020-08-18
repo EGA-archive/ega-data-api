@@ -2,10 +2,12 @@ package eu.elixir.ega.ebi.htsget.formats;
 
 import eu.elixir.ega.ebi.htsget.config.LocalTestData;
 import eu.elixir.ega.ebi.htsget.dto.HtsgetResponseV2;
-import eu.elixir.ega.ebi.htsget.dto.HtsgetUrlV2;
-import htsjdk.samtools.*;
-import htsjdk.samtools.seekablestream.SeekableFileStream;
-import htsjdk.samtools.seekablestream.SeekableStream;
+import htsjdk.samtools.QueryInterval;
+import htsjdk.samtools.SAMRecord;
+import htsjdk.samtools.SAMRecordIterator;
+import htsjdk.samtools.SamInputResource;
+import htsjdk.samtools.SamReader;
+import htsjdk.samtools.SamReaderFactory;
 import htsjdk.samtools.util.BlockCompressedStreamConstants;
 import htsjdk.samtools.util.Interval;
 import org.junit.Assert;
@@ -14,7 +16,6 @@ import org.junit.Test;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Base64;
 
@@ -44,31 +45,33 @@ public class BAMDataProviderTest extends DataProviderTest {
     @Test
     public void sliceContainsExpectedNumberOfRecords() throws IOException, URISyntaxException {
 
-        BAMDataProvider bamDataProvider = new BAMDataProvider();
+        Interval interval = new Interval(CHROMOSOME_NAME, START_POSITION.intValue(), END_POSITION.intValue());
 
-        // Use the data file and index to make a response with URIs for all the pieces
-        HtsgetResponseV2 response = new HtsgetResponseV2("BAM");
-        try (SeekableStream dataStream = new SeekableFileStream(new File(LocalTestData.BAM_FILE_PATH));
-             SeekableStream indexStream = new SeekableFileStream(new File(LocalTestData.BAM_INDEX_FILE_PATH))) {
+        int expectedRecordCount = countRecordsInOriginalFile(interval);
 
-            bamDataProvider.readHeader(dataStream);
-            response.addUrl(new HtsgetUrlV2(bamDataProvider.getHeaderAsDataUri(), "header"));
+        HtsgetResponseV2 response = getHtsgetResponseV2(new BAMDataProvider(),
+                "BAM",
+                LocalTestData.BAM_FILE_PATH,
+                LocalTestData.BAM_INDEX_FILE_PATH,
+                interval);
 
-            bamDataProvider.addContentUris(CHROMOSOME_NAME,
-                    START_POSITION, END_POSITION,
-                    new URI("file://" + LocalTestData.BAM_FILE_PATH),
-                    response,
-                    dataStream,
-                    indexStream);
+        Assert.assertEquals(expectedRecordCount, countMatchingRecordsInResponse(response, interval));
+    }
 
+    @Test
+    public void sliceWithNoStartOrEndContainsExpectedNumberOfRecords() throws IOException, URISyntaxException {
 
-            response.addUrl(new HtsgetUrlV2(bamDataProvider.getFooterAsDataUri()));
-        }
+        Interval interval = new Interval(CHROMOSOME_NAME, 0, Integer.MAX_VALUE);
 
-        int expectedRecordCount = countRecordsInOriginalFile(new Interval(CHROMOSOME_NAME, START_POSITION.intValue(), END_POSITION.intValue()));
+        int expectedRecordCount = countRecordsInOriginalFile(interval);
 
-        Assert.assertEquals(expectedRecordCount, countMatchingRecordsInResponse(response,
-                new Interval(CHROMOSOME_NAME, START_POSITION.intValue(), END_POSITION.intValue())));
+        HtsgetResponseV2 response = getHtsgetResponseV2(new BAMDataProvider(),
+                "BAM",
+                LocalTestData.BAM_FILE_PATH,
+                LocalTestData.BAM_INDEX_FILE_PATH,
+                interval);
+
+        Assert.assertEquals(expectedRecordCount, countMatchingRecordsInResponse(response, interval));
     }
 
     @Test

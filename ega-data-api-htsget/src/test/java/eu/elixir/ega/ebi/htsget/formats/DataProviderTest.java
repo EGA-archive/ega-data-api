@@ -5,6 +5,7 @@ import eu.elixir.ega.ebi.htsget.dto.HtsgetUrlV2;
 import htsjdk.samtools.cram.io.InputStreamUtils;
 import htsjdk.samtools.seekablestream.SeekableFileStream;
 import htsjdk.samtools.seekablestream.SeekableStream;
+import htsjdk.samtools.util.Interval;
 import org.apache.http.HttpHeaders;
 import org.springframework.http.HttpRange;
 
@@ -12,6 +13,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Base64;
 import java.util.List;
 
@@ -46,5 +48,26 @@ public abstract class DataProviderTest {
             byte[] content = InputStreamUtils.readFully(dataStream, ((Long) (range.getRangeEnd(length) - range.getRangeStart(length) + 1)).intValue());
             outputStream.write(content);
         }
+    }
+
+    protected HtsgetResponseV2 getHtsgetResponseV2(DataProvider dataProvider, String format, String dataFilePath, String indexFilePath, Interval interval) throws IOException, URISyntaxException {
+        HtsgetResponseV2 response = new HtsgetResponseV2(format);
+
+        try (SeekableStream dataStream = new SeekableFileStream(new File(dataFilePath));
+             SeekableStream indexStream = new SeekableFileStream(new File(indexFilePath))) {
+
+            dataProvider.readHeader(dataStream);
+            response.addUrl(new HtsgetUrlV2(dataProvider.getHeaderAsDataUri(), "header"));
+
+            dataProvider.addContentUris(interval.getContig(),
+                    (long)interval.getStart(), (long)interval.getEnd(),
+                    new URI("file://" + dataFilePath),
+                    response,
+                    dataStream,
+                    indexStream);
+
+            response.addUrl(new HtsgetUrlV2(dataProvider.getFooterAsDataUri()));
+        }
+        return response;
     }
 }

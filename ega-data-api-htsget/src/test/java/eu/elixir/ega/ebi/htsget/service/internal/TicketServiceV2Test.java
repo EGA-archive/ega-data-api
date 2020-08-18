@@ -107,8 +107,8 @@ public class TicketServiceV2Test {
                 "BAM",
                 Optional.empty(),
                 Optional.of("DoesNotExist"),
-                Optional.of(1L),
-                Optional.of(2L),
+                Optional.empty(),
+                Optional.empty(),
                 Optional.empty(),
                 Optional.empty(),
                 Optional.empty());
@@ -215,6 +215,21 @@ public class TicketServiceV2Test {
             }
         }
         Assert.assertEquals(mockDataLength, totalLength);
+    }
+
+    @Test
+    public void whenStartAndEndAreNotThereUseZeroAndMaximum() throws IOException, URISyntaxException {
+        doReturn(true).when(dataProvider).supportsFileType(any());
+        HtsgetResponseV2 response = service.getRead(LocalTestData.BAM_FILE_ID,
+                "BAM",
+                Optional.empty(),
+                Optional.of("chrM"),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty());
+        Mockito.verify(dataProvider).addContentUris(eq("chrM"), eq(0L), eq(Long.MAX_VALUE), any(), any(), any(), any());
     }
 
     @TestConfiguration

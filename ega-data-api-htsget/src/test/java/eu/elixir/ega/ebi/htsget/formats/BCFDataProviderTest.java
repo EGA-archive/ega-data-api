@@ -40,25 +40,10 @@ public class BCFDataProviderTest extends DataProviderTest {
     @Test
     public void bcfBlocksAreValid() throws IOException, URISyntaxException {
         BCFDataProvider provider = new BCFDataProvider();
+        Interval interval = new Interval(CHROMOSOME_NAME, START_POSITION.intValue(), END_POSITION.intValue());
 
         // Use the data file and index to make a response with URIs for all the pieces
-        HtsgetResponseV2 response = new HtsgetResponseV2("BCF");
-        try (SeekableStream dataStream = new SeekableFileStream(new File(LocalTestData.BCF_FILE_PATH));
-             SeekableStream indexStream = new SeekableFileStream(new File(LocalTestData.BCF_INDEX_FILE_PATH))) {
-
-            provider.readHeader(dataStream);
-            response.addUrl(new HtsgetUrlV2(provider.getHeaderAsDataUri(), "header"));
-
-            provider.addContentUris(CHROMOSOME_NAME,
-                    START_POSITION, END_POSITION,
-                    new URI("file://" + LocalTestData.BCF_FILE_PATH),
-                    response,
-                    dataStream,
-                    indexStream);
-
-
-            response.addUrl(new HtsgetUrlV2(provider.getFooterAsDataUri()));
-        }
+        HtsgetResponseV2 response = getHtsgetResponseV2(provider, "BCF", LocalTestData.BCF_FILE_PATH, LocalTestData.BCF_INDEX_FILE_PATH, interval);
 
         byte[] responseBytes = this.makeDataFileFromResponse(response, LocalTestData.BCF_FILE_PATH);
 
