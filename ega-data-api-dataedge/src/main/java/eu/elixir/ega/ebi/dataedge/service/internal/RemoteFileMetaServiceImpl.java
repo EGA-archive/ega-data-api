@@ -29,6 +29,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import static eu.elixir.ega.ebi.commons.config.Constants.FILEDATABASE_SERVICE;
@@ -62,15 +63,17 @@ public class RemoteFileMetaServiceImpl implements FileMetaService {
     @Override
     @Cacheable(cacheNames = "fileFile")
     public File getFile(Authentication auth, String fileId, String sessionId) {
-        ResponseEntity<File[]> forEntity = restTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}", File[].class, fileId);
-        File[] body = forEntity.getBody();
-        
-        if (body == null || body.length == 0) {
+        File[] body = null;
+      
+        try {
+            ResponseEntity<File[]> forEntity = restTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}", File[].class, fileId);
+            body = forEntity.getBody();
+        } catch (HttpClientErrorException e) {
             String message = sessionId.concat("file not found : ").concat(fileId);
-            log.error(message);
+            log.error(message.concat(" ").concat(e.toString()));
             throw new NotFoundException(message);
         }
-        
+
         ResponseEntity<FileDataset[]> forEntityDataset = restTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}/datasets", FileDataset[].class, fileId);
         FileDataset[] bodyDataset = forEntityDataset.getBody();
 

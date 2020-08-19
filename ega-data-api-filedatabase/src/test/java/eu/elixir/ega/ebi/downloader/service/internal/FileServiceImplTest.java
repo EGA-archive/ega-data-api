@@ -40,7 +40,6 @@ import eu.elixir.ega.ebi.downloader.domain.repository.DatasetRepository;
 import eu.elixir.ega.ebi.downloader.domain.repository.FileDatasetRepository;
 import eu.elixir.ega.ebi.downloader.domain.repository.FileIndexFileRepository;
 import eu.elixir.ega.ebi.downloader.domain.repository.FileRepository;
-import java.util.Iterator;
 
 /**
  * Test class for {@link FileServiceImpl}.
@@ -49,30 +48,30 @@ import java.util.Iterator;
  */
 @RunWith(SpringRunner.class)
 public class FileServiceImplTest {
+    
+    @Autowired
+    private FileServiceImpl fileServiceImpl;
 
-	@Autowired
-	private FileServiceImpl fileServiceImpl;
+    @MockBean
+    private FileRepository fileRepository;
 
-	@MockBean
-	private FileRepository fileRepository;
+    @MockBean
+    private FileDatasetRepository fileDatasetRepository;
 
-	@MockBean
-	private FileDatasetRepository fileDatasetRepository;
+    @MockBean
+    private FileIndexFileRepository fileIndexFileRepository;
 
-	@MockBean
-	private FileIndexFileRepository fileIndexFileRepository;
-	
-	@MockBean
+    @MockBean
     private DatasetRepository datasetRepository;
 
-	@Before
-	public void setup() {
-		when(fileRepository.findByFileId(any(String.class))).thenReturn(getFile());
-		when(fileDatasetRepository.findByFileId(any(String.class))).thenReturn(getFileDataset());
-		when(fileDatasetRepository.findByDatasetId(any(String.class))).thenReturn(getFileDataset());
-		when(datasetRepository.findByDatasetId(any(String.class))).thenReturn(getDataset());
-		when(fileIndexFileRepository.findByFileId(any(String.class))).thenReturn(getFileIndexFile());
-	}
+    @Before
+    public void setup() {
+        when(fileRepository.findByFileId(any(String.class))).thenReturn(getFile());
+        when(fileDatasetRepository.findByFileId(any(String.class))).thenReturn(getFileDataset());
+        when(fileDatasetRepository.findByDatasetId(any(String.class))).thenReturn(getFileDataset());
+        when(datasetRepository.findByDatasetId(any(String.class))).thenReturn(getDataset());
+        when(fileIndexFileRepository.findByFileId(any(String.class))).thenReturn(getFileIndexFile());
+    }
 
 	/**
 	 * Test class for {@link FileServiceImpl#getFileByStableId(String)}. Verify
