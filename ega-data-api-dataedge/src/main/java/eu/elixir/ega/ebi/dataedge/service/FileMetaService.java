@@ -47,5 +47,5 @@ public interface FileMetaService {
      */
     Iterable<File> getDatasetFiles(String datasetId);
 
-    List<Dataset> getDataset(String datasetId);
+    List<Dataset> getDataset(String datasetId, String sessionId);
 }

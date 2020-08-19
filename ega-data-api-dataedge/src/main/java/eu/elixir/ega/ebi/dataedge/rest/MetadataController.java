@@ -105,13 +105,7 @@ public class MetadataController {
                 : request.getHeader("Session-Id") + " ";
         
         
-        List<Dataset> dataset = fileService.getDataset(datasetId);
-        if (dataset == null || dataset.size() == 0) {
-            String message = sessionId.concat("dataset not found : ").concat(datasetId);
-            log.error(message);
-            throw new NotFoundException(message);
-        }
-        
+        fileService.getDataset(datasetId, sessionId);
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
         // Validate Dataset Access

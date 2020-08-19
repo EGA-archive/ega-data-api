@@ -82,7 +82,7 @@ public class MetadataControllerTest {
         when(authentication.getAuthorities()).thenReturn(authorities);
         when(securityContext.getAuthentication()).thenReturn(authentication);
         SecurityContextHolder.setContext(securityContext);
-        when(fileService.getDataset(anyString())).thenReturn(Arrays.asList(new Dataset()));
+        when(fileService.getDataset(anyString(), anyString())).thenReturn(Arrays.asList(new Dataset()));
     }
 
     /**
@@ -123,15 +123,6 @@ public class MetadataControllerTest {
             throws Exception {
         mockMvc.perform(get("/metadata/datasets/DATASET3/files").session(new MockHttpSession()))
                 .andExpect(result -> assertTrue(result.getResolvedException() instanceof PermissionDeniedException));
-    }
-    
-    @Test
-    public void getDatasetFiles_WhenDatasetDoesNotExistInDatabase_ThenThrowsNotFoundException()
-            throws Exception {
-        when(fileService.getDataset("DATASET4")).thenReturn(null);
-
-        mockMvc.perform(get("/metadata/datasets/DATASET4/files").session(new MockHttpSession()))
-                .andExpect(result -> assertTrue(result.getResolvedException() instanceof NotFoundException));
     }
     
     /**
