@@ -48,7 +48,7 @@ import eu.elixir.ega.ebi.downloader.domain.repository.FileRepository;
  */
 @RunWith(SpringRunner.class)
 public class FileServiceImplTest {
-    
+
     @Autowired
     private FileServiceImpl fileServiceImpl;
 
@@ -73,70 +73,71 @@ public class FileServiceImplTest {
         when(fileIndexFileRepository.findByFileId(any(String.class))).thenReturn(getFileIndexFile());
     }
 
-	/**
-	 * Test class for {@link FileServiceImpl#getFileByStableId(String)}. Verify
-	 * fileId retrieved from db mock call.
-	 */
-	@Test
-	public void testGetFileByStableId() {
-		assertThat(fileServiceImpl.getFileByStableId("fileId").iterator().next().getFileId(), equalTo(getFile()
-				.iterator().next().getFileId()));
-	}
+    /**
+     * Test class for {@link FileServiceImpl#getFileByStableId(String)}. Verify
+     * fileId retrieved from db mock call.
+     */
+    @Test
+    public void testGetFileByStableId() {
+        assertThat(fileServiceImpl.getFileByStableId("fileId").iterator().next().getFileId(),
+                equalTo(getFile().iterator().next().getFileId()));
+    }
 
-	/**
-	 * Test class for {@link FileServiceImpl#getFileDatasetByFileId(String)}.
-	 * Verify fileId retrieved from db mock call.
-	 */
-	@Test
-	public void testGetFileDatasetByFileId() {
-            // TODO: Update Test for FindCustom method in FileDatasetRepository called from FileServiceImpl
-	//	assertThat(fileServiceImpl.getFileDatasetByFileId("fileId").iterator().next().getFileId(),
-	//			equalTo(getFileDataset().iterator().next().getFileId()));
-	}
+    /**
+     * Test class for {@link FileServiceImpl#getFileDatasetByFileId(String)}. Verify
+     * fileId retrieved from db mock call.
+     */
+    @Test
+    public void testGetFileDatasetByFileId() {
+        // TODO: Update Test for FindCustom method in FileDatasetRepository called from
+        // FileServiceImpl
+        // assertThat(fileServiceImpl.getFileDatasetByFileId("fileId").iterator().next().getFileId(),
+        // equalTo(getFileDataset().iterator().next().getFileId()));
+    }
 
-	/**
-	 * Test class for {@link FileServiceImpl#getDatasetFiles(String)}. Verify
-	 * fileId retrieved from db mock call.
-	 */
-	@Test
-	public void testGetDatasetFiles() {
-		assertThat(fileServiceImpl.getDatasetFiles("datasetId").iterator().next().getFileId(), equalTo(getFileDataset()
-				.iterator().next().getFileId()));
-	}
+    /**
+     * Test class for {@link FileServiceImpl#getDatasetFiles(String)}. Verify fileId
+     * retrieved from db mock call.
+     */
+    @Test
+    public void testGetDatasetFiles() {
+        assertThat(fileServiceImpl.getDatasetFiles("datasetId").iterator().next().getFileId(),
+                equalTo(getFileDataset().iterator().next().getFileId()));
+    }
 
-	/**
-	 * Test class for {@link FileServiceImpl#getFileIndexByFileId(String)}.
-	 * Verify fileId retrieved from db mock call.
-	 */
-	@Test
-	public void testGetFileIndexByFileId() {
-		assertThat(fileServiceImpl.getFileIndexByFileId("fileId").iterator().next().getFileId(),
-				equalTo(getFileIndexFile().iterator().next().getFileId()));
-	}
+    /**
+     * Test class for {@link FileServiceImpl#getFileIndexByFileId(String)}. Verify
+     * fileId retrieved from db mock call.
+     */
+    @Test
+    public void testGetFileIndexByFileId() {
+        assertThat(fileServiceImpl.getFileIndexByFileId("fileId").iterator().next().getFileId(),
+                equalTo(getFileIndexFile().iterator().next().getFileId()));
+    }
 
-	private Iterable<File> getFile() {
-		final File file = new File();
-		file.setFileId("fileId");
-		return Arrays.asList(file);
-	}
+    private Iterable<File> getFile() {
+        final File file = new File();
+        file.setFileId("fileId");
+        return Arrays.asList(file);
+    }
 
-	private Iterable<FileDataset> getFileDataset() {
-		return Arrays.asList(new FileDataset("fileId", "datasetId"));
-	}
-	
+    private Iterable<FileDataset> getFileDataset() {
+        return Arrays.asList(new FileDataset("fileId", "datasetId"));
+    }
+
     private Iterable<Dataset> getDataset() {
         return Arrays.asList(new Dataset("datasetId", "description", "dacStableId", "no"));
     }
 
-	private Iterable<FileIndexFile> getFileIndexFile() {
-		return Arrays.asList(new FileIndexFile("fileId", "indexFileId"));
-	}
+    private Iterable<FileIndexFile> getFileIndexFile() {
+        return Arrays.asList(new FileIndexFile("fileId", "indexFileId"));
+    }
 
-	@TestConfiguration
-	static class FileServiceImplTestContextConfiguration {
-		@Bean
-		public FileServiceImpl fileService() {
-			return new FileServiceImpl();
-		}
-	}
+    @TestConfiguration
+    static class FileServiceImplTestContextConfiguration {
+        @Bean
+        public FileServiceImpl fileService() {
+            return new FileServiceImpl();
+        }
+    }
 }
