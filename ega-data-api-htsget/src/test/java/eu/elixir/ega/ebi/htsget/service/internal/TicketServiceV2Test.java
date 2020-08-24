@@ -18,6 +18,7 @@ import eu.elixir.ega.ebi.htsget.service.TicketServiceV2;
 import htsjdk.samtools.seekablestream.SeekableFileStream;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
@@ -41,6 +42,7 @@ import java.util.Optional;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
+@Ignore
 @RunWith(SpringRunner.class)
 public class TicketServiceV2Test {
 

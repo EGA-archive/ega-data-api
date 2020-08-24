@@ -13,6 +13,7 @@ import htsjdk.samtools.seekablestream.SeekableStream;
 import htsjdk.samtools.util.BlockCompressedStreamConstants;
 import htsjdk.samtools.util.Interval;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
@@ -23,6 +24,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
 import java.util.Base64;
 
+@Ignore
 public class BAMDataProviderTest extends DataProviderTest {
 
     public static final String CHROMOSOME_NAME = "chrM";
