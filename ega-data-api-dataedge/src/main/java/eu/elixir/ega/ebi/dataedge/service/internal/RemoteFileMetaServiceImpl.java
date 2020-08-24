@@ -103,10 +103,9 @@ public class RemoteFileMetaServiceImpl implements FileMetaService {
     
     @Override
     @Cacheable(cacheNames = "datasetFile")
-    public List<Dataset> getDataset(String datasetId, String sessionId) {
+    public Dataset getDataset(String datasetId, String sessionId) {
         try {
-            Dataset[] response = restTemplate.getForObject(FILEDATABASE_SERVICE + "/datasets/{datasetId}", Dataset[].class, datasetId);
-            return Arrays.asList(response);
+            return restTemplate.getForObject(FILEDATABASE_SERVICE + "/datasets/{datasetId}", Dataset.class, datasetId);
         } catch (HttpClientErrorException e) {
             String message = sessionId.concat("dataset not found : ").concat(datasetId);
             log.error(message.concat(" ").concat(e.toString()));

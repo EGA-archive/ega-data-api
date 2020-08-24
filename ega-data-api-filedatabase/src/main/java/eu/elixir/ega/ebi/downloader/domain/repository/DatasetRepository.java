@@ -15,6 +15,8 @@
  */
 package eu.elixir.ega.ebi.downloader.domain.repository;
 
+import java.util.Optional;
+
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
@@ -23,5 +25,5 @@ import eu.elixir.ega.ebi.downloader.domain.entity.Dataset;
 
 public interface DatasetRepository extends CrudRepository<Dataset, String> {
     @Cacheable(cacheNames = "datasetByDatasetId")
-    Iterable<Dataset> findByDatasetId(@Param("datasetId") String datasetId);
+    Optional<Dataset> findByDatasetId(@Param("datasetId") String datasetId);
 }

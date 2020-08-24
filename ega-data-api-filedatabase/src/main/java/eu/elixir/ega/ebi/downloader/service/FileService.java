@@ -15,6 +15,8 @@
  */
 package eu.elixir.ega.ebi.downloader.service;
 
+import java.util.Optional;
+
 import eu.elixir.ega.ebi.downloader.domain.entity.Dataset;
 import eu.elixir.ega.ebi.downloader.domain.entity.File;
 import eu.elixir.ega.ebi.downloader.domain.entity.FileDataset;
@@ -34,6 +36,6 @@ public interface FileService {
 
     Iterable<FileIndexFile> getFileIndexByFileId(String fileID);
     
-    Iterable<Dataset> getDataset(String datasetId);
+    Optional<Dataset> getDataset(String datasetId);
 
 }

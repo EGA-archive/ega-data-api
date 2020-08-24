@@ -131,7 +131,7 @@ public class RemoteFileMetaServiceImplTest {
 
     @Test(expected = NotFoundException.class)
     public void getDatasetFiles_WhenDatasetDoesNotExist_ThenThrowsNotFoundException() {
-        when(syncRestTemplate.getForObject(FILEDATABASE_SERVICE + "/datasets/{datasetId}", Dataset[].class, DATASET1))
+        when(syncRestTemplate.getForObject(FILEDATABASE_SERVICE + "/datasets/{datasetId}", Dataset.class, DATASET1))
                 .thenThrow(HttpClientErrorException.class);
         remoteFileMetaServiceImpl.getDataset(DATASET1, "");
     }

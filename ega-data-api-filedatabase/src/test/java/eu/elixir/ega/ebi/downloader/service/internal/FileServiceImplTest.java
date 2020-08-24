@@ -22,6 +22,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
+import java.util.Optional;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -125,8 +126,8 @@ public class FileServiceImplTest {
         return Arrays.asList(new FileDataset("fileId", "datasetId"));
     }
 
-    private Iterable<Dataset> getDataset() {
-        return Arrays.asList(new Dataset("datasetId", "description", "dacStableId", "no"));
+    private Optional<Dataset> getDataset() {
+        return Optional.of(new Dataset("datasetId", "description", "dacStableId", "no"));
     }
 
     private Iterable<FileIndexFile> getFileIndexFile() {

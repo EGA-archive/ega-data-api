@@ -34,6 +34,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Optional;
 
 /**
  * @author asenf
@@ -114,7 +115,7 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
-    public Iterable<Dataset> getDataset(String datasetId) {
+    public Optional<Dataset> getDataset(String datasetId) {
         return datasetRepository.findByDatasetId(datasetId);
     }
 

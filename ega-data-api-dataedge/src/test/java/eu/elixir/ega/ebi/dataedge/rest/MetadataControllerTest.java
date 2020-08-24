@@ -82,7 +82,7 @@ public class MetadataControllerTest {
         when(authentication.getAuthorities()).thenReturn(authorities);
         when(securityContext.getAuthentication()).thenReturn(authentication);
         SecurityContextHolder.setContext(securityContext);
-        when(fileService.getDataset(anyString(), anyString())).thenReturn(Arrays.asList(new Dataset()));
+        when(fileService.getDataset(anyString(), anyString())).thenReturn(new Dataset());
     }
 
     /**

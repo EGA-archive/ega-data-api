@@ -38,6 +38,7 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Optional;
 
 // Most likely we don't need any custom implementation for LocalEGA
 // Default implementation should work "as is"
@@ -94,7 +95,7 @@ public class LocalEGAFileServiceImpl implements FileService {
     }
     
     @Override
-    public Iterable<Dataset> getDataset(String datasetId) {
+    public Optional<Dataset> getDataset(String datasetId) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
