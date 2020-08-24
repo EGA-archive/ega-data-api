@@ -1,8 +1,8 @@
 package eu.elixir.ega.ebi.htsget.service;
 
 import eu.elixir.ega.ebi.commons.config.HtsgetException;
-import eu.elixir.ega.ebi.commons.shared.config.NotFoundException;
-import eu.elixir.ega.ebi.commons.shared.config.PermissionDeniedException;
+import eu.elixir.ega.ebi.commons.exception.NotFoundException;
+import eu.elixir.ega.ebi.commons.exception.PermissionDeniedException;
 import eu.elixir.ega.ebi.htsget.dto.HtsgetResponseV2;
 
 import java.io.IOException;

@@ -1,6 +1,6 @@
 package eu.elixir.ega.ebi.htsget.rest;
 
-import eu.elixir.ega.ebi.commons.shared.config.NotFoundException;
+import eu.elixir.ega.ebi.commons.exception.NotFoundException;
 import eu.elixir.ega.ebi.commons.shared.dto.File;
 import eu.elixir.ega.ebi.commons.shared.dto.FileIndexFile;
 import eu.elixir.ega.ebi.commons.shared.dto.MyExternalConfig;
