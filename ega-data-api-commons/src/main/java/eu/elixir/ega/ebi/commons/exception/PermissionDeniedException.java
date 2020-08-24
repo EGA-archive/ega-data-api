@@ -13,27 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package eu.elixir.ega.ebi.commons.shared.config;
+package eu.elixir.ega.ebi.commons.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 /**
- * @author amohan
+ * @author asenf
  */
-@ResponseStatus(HttpStatus.NOT_FOUND)
-public class IndexNotFoundException extends RuntimeException {
+@ResponseStatus(HttpStatus.FORBIDDEN)
+public class PermissionDeniedException extends RuntimeException {
 
     private static final long serialVersionUID = 1L;
 
     /**
-     * Exception thrown when an index file is not found.
+     * Thrown when a resource is requested with insufficient permissions.
      *
-     * @param error Error description.
-     * @param id file ID of the index file.
+     * @param code ID of the requested resource.
      */
-    public IndexNotFoundException(String error, String id) {
-        super(error + ": " + id);
+    public PermissionDeniedException(String code) {
+        super("Permission Denied : " + code);
     }
 
 }

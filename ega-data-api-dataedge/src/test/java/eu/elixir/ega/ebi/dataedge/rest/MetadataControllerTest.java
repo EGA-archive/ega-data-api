@@ -20,6 +20,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.HttpStatus.OK;
@@ -31,6 +32,9 @@ import java.util.Collection;
 
 import javax.servlet.http.HttpServletRequest;
 
+import eu.elixir.ega.ebi.commons.exception.NotFoundException;
+import eu.elixir.ega.ebi.commons.exception.PermissionDeniedException;
+import eu.elixir.ega.ebi.commons.shared.dto.Dataset;
 import eu.elixir.ega.ebi.commons.shared.dto.File;
 import org.junit.Before;
 import org.junit.Test;
@@ -78,6 +82,7 @@ public class MetadataControllerTest {
         when(authentication.getAuthorities()).thenReturn(authorities);
         when(securityContext.getAuthentication()).thenReturn(authentication);
         SecurityContextHolder.setContext(securityContext);
+        when(fileService.getDataset(anyString(), anyString())).thenReturn(new Dataset());
     }
 
     /**
@@ -113,6 +118,13 @@ public class MetadataControllerTest {
         assertTrue(response.getContentAsString().contains(f1.getFileId()));
     }
     
+    @Test
+    public void getDatasetFiles_WhenDatasetDoesNotExistInUserAuthorisedDatasets_ThenThrowsPermissionDeniedException()
+            throws Exception {
+        mockMvc.perform(get("/metadata/datasets/DATASET3/files").session(new MockHttpSession()))
+                .andExpect(result -> assertTrue(result.getResolvedException() instanceof PermissionDeniedException));
+    }
+    
     /**
      * Test {@link MetadataController#getFile(String)}. Verify the API call
      * returns status is OK and checking fileId.
@@ -123,7 +135,7 @@ public class MetadataControllerTest {
     public void testGetFile() throws Exception {
         final File f1 = new File();
         f1.setFileId("fileId");
-        when(fileService.getFile(any(Authentication.class), any(String.class))).thenReturn(f1);
+        when(fileService.getFile(any(Authentication.class), any(String.class), any(String.class))).thenReturn(f1);
         
         final MockHttpServletResponse response = mockMvc
                 .perform(get("/metadata/files/fileId").session(new MockHttpSession())).andReturn().getResponse();

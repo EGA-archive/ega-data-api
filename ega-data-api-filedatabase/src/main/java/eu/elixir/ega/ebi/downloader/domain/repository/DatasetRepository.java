@@ -13,16 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package eu.elixir.ega.ebi.dataedge.config;
+package eu.elixir.ega.ebi.downloader.domain.repository;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.ResponseStatus;
+import java.util.Optional;
 
-@ResponseStatus(HttpStatus.UNAVAILABLE_FOR_LEGAL_REASONS)
-public class UnavailableForLegalReasonsException extends RuntimeException {
-    private static final long serialVersionUID = 1L;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.query.Param;
 
-    public UnavailableForLegalReasonsException(String msg) {
-        super(msg);
-    }
+import eu.elixir.ega.ebi.downloader.domain.entity.Dataset;
+
+public interface DatasetRepository extends CrudRepository<Dataset, String> {
+    @Cacheable(cacheNames = "datasetByDatasetId")
+    Optional<Dataset> findByDatasetId(@Param("datasetId") String datasetId);
 }

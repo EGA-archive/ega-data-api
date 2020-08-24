@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package eu.elixir.ega.ebi.dataedge.config;
+package eu.elixir.ega.ebi.commons.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -21,18 +21,20 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 /**
  * @author asenf
  */
-@ResponseStatus(HttpStatus.UNAUTHORIZED)
-public class InvalidAuthenticationException extends RuntimeException {
+@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+public class GeneralStreamingException extends RuntimeException {
 
     private static final long serialVersionUID = 1L;
 
     /**
-     * Exception thrown when authentication fails for a requested resource.
+     * Thrown when a data stream fails, providing the stream stage and error
+     * description.
      *
-     * @param code Accession number or id of the requested resource
+     * @param error Error description.
+     * @param stage Stage number.
      */
-    public InvalidAuthenticationException(String code) {
-        super("Invalid Authentication : " + code);
+    public GeneralStreamingException(String error, int stage) {
+        super("Error processing Stream at stage : " + stage + " (with error " + error + ")");
     }
 
 }

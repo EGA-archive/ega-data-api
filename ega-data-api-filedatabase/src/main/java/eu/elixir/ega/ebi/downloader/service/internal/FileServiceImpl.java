@@ -15,9 +15,11 @@
  */
 package eu.elixir.ega.ebi.downloader.service.internal;
 
+import eu.elixir.ega.ebi.downloader.domain.entity.Dataset;
 import eu.elixir.ega.ebi.downloader.domain.entity.File;
 import eu.elixir.ega.ebi.downloader.domain.entity.FileDataset;
 import eu.elixir.ega.ebi.downloader.domain.entity.FileIndexFile;
+import eu.elixir.ega.ebi.downloader.domain.repository.DatasetRepository;
 import eu.elixir.ega.ebi.downloader.domain.repository.FileDatasetRepository;
 import eu.elixir.ega.ebi.downloader.domain.repository.FileIndexFileRepository;
 import eu.elixir.ega.ebi.downloader.domain.repository.FileRepository;
@@ -32,6 +34,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Optional;
 
 /**
  * @author asenf
@@ -49,6 +52,9 @@ public class FileServiceImpl implements FileService {
 
     @Autowired
     private FileIndexFileRepository fileIndexFileRepository;
+    
+    @Autowired
+    private DatasetRepository datasetRepository;
 
     @Override
     @Cacheable(cacheNames = "fileById")
@@ -106,6 +112,11 @@ public class FileServiceImpl implements FileService {
     @Cacheable(cacheNames = "fileIndexFile")
     public Iterable<FileIndexFile> getFileIndexByFileId(String fileId) {
         return fileIndexFileRepository.findByFileId(fileId);
+    }
+
+    @Override
+    public Optional<Dataset> getDataset(String datasetId) {
+        return datasetRepository.findByDatasetId(datasetId);
     }
 
 }

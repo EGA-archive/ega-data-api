@@ -15,7 +15,11 @@
  */
 package eu.elixir.ega.ebi.dataedge.service;
 
+import eu.elixir.ega.ebi.commons.shared.dto.Dataset;
 import eu.elixir.ega.ebi.commons.shared.dto.File;
+
+import java.util.List;
+
 import org.springframework.security.core.Authentication;
 
 /**
@@ -29,10 +33,11 @@ public interface FileMetaService {
      *
      * @param auth   An authentication token for the file.
      * @param fileId The stable ID of the file to request.
+     * @param sessionId 
      * @return The requested file descriptor, otherwise an empty {@link File}
      *         object.
      */
-    File getFile(Authentication auth, String fileId);
+    File getFile(Authentication auth, String fileId, String sessionId);
 
     /**
      * Returns the list of files for a given dataset from the file database service.
@@ -42,4 +47,5 @@ public interface FileMetaService {
      */
     Iterable<File> getDatasetFiles(String datasetId);
 
+    Dataset getDataset(String datasetId, String sessionId);
 }

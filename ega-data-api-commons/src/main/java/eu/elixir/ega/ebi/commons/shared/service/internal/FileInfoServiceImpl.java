@@ -1,6 +1,6 @@
 package eu.elixir.ega.ebi.commons.shared.service.internal;
 
-import eu.elixir.ega.ebi.commons.shared.config.NotFoundException;
+import eu.elixir.ega.ebi.commons.exception.NotFoundException;
 import eu.elixir.ega.ebi.commons.shared.dto.File;
 import eu.elixir.ega.ebi.commons.shared.service.FileInfoService;
 import eu.elixir.ega.ebi.commons.shared.service.PermissionsService;

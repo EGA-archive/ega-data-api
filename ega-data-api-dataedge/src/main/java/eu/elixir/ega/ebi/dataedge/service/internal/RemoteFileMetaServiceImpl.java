@@ -15,9 +15,13 @@
  */
 package eu.elixir.ega.ebi.dataedge.service.internal;
 
+import eu.elixir.ega.ebi.commons.exception.NotFoundException;
+import eu.elixir.ega.ebi.commons.shared.dto.Dataset;
 import eu.elixir.ega.ebi.commons.shared.dto.File;
 import eu.elixir.ega.ebi.commons.shared.dto.FileDataset;
 import eu.elixir.ega.ebi.dataedge.service.FileMetaService;
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
@@ -25,6 +29,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import static eu.elixir.ega.ebi.commons.config.Constants.FILEDATABASE_SERVICE;
@@ -33,12 +38,14 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * @author asenf
  */
 @Service
 @EnableDiscoveryClient
+@Slf4j
 public class RemoteFileMetaServiceImpl implements FileMetaService {
 
     @Autowired
@@ -55,7 +62,18 @@ public class RemoteFileMetaServiceImpl implements FileMetaService {
      */
     @Override
     @Cacheable(cacheNames = "fileFile")
-    public File getFile(Authentication auth, String fileId) {
+    public File getFile(Authentication auth, String fileId, String sessionId) {
+        File[] body = null;
+      
+        try {
+            ResponseEntity<File[]> forEntity = restTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}", File[].class, fileId);
+            body = forEntity.getBody();
+        } catch (HttpClientErrorException e) {
+            String message = sessionId.concat("file not found : ").concat(fileId);
+            log.error(message.concat(" ").concat(e.toString()));
+            throw new NotFoundException(message);
+        }
+
         ResponseEntity<FileDataset[]> forEntityDataset = restTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}/datasets", FileDataset[].class, fileId);
         FileDataset[] bodyDataset = forEntityDataset.getBody();
 
@@ -68,9 +86,7 @@ public class RemoteFileMetaServiceImpl implements FileMetaService {
             permissions.add(next.getAuthority());
         }
 
-        // Is this File in at least one Authorised Dataset?
-        ResponseEntity<File[]> forEntity = restTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}", File[].class, fileId);
-        File[] body = forEntity.getBody();
+        
         if (body != null && bodyDataset != null) {
             for (FileDataset f : bodyDataset) {
                 String datasetId = f.getDatasetId();
@@ -83,6 +99,18 @@ public class RemoteFileMetaServiceImpl implements FileMetaService {
         }
 
         return (new File());
+    }
+    
+    @Override
+    @Cacheable(cacheNames = "datasetFile")
+    public Dataset getDataset(String datasetId, String sessionId) {
+        try {
+            return restTemplate.getForObject(FILEDATABASE_SERVICE + "/datasets/{datasetId}", Dataset.class, datasetId);
+        } catch (HttpClientErrorException e) {
+            String message = sessionId.concat("dataset not found : ").concat(datasetId);
+            log.error(message.concat(" ").concat(e.toString()));
+            throw new NotFoundException(message);
+        }
     }
 
     /**

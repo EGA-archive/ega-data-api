@@ -20,11 +20,13 @@ import eu.elixir.ega.ebi.downloader.domain.entity.FileDataset;
 import eu.elixir.ega.ebi.downloader.domain.entity.FileIndexFile;
 import eu.elixir.ega.ebi.downloader.service.FileService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 
 /**
@@ -39,8 +41,12 @@ public class FileController {
 
     @RequestMapping(value = "/{fileId}", method = GET)
     @ResponseBody
-    public Iterable<File> get(@PathVariable String fileId) {
-        return fileService.getFileByStableId(fileId);
+    public ResponseEntity<?> get(@PathVariable String fileId) {
+        Iterable<File> file = fileService.getFileByStableId(fileId);
+        while (!file.iterator().hasNext()) {
+            return ResponseEntity.status(NOT_FOUND).build();
+        }
+        return ResponseEntity.ok(file);
     }
 
     @RequestMapping(value = "/{fileId}/datasets", method = GET)

@@ -17,9 +17,14 @@ package eu.elixir.ega.ebi.dataedge.rest;
 
 
 import eu.elixir.ega.ebi.commons.config.VerifyMessage;
+import eu.elixir.ega.ebi.commons.exception.NotFoundException;
+import eu.elixir.ega.ebi.commons.exception.PermissionDeniedException;
 import eu.elixir.ega.ebi.commons.shared.config.VerifyMessageNew;
+import eu.elixir.ega.ebi.commons.shared.dto.Dataset;
 import eu.elixir.ega.ebi.commons.shared.dto.File;
 import eu.elixir.ega.ebi.dataedge.service.FileMetaService;
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.security.core.Authentication;
@@ -29,6 +34,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.google.common.base.Strings;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.*;
@@ -40,6 +47,7 @@ import static org.springframework.web.bind.annotation.RequestMethod.GET;
  */
 @RestController
 @EnableDiscoveryClient
+@Slf4j
 @RequestMapping("/metadata")
 public class MetadataController {
 
@@ -93,6 +101,11 @@ public class MetadataController {
     public @ResponseBody
     Iterable<File> getDatasetFiles(@PathVariable String datasetId,
                                    HttpServletRequest request) {
+        String sessionId = Strings.isNullOrEmpty(request.getHeader("Session-Id")) ? ""
+                : request.getHeader("Session-Id") + " ";
+        
+        
+        fileService.getDataset(datasetId, sessionId);
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
         // Validate Dataset Access
@@ -123,8 +136,14 @@ public class MetadataController {
             } catch (Exception ignored) {
             }
         }
+        
+        if(!permission) {
+            String message = sessionId.concat("Forbidden dataset ").concat(datasetId);
+            log.error(message);
+            throw new PermissionDeniedException(message);
+        }
 
-        return permission ? (fileService.getDatasetFiles(datasetId)) : (new ArrayList<>());
+        return fileService.getDatasetFiles(datasetId);
     }
 
     /**
@@ -135,10 +154,12 @@ public class MetadataController {
      */
     @RequestMapping(value = "/files/{fileId}", method = GET)
     @ResponseBody
-    public File getFile(@PathVariable String fileId) {
+    public File getFile(@PathVariable String fileId,  HttpServletRequest request) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         // I don't know the dataset ID yet - pass on auth object to implementation for access control
-        return fileService.getFile(auth, fileId);
+        String sessionId = Strings.isNullOrEmpty(request.getHeader("Session-Id")) ? ""
+                : request.getHeader("Session-Id") + " ";
+        return fileService.getFile(auth, fileId, sessionId);
     }
 
 }

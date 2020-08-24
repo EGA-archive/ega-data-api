@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package eu.elixir.ega.ebi.commons.shared.config;
+package eu.elixir.ega.ebi.commons.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -21,18 +21,18 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 /**
  * @author asenf
  */
-@ResponseStatus(HttpStatus.FORBIDDEN)
-public class PermissionDeniedException extends RuntimeException {
+@ResponseStatus(HttpStatus.UNAUTHORIZED)
+public class InvalidAuthenticationException extends RuntimeException {
 
     private static final long serialVersionUID = 1L;
 
     /**
-     * Thrown when a resource is requested with insufficient permissions.
+     * Exception thrown when authentication fails for a requested resource.
      *
-     * @param code ID of the requested resource.
+     * @param code Accession number or id of the requested resource
      */
-    public PermissionDeniedException(String code) {
-        super("Permission Denied : " + code);
+    public InvalidAuthenticationException(String code) {
+        super("Invalid Authentication : " + code);
     }
 
 }

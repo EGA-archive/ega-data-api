@@ -21,6 +21,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.HttpStatus.OK;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 
@@ -69,11 +70,19 @@ public class FileControllerTest {
 		final List<File> files = new ArrayList<>();
 		final File file = new File();
 		file.setFileId("fileId");
-
+		files.add(file);
 		when(fileService.getFileByStableId(any(String.class))).thenReturn(files);
 		final MockHttpServletResponse response = mockMvc.perform(get("/file/fileId").accept(APPLICATION_JSON)).andReturn().getResponse();
 		assertThat(response.getStatus(), equalTo(OK.value()));
 	}
+
+    @Test
+    public void getFile_WhenFileDoesNotExistInDatabase_ThenSendNotFoundInResponseEntity() throws Exception {
+        when(fileService.getFileByStableId(any(String.class))).thenReturn(new ArrayList<>());
+        final MockHttpServletResponse response = mockMvc.perform(get("/file/fileId").accept(APPLICATION_JSON))
+                .andReturn().getResponse();
+        assertThat(response.getStatus(), equalTo(NOT_FOUND.value()));
+    }
 
 	/**
 	 * Test {@link FileController#getDatasets(String)}. Verify the api call

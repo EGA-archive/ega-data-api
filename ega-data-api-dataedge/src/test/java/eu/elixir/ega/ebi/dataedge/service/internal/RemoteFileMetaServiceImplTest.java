@@ -15,8 +15,11 @@
  */
 package eu.elixir.ega.ebi.dataedge.service.internal;
 
+import eu.elixir.ega.ebi.commons.exception.NotFoundException;
+import eu.elixir.ega.ebi.commons.shared.dto.Dataset;
 import eu.elixir.ega.ebi.commons.shared.dto.File;
 import eu.elixir.ega.ebi.commons.shared.dto.FileDataset;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -30,6 +33,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
@@ -93,9 +97,17 @@ public class RemoteFileMetaServiceImplTest {
         when(forEntityDataset.getBody()).thenReturn(datasets);
         when(forEntity.getBody()).thenReturn(files);
 
-        final File fileOutput = remoteFileMetaServiceImpl.getFile(auth, FILEID);
+        final File fileOutput = remoteFileMetaServiceImpl.getFile(auth, FILEID, "");
 
         assertThat(fileOutput.getDatasetId(), equalTo(DATASET1));
+    }
+
+    @Test(expected = NotFoundException.class)
+    public void getFile_WhenFileDoesNotExist_ThenThrowsNotFoundException() {
+        final Authentication auth = mock(Authentication.class);
+        when(syncRestTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}", File[].class, FILEID))
+                .thenThrow(HttpClientErrorException.class);
+        remoteFileMetaServiceImpl.getFile(auth, FILEID, "");
     }
 
     /**
@@ -115,6 +127,13 @@ public class RemoteFileMetaServiceImplTest {
         final Iterable<File> fileOutput = remoteFileMetaServiceImpl.getDatasetFiles(DATASET1);
 
         assertThat(fileOutput.iterator().next().getFileId(), equalTo(f.getFileId()));
+    }
+
+    @Test(expected = NotFoundException.class)
+    public void getDatasetFiles_WhenDatasetDoesNotExist_ThenThrowsNotFoundException() {
+        when(syncRestTemplate.getForObject(FILEDATABASE_SERVICE + "/datasets/{datasetId}", Dataset.class, DATASET1))
+                .thenThrow(HttpClientErrorException.class);
+        remoteFileMetaServiceImpl.getDataset(DATASET1, "");
     }
 
 }

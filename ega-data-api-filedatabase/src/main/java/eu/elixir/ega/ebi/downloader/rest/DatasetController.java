@@ -15,15 +15,21 @@
  */
 package eu.elixir.ega.ebi.downloader.rest;
 
-import eu.elixir.ega.ebi.downloader.dto.DownloaderFile;
-import eu.elixir.ega.ebi.downloader.service.FileService;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static org.springframework.web.bind.annotation.RequestMethod.GET;
+
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import static org.springframework.web.bind.annotation.RequestMethod.GET;
+import eu.elixir.ega.ebi.downloader.domain.entity.Dataset;
+import eu.elixir.ega.ebi.downloader.dto.DownloaderFile;
+import eu.elixir.ega.ebi.downloader.service.FileService;
 
 /**
  * @author asenf
@@ -34,6 +40,16 @@ public class DatasetController {
 
     @Autowired
     private FileService fileService;
+
+    @RequestMapping(value = "/{datasetId}", method = GET)
+    @ResponseBody
+    public ResponseEntity<?> getDataset(@PathVariable String datasetId) {
+        Optional<Dataset> dataset = fileService.getDataset(datasetId);
+        if (!dataset.isPresent()) {
+            return ResponseEntity.status(NOT_FOUND).build();
+        }
+        return ResponseEntity.ok(dataset.get());
+    }
 
     @RequestMapping(value = "/{datasetId}/files", method = GET)
     @ResponseBody

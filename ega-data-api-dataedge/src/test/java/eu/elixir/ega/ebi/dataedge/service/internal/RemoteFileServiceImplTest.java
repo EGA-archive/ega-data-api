@@ -15,15 +15,15 @@
  */
 package eu.elixir.ega.ebi.dataedge.service.internal;
 
+import eu.elixir.ega.ebi.commons.exception.InternalErrorException;
+import eu.elixir.ega.ebi.commons.exception.NoContentException;
+import eu.elixir.ega.ebi.commons.exception.UnavailableForLegalReasonsException;
 import eu.elixir.ega.ebi.commons.shared.dto.File;
 import eu.elixir.ega.ebi.commons.shared.dto.FileDataset;
 import eu.elixir.ega.ebi.commons.shared.dto.FileIndexFile;
 import eu.elixir.ega.ebi.commons.shared.dto.MyExternalConfig;
 import eu.elixir.ega.ebi.commons.shared.service.DownloaderLogService;
 import eu.elixir.ega.ebi.commons.shared.service.FileInfoService;
-import eu.elixir.ega.ebi.dataedge.config.InternalErrorException;
-import eu.elixir.ega.ebi.dataedge.config.NoContentException;
-import eu.elixir.ega.ebi.dataedge.config.UnavailableForLegalReasonsException;
 import eu.elixir.ega.ebi.dataedge.dto.*;
 import eu.elixir.ega.ebi.dataedge.service.FileLengthService;
 import eu.elixir.ega.ebi.dataedge.service.KeyService;

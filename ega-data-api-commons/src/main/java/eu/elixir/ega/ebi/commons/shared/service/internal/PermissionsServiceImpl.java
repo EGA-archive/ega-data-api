@@ -16,9 +16,9 @@
 package eu.elixir.ega.ebi.commons.shared.service.internal;
 
 
-import eu.elixir.ega.ebi.commons.shared.config.GeneralStreamingException;
-import eu.elixir.ega.ebi.commons.shared.config.NotFoundException;
-import eu.elixir.ega.ebi.commons.shared.config.PermissionDeniedException;
+import eu.elixir.ega.ebi.commons.exception.GeneralStreamingException;
+import eu.elixir.ega.ebi.commons.exception.NotFoundException;
+import eu.elixir.ega.ebi.commons.exception.PermissionDeniedException;
 import eu.elixir.ega.ebi.commons.shared.config.VerifyMessageNew;
 import eu.elixir.ega.ebi.commons.shared.dto.EventEntry;
 import eu.elixir.ega.ebi.commons.shared.dto.FileDataset;

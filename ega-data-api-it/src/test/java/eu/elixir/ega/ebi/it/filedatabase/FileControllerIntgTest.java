@@ -1,6 +1,7 @@
 package eu.elixir.ega.ebi.it.filedatabase;
 
 import static org.apache.http.HttpStatus.SC_OK;
+import static org.apache.http.HttpStatus.SC_NOT_FOUND;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -42,10 +43,7 @@ public class FileControllerIntgTest extends FileDatabaseBase {
     @Test
     public void testGetFileForZeroId() {
         final Response response = REQUEST.get(FILE_CONTROLLER + ID_ZERO);
-        JSONArray jsonArray = new JSONArray(response.body().asString()); 
-        
-        response.then().assertThat().statusCode(SC_OK);
-        assertThat(jsonArray.length(), equalTo(0));
+        response.then().assertThat().statusCode(SC_NOT_FOUND);
     }
     
     
