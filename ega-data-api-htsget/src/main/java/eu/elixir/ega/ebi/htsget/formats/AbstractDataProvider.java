@@ -16,11 +16,19 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.List;
 import java.util.Optional;
 
-public class AbstractDataProvider {
+public abstract class AbstractDataProvider {
+
+    protected AbstractDataProvider(SeekableStream dataStream) throws IOException {
+        readHeader(dataStream);
+    }
+
+    protected abstract void readHeader(SeekableStream stream) throws IOException;
 
     private static int getBlockSize(SeekableStream dataStream, long blockPosition) throws IOException {
         dataStream.seek(blockPosition + BlockCompressedStreamConstants.BLOCK_LENGTH_OFFSET);
@@ -34,7 +42,9 @@ public class AbstractDataProvider {
         return (highByte << 8 | lowByte) + 1;
     }
 
-    protected void makeUrlsForBGZFBlocks(URI baseURI, HtsgetResponseV2 urls, SeekableStream dataStream, long chunkStart, long chunkEnd) throws IOException, URISyntaxException {
+    protected List<HtsgetUrlV2> makeUrlsForBGZFBlocks(URI baseURI, SeekableStream dataStream, long chunkStart, long chunkEnd) throws IOException, URISyntaxException {
+        List<HtsgetUrlV2> results = new ArrayList<>();
+
         // For all the blocks we return, the first and last one we have to be careful, because
         // there might be records that are split across the edge of the block.
         long startBlockPosition = BlockCompressedFilePointerUtil.getBlockAddress(chunkStart);
@@ -47,14 +57,14 @@ public class AbstractDataProvider {
             startBlockEndTrim = Optional.of(BlockCompressedFilePointerUtil.getBlockOffset(chunkEnd));
         }
 
-        urls.addUrl(new HtsgetUrlV2(getTrimmedBlockAsDataUri(startBlockPosition,
+        results.add(new HtsgetUrlV2(getTrimmedBlockAsDataUri(startBlockPosition,
                 startBlockLength,
                 startBlockStartTrim,
                 startBlockEndTrim,
                 dataStream)));
 
         if (startBlockPosition == endBlockPosition)
-            return;
+            return results;
 
         // blocks in the middle will never have a problem with records that are at the edge of the block
         // because the other part of the record is in a block that is included too. so in the middle it
@@ -64,18 +74,20 @@ public class AbstractDataProvider {
             HtsgetUrlV2 chunkURL = new HtsgetUrlV2(baseURI, "body");
             HttpRange range = HttpRange.createByteRange(midBlockPosition, endBlockPosition - 1);
             chunkURL.setHeader("Range", "bytes=" + range.toString());
-            urls.addUrl(chunkURL);
+            results.add(chunkURL);
         }
 
         // Make the end block
         int endBlockLength = AbstractDataProvider.getBlockSize(dataStream, endBlockPosition);
         Optional<Integer> endBlockEndTrim = Optional.of(BlockCompressedFilePointerUtil.getBlockOffset(chunkEnd) + 1);
 
-        urls.addUrl(new HtsgetUrlV2(getTrimmedBlockAsDataUri(endBlockPosition,
+       results.add(new HtsgetUrlV2(getTrimmedBlockAsDataUri(endBlockPosition,
                 endBlockLength,
                 Optional.empty(),
                 endBlockEndTrim,
                 dataStream)));
+
+       return results;
     }
 
     private URI getTrimmedBlockAsDataUri(long startBlockPosition, int blockSize, Optional<Integer> startTrim, Optional<Integer> endTrim, SeekableStream dataStream) throws IOException, URISyntaxException {
@@ -90,11 +102,7 @@ public class AbstractDataProvider {
             throw new RuntimeException("Invalid block (expected header bytes " + BlockCompressedStreamConstants.GZIP_ID1 + "," + BlockCompressedStreamConstants.GZIP_ID2 + " but got " + originalBlock[0] + "," + originalBlock[1]);
 
         // Decompress it
-        byte[] uncompressedData;
-        try (ByteArrayInputStream input = new ByteArrayInputStream(originalBlock);
-             BlockCompressedInputStream inputStream = new BlockCompressedInputStream(input)) {
-            uncompressedData = IOUtils.toByteArray(inputStream);
-        }
+        byte[] uncompressedData = blockDecompress(originalBlock);
 
         // Trim it
         if (endTrim.isPresent())
@@ -102,15 +110,28 @@ public class AbstractDataProvider {
         if (startTrim.isPresent())
             uncompressedData = Arrays.copyOfRange(uncompressedData, startTrim.get(), uncompressedData.length);
 
-        // Compress it again
+        // Make it into a data uri
+        return makeDataUriFromBytes(blockCompress(uncompressedData));
+    }
+
+    private byte[] blockCompress(byte[] uncompressedData) throws IOException {
+        byte[] compressedData;
         try (ByteArrayOutputStream output = new ByteArrayOutputStream()) {
             try (BlockCompressedOutputStream blockStream = new BlockCompressedOutputStream(output, (File) null)) {
                 blockStream.write(uncompressedData);
             }
-
-            // Make it into a data uri
-            return makeDataUriFromBytes(output.toByteArray());
+            compressedData = output.toByteArray();
         }
+        return compressedData;
+    }
+
+    private byte[] blockDecompress(byte[] originalBlock) throws IOException {
+        byte[] uncompressedData;
+        try (ByteArrayInputStream input = new ByteArrayInputStream(originalBlock);
+             BlockCompressedInputStream inputStream = new BlockCompressedInputStream(input)) {
+            uncompressedData = IOUtils.toByteArray(inputStream);
+        }
+        return uncompressedData;
     }
 
     protected URI makeDataUriFromBytes(byte[] bytes) throws URISyntaxException {

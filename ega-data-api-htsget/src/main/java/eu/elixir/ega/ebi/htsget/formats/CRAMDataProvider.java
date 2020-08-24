@@ -19,6 +19,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 
@@ -27,13 +28,17 @@ public class CRAMDataProvider extends AbstractDataProvider implements DataProvid
     CramHeader cramHeader;
     SAMFileHeader samHeader;
 
+    public CRAMDataProvider(SeekableStream dataStream) throws IOException {
+        super(dataStream);
+    }
+
     @Override
     public boolean supportsFileType(String filename) {
         return filename.toLowerCase().endsWith(".cram") || filename.toLowerCase().endsWith(".cram.cip");
     }
 
     @Override
-    public void readHeader(SeekableStream stream) {
+    protected void readHeader(SeekableStream stream) {
         cramHeader = CramIO.readCramHeader(stream);
         samHeader = Container.readSAMFileHeaderContainer(cramHeader.getCRAMVersion(), stream, new String(cramHeader.getId()));
     }
@@ -50,13 +55,15 @@ public class CRAMDataProvider extends AbstractDataProvider implements DataProvid
     }
 
     @Override
-    public void addContentUris(String referenceName, Long start, Long end, URI baseURI, HtsgetResponseV2 urls, SeekableStream dataStream, SeekableStream indexStream) throws IOException {
+    public List<HtsgetUrlV2> addContentUris(String referenceName, Long start, Long end, URI baseURI, SeekableStream dataStream, SeekableStream indexStream) throws IOException {
         // look up this sequence in the dictionary
         SAMSequenceDictionary sequenceDictionary = samHeader.getSequenceDictionary();
         int sequenceIndex = sequenceDictionary.getSequenceIndex(referenceName);
         if (sequenceIndex == SAMSequenceRecord.UNAVAILABLE_SEQUENCE_INDEX) {
             throw new NotFoundException("sequence not found", referenceName);
         }
+
+        List<HtsgetUrlV2> results = new ArrayList<>();
 
         CRAIIndex index = CRAMCRAIIndexer.readIndex(indexStream);
         List<CRAIEntry> indexEntries = CRAIIndex.find(index.getCRAIEntries(), sequenceIndex, start.intValue(), ((Long) (end - start)).intValue());
@@ -71,8 +78,9 @@ public class CRAMDataProvider extends AbstractDataProvider implements DataProvid
 
             HtsgetUrlV2 chunkURL = new HtsgetUrlV2(baseURI, "body");
             chunkURL.setHeader("Range", String.format("bytes=%d-%d", byteStart, byteEnd - 1));
-            urls.addUrl(chunkURL);
+            results.add(chunkURL);
         }
+        return results;
     }
 
     @Override

@@ -1,6 +1,7 @@
 package eu.elixir.ega.ebi.htsget.service.internal;
 
 import eu.elixir.ega.ebi.commons.config.InvalidInputException;
+import eu.elixir.ega.ebi.commons.config.InvalidRangeException;
 import eu.elixir.ega.ebi.commons.config.UnsupportedFormatException;
 import eu.elixir.ega.ebi.commons.shared.config.NotFoundException;
 import eu.elixir.ega.ebi.commons.shared.dto.File;
@@ -8,6 +9,7 @@ import eu.elixir.ega.ebi.commons.shared.dto.FileIndexFile;
 import eu.elixir.ega.ebi.commons.shared.dto.MyExternalConfig;
 import eu.elixir.ega.ebi.commons.shared.service.FileInfoService;
 import eu.elixir.ega.ebi.htsget.config.LocalTestData;
+import eu.elixir.ega.ebi.htsget.dto.HtsgetResponse;
 import eu.elixir.ega.ebi.htsget.dto.HtsgetResponseV2;
 import eu.elixir.ega.ebi.htsget.dto.HtsgetUrlV2;
 import eu.elixir.ega.ebi.htsget.formats.DataProvider;
@@ -32,6 +34,8 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import static org.mockito.Matchers.any;
@@ -59,7 +63,7 @@ public class TicketServiceV2Test {
     private DataProvider dataProvider;
 
     @Before
-    public void setUpCommonMocks() throws MalformedURLException, FileNotFoundException {
+    public void setUpCommonMocks() throws IOException {
         Mockito.reset(externalConfig);
         when(externalConfig.getEgaExternalUrl())
                 .thenReturn("https://test.Htsget.ega.url/");
@@ -80,9 +84,9 @@ public class TicketServiceV2Test {
                 .thenReturn(new SeekableFileStream(new java.io.File(LocalTestData.BAM_INDEX_FILE_PATH)));
 
         Mockito.reset(dataProviderFactory);
-        doThrow(UnsupportedFormatException.class).when(dataProviderFactory).getProviderForFormat(any());
-        doReturn(dataProvider).when(dataProviderFactory).getProviderForFormat("BAM");
-        doReturn(dataProvider).when(dataProviderFactory).getProviderForFormat("CRAM");
+        doThrow(UnsupportedFormatException.class).when(dataProviderFactory).getProviderForFormat(any(), any());
+        doReturn(dataProvider).when(dataProviderFactory).getProviderForFormat(eq("BAM"), any());
+        doReturn(dataProvider).when(dataProviderFactory).getProviderForFormat(eq("CRAM"), any());
     }
 
     @Test(expected = InvalidInputException.class)
@@ -102,7 +106,7 @@ public class TicketServiceV2Test {
     @Test(expected = NotFoundException.class)
     public void requestForNonExistingReferenceReturnsNotFound() throws IOException, URISyntaxException {
         doReturn(true).when(dataProvider).supportsFileType(any());
-        doThrow(NotFoundException.class).when(dataProvider).addContentUris(anyString(), any(), any(), any(), any(), any(), any());
+        doThrow(NotFoundException.class).when(dataProvider).addContentUris(anyString(), any(), any(), any(), any(), any());
         service.getRead(LocalTestData.BAM_FILE_ID,
                 "BAM",
                 Optional.empty(),
@@ -188,9 +192,10 @@ public class TicketServiceV2Test {
         doAnswer(i -> {
             HtsgetUrlV2 bigByteRange = new HtsgetUrlV2(new URI("https://test.data/"));
             bigByteRange.setHeader(HttpHeaders.RANGE, "bytes=" + HttpRange.createByteRange(0, mockDataLength).toString());
-            i.getArgumentAt(4, HtsgetResponseV2.class).addUrl(bigByteRange);
-            return null;
-        }).when(dataProvider).addContentUris(anyString(), any(), any(), any(), any(), any(), any());
+            List<HtsgetUrlV2> result = new ArrayList<>();
+            result.add(bigByteRange);
+            return result;
+        }).when(dataProvider).addContentUris(anyString(), any(), any(), any(), any(), any());
         doReturn(new URI("data:123")).when(dataProvider).getHeaderAsDataUri();
         doReturn(new URI("data:321")).when(dataProvider).getFooterAsDataUri();
 
@@ -229,7 +234,21 @@ public class TicketServiceV2Test {
                 Optional.empty(),
                 Optional.empty(),
                 Optional.empty());
-        Mockito.verify(dataProvider).addContentUris(eq("chrM"), eq(0L), eq(Long.MAX_VALUE), any(), any(), any(), any());
+        Mockito.verify(dataProvider).addContentUris(eq("chrM"), eq(0L), eq(Long.MAX_VALUE), any(), any(), any());
+    }
+
+    @Test(expected = InvalidRangeException.class)
+    public void whenEndIsLessThanStartThrowsInvalidRangeException() throws IOException, URISyntaxException {
+        doReturn(true).when(dataProvider).supportsFileType(any());
+        service.getRead(LocalTestData.BAM_FILE_ID,
+                "BAM",
+                Optional.empty(),
+                Optional.of("chrM"),
+                Optional.of(100L),
+                Optional.of(50L),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty());
     }
 
     @TestConfiguration

@@ -14,6 +14,7 @@ import org.junit.Test;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
 
 public class CRAMDataProviderTest extends DataProviderTest {
@@ -48,11 +49,11 @@ public class CRAMDataProviderTest extends DataProviderTest {
     }
 
     @Test
-    public void sliceContainsExpectedNumberOfRecords() throws IOException, URISyntaxException {
+    public void sliceContainsExpectedNumberOfRecords() throws IOException, URISyntaxException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
         Interval interval = new Interval(CHROMOSOME_NAME, START_POSITION.intValue(), END_POSITION.intValue());
 
         HtsgetResponseV2 response = getHtsgetResponseV2(
-                new CRAMDataProvider(),
+                CRAMDataProvider.class,
                 "CRAM",
                 LocalTestData.CRAM_FILE_PATH,
                 LocalTestData.CRAM_INDEX_FILE_PATH,

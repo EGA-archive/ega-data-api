@@ -40,4 +40,8 @@ public class HtsgetResponseV2 {
     public void setMd5(String md5) {
         this.md5 = md5;
     }
+
+    public void setUrls(List<HtsgetUrlV2> urls) {
+        this.urls = urls;
+    }
 }

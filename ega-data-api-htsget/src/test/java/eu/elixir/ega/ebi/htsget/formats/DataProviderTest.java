@@ -12,6 +12,8 @@ import org.springframework.http.HttpRange;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Base64;
@@ -50,21 +52,22 @@ public abstract class DataProviderTest {
         }
     }
 
-    protected HtsgetResponseV2 getHtsgetResponseV2(DataProvider dataProvider, String format, String dataFilePath, String indexFilePath, Interval interval) throws IOException, URISyntaxException {
+    protected HtsgetResponseV2 getHtsgetResponseV2(Class<? extends AbstractDataProvider> dataProviderClass, String format, String dataFilePath, String indexFilePath, Interval interval) throws IOException, URISyntaxException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
         HtsgetResponseV2 response = new HtsgetResponseV2(format);
 
         try (SeekableStream dataStream = new SeekableFileStream(new File(dataFilePath));
              SeekableStream indexStream = new SeekableFileStream(new File(indexFilePath))) {
 
-            dataProvider.readHeader(dataStream);
+            Constructor constructor = dataProviderClass.getConstructor(SeekableStream.class);
+            DataProvider dataProvider = (DataProvider) constructor.newInstance(dataStream);
+
             response.addUrl(new HtsgetUrlV2(dataProvider.getHeaderAsDataUri(), "header"));
 
-            dataProvider.addContentUris(interval.getContig(),
+            response.getUrls().addAll(dataProvider.addContentUris(interval.getContig(),
                     (long)interval.getStart(), (long)interval.getEnd(),
                     new URI("file://" + dataFilePath),
-                    response,
                     dataStream,
-                    indexStream);
+                    indexStream));
 
             response.addUrl(new HtsgetUrlV2(dataProvider.getFooterAsDataUri()));
         }

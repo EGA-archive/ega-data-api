@@ -8,6 +8,8 @@ import htsjdk.samtools.SAMRecordIterator;
 import htsjdk.samtools.SamInputResource;
 import htsjdk.samtools.SamReader;
 import htsjdk.samtools.SamReaderFactory;
+import htsjdk.samtools.seekablestream.SeekableFileStream;
+import htsjdk.samtools.seekablestream.SeekableStream;
 import htsjdk.samtools.util.BlockCompressedStreamConstants;
 import htsjdk.samtools.util.Interval;
 import org.junit.Assert;
@@ -15,7 +17,9 @@ import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
 import java.util.Base64;
 
@@ -43,13 +47,13 @@ public class BAMDataProviderTest extends DataProviderTest {
     }
 
     @Test
-    public void sliceContainsExpectedNumberOfRecords() throws IOException, URISyntaxException {
+    public void sliceContainsExpectedNumberOfRecords() throws IOException, URISyntaxException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
 
         Interval interval = new Interval(CHROMOSOME_NAME, START_POSITION.intValue(), END_POSITION.intValue());
 
         int expectedRecordCount = countRecordsInOriginalFile(interval);
 
-        HtsgetResponseV2 response = getHtsgetResponseV2(new BAMDataProvider(),
+        HtsgetResponseV2 response = getHtsgetResponseV2(BAMDataProvider.class,
                 "BAM",
                 LocalTestData.BAM_FILE_PATH,
                 LocalTestData.BAM_INDEX_FILE_PATH,
@@ -59,13 +63,13 @@ public class BAMDataProviderTest extends DataProviderTest {
     }
 
     @Test
-    public void sliceWithNoStartOrEndContainsExpectedNumberOfRecords() throws IOException, URISyntaxException {
+    public void sliceWithNoStartOrEndContainsExpectedNumberOfRecords() throws IOException, URISyntaxException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
 
         Interval interval = new Interval(CHROMOSOME_NAME, 0, Integer.MAX_VALUE);
 
         int expectedRecordCount = countRecordsInOriginalFile(interval);
 
-        HtsgetResponseV2 response = getHtsgetResponseV2(new BAMDataProvider(),
+        HtsgetResponseV2 response = getHtsgetResponseV2(BAMDataProvider.class,
                 "BAM",
                 LocalTestData.BAM_FILE_PATH,
                 LocalTestData.BAM_INDEX_FILE_PATH,
@@ -75,10 +79,12 @@ public class BAMDataProviderTest extends DataProviderTest {
     }
 
     @Test
-    public void footerIsEmptyGzipBlock() throws URISyntaxException {
-        BAMDataProvider bamDataProvider = new BAMDataProvider();
-        String base64Data = bamDataProvider.getFooterAsDataUri().getSchemeSpecificPart().substring("base64,".length());
-        Assert.assertArrayEquals(BlockCompressedStreamConstants.EMPTY_GZIP_BLOCK, Base64.getDecoder().decode(base64Data));
+    public void footerIsEmptyGzipBlock() throws URISyntaxException, IOException {
+        try(SeekableStream dataStream = new SeekableFileStream(new File(LocalTestData.BAM_FILE_PATH))) {
+            BAMDataProvider bamDataProvider = new BAMDataProvider(dataStream);
+            String base64Data = bamDataProvider.getFooterAsDataUri().getSchemeSpecificPart().substring("base64,".length());
+            Assert.assertArrayEquals(BlockCompressedStreamConstants.EMPTY_GZIP_BLOCK, Base64.getDecoder().decode(base64Data));
+        }
     }
 
     private int countMatchingRecordsInResponse(HtsgetResponseV2 response, Interval interval) throws IOException {

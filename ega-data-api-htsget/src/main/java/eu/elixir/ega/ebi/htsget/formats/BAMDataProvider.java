@@ -2,6 +2,7 @@ package eu.elixir.ega.ebi.htsget.formats;
 
 import eu.elixir.ega.ebi.commons.shared.config.NotFoundException;
 import eu.elixir.ega.ebi.htsget.dto.HtsgetResponseV2;
+import eu.elixir.ega.ebi.htsget.dto.HtsgetUrlV2;
 import htsjdk.samtools.*;
 import htsjdk.samtools.seekablestream.SeekableStream;
 import htsjdk.samtools.util.BlockCompressedStreamConstants;
@@ -11,10 +12,16 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class BAMDataProvider extends AbstractDataProvider implements DataProvider {
 
     private SAMFileHeader header;
+
+    public BAMDataProvider(SeekableStream dataStream) throws IOException {
+        super(dataStream);
+    }
 
     @Override
     public boolean supportsFileType(String filename) {
@@ -22,7 +29,7 @@ public class BAMDataProvider extends AbstractDataProvider implements DataProvide
     }
 
     @Override
-    public void readHeader(SeekableStream stream) throws IOException {
+    protected void readHeader(SeekableStream stream) throws IOException {
 
         // SamReader will try and close the stream so shield it
         try (CloseShieldInputStream shield = new CloseShieldInputStream(stream);
@@ -44,7 +51,7 @@ public class BAMDataProvider extends AbstractDataProvider implements DataProvide
     }
 
     @Override
-    public void addContentUris(String referenceName, Long start, Long end, URI baseURI, HtsgetResponseV2 urls, SeekableStream dataStream, SeekableStream indexStream) throws IOException, URISyntaxException {
+    public List<HtsgetUrlV2> addContentUris(String referenceName, Long start, Long end, URI baseURI, SeekableStream dataStream, SeekableStream indexStream) throws IOException, URISyntaxException {
         BAMFileSpan span;
 
         // look up this sequence in the dictionary
@@ -63,9 +70,12 @@ public class BAMDataProvider extends AbstractDataProvider implements DataProvide
         }
 
         // Build the URLs for each chunk
+        List<HtsgetUrlV2> results = new ArrayList<>();
+
         for (Chunk chunk : span.getChunks()) {
-            makeUrlsForBGZFBlocks(baseURI, urls, dataStream, chunk.getChunkStart(), chunk.getChunkEnd());
+            results.addAll(makeUrlsForBGZFBlocks(baseURI, dataStream, chunk.getChunkStart(), chunk.getChunkEnd()));
         }
+        return results;
     }
 
     @Override

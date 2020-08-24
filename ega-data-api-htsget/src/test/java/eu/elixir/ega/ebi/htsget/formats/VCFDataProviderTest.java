@@ -15,6 +15,7 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
@@ -38,34 +39,23 @@ public class VCFDataProviderTest extends DataProviderTest {
     }
 
     @Test
-    public void vcfBlocksAreValid() throws IOException, URISyntaxException {
-        VCFDataProvider provider = new VCFDataProvider();
+    public void vcfBlocksAreValid() throws IOException, URISyntaxException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
+
+        Interval range = new Interval(CHROMOSOME_NAME, START_POSITION.intValue(), END_POSITION.intValue());
 
         // Use the data file and index to make a response with URIs for all the pieces
-        HtsgetResponseV2 response = new HtsgetResponseV2("VCF");
-        try (SeekableStream dataStream = new SeekableFileStream(new File(LocalTestData.VCF_FILE_PATH));
-             SeekableStream indexStream = new SeekableFileStream(new File(LocalTestData.VCF_INDEX_FILE_PATH))) {
-
-            provider.readHeader(dataStream);
-            response.addUrl(new HtsgetUrlV2(provider.getHeaderAsDataUri(), "header"));
-
-            provider.addContentUris(CHROMOSOME_NAME,
-                    START_POSITION, END_POSITION,
-                    new URI("file://" + LocalTestData.VCF_FILE_PATH),
-                    response,
-                    dataStream,
-                    indexStream);
-
-
-            response.addUrl(new HtsgetUrlV2(provider.getFooterAsDataUri()));
-        }
+        HtsgetResponseV2 response = this.getHtsgetResponseV2(VCFDataProvider.class,
+                "VCF",
+                LocalTestData.VCF_FILE_PATH,
+                LocalTestData.VCF_INDEX_FILE_PATH,
+                range);
 
         byte[] responseBytes = this.makeDataFileFromResponse(response, LocalTestData.VCF_FILE_PATH);
 
         File tempFile = new File("/tmp/my-test.vcf.gz");
         FileUtils.writeByteArrayToFile(tempFile, responseBytes);
 
-        Interval range = new Interval(CHROMOSOME_NAME, START_POSITION.intValue(), END_POSITION.intValue());
+
         int recordCount = 0;
         try (VCFFileReader reader = new VCFFileReader(tempFile, false)) {
             try (CloseableIterator<VariantContext> iterator = reader.iterator()) {

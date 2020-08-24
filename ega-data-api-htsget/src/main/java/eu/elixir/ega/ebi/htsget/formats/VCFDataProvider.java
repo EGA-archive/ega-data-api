@@ -1,6 +1,7 @@
 package eu.elixir.ega.ebi.htsget.formats;
 
 import eu.elixir.ega.ebi.htsget.dto.HtsgetResponseV2;
+import eu.elixir.ega.ebi.htsget.dto.HtsgetUrlV2;
 import htsjdk.samtools.seekablestream.SeekableStream;
 import htsjdk.samtools.util.BlockCompressedInputStream;
 import htsjdk.samtools.util.BlockCompressedOutputStream;
@@ -20,10 +21,15 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class VCFDataProvider extends AbstractDataProvider implements DataProvider {
     VCFHeader header;
+
+    public VCFDataProvider(SeekableStream dataStream) throws IOException {
+        super(dataStream);
+    }
 
     @Override
     public boolean supportsFileType(String filename) {
@@ -31,7 +37,7 @@ public class VCFDataProvider extends AbstractDataProvider implements DataProvide
     }
 
     @Override
-    public void readHeader(SeekableStream stream) throws IOException {
+    protected void readHeader(SeekableStream stream) throws IOException {
         VCFCodec codec = new VCFCodec();
         try (CloseShieldInputStream shield = new CloseShieldInputStream(stream);
              BlockCompressedInputStream blockStream = new BlockCompressedInputStream(shield)) {
@@ -56,15 +62,18 @@ public class VCFDataProvider extends AbstractDataProvider implements DataProvide
     }
 
     @Override
-    public void addContentUris(String referenceName, Long start, Long end, URI baseURI, HtsgetResponseV2 urls, SeekableStream dataStream, SeekableStream indexStream) throws IOException, URISyntaxException {
+    public List<HtsgetUrlV2> addContentUris(String referenceName, Long start, Long end, URI baseURI, SeekableStream dataStream, SeekableStream indexStream) throws IOException, URISyntaxException {
 
         try (BlockCompressedInputStream compressedIndexStream = new BlockCompressedInputStream(indexStream)) {
             TabixIndex index = new TabixIndex(compressedIndexStream);
             List<Block> blocks = index.getBlocks(referenceName, start.intValue(), end.intValue());
 
+            List<HtsgetUrlV2> results = new ArrayList<>();
+
             for (Block block : blocks) {
-                makeUrlsForBGZFBlocks(baseURI, urls, dataStream, block.getStartPosition(), block.getEndPosition());
+                results.addAll(makeUrlsForBGZFBlocks(baseURI, dataStream, block.getStartPosition(), block.getEndPosition()));
             }
+            return results;
         }
     }
 
