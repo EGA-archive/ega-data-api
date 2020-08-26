@@ -15,6 +15,7 @@
  */
 package eu.elixir.ega.ebi.htsget.config;
 
+
 import eu.elixir.ega.ebi.commons.config.CachingMultipleRemoteTokenService;
 import eu.elixir.ega.ebi.commons.config.CachingRemoteTokenService;
 import eu.elixir.ega.ebi.commons.config.MyAccessTokenConverter;
@@ -47,9 +48,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-/**
- * @author asenf
- */
+
 @Order(1)
 @Configuration
 @EnableCaching
@@ -144,3 +143,4 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
     }
 
 }
+

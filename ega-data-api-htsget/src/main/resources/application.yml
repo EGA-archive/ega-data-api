@@ -19,4 +19,4 @@ KEYSERVER:
 
 server.ssl.key-store-type: ${KEY_STORE_TYPE:PKCS12}
 server.ssl.key-store: ${KEY_STORE:/htsget.p12}
-server.ssl.key-store-password: ${KEY_STORE_PASSWORD:changeit}  
+server.ssl.key-store-password: ${KEY_STORE_PASSWORD:changeit}

@@ -19,9 +19,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
-/**
- * @author asenf
- */
+
 public interface TicketService {
 
     Object getTicket(String fileId,

@@ -86,9 +86,6 @@ import static eu.elixir.ega.ebi.commons.config.Constants.FILEDATABASE_SERVICE;
 import static eu.elixir.ega.ebi.commons.config.Constants.RES_SERVICE;
 import static org.apache.catalina.connector.OutputBuffer.DEFAULT_BUFFER_SIZE;
 
-/**
- * @author asenf
- */
 @Service
 @EnableDiscoveryClient
 @Slf4j
