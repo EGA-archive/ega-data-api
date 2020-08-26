@@ -12,7 +12,9 @@ import htsjdk.variant.vcf.VCFFileReader;
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Ignore;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 import java.io.File;
 import java.io.IOException;
@@ -40,6 +42,9 @@ public class VCFDataProviderTest extends DataProviderTest {
         return recordCount;
     }
 
+    @Rule
+    public TemporaryFolder temporaryFolder = new TemporaryFolder();
+
     @Test
     public void vcfBlocksAreValid() throws IOException, URISyntaxException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
 
@@ -54,7 +59,7 @@ public class VCFDataProviderTest extends DataProviderTest {
 
         byte[] responseBytes = this.makeDataFileFromResponse(response, LocalTestData.VCF_FILE_PATH);
 
-        File tempFile = new File("/tmp/my-test.vcf.gz");
+        File tempFile = temporaryFolder.newFile("test.vcf.gz");
         FileUtils.writeByteArrayToFile(tempFile, responseBytes);
 
 
