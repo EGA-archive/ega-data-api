@@ -20,6 +20,6 @@ public class ResClient {
     }
 
     private String resURL() {
-        return loadBalancer.choose("RES2").getUri().toString() + "/ega-res";
+        return loadBalancer.choose("RES2").getUri().toString();
     }
 }
