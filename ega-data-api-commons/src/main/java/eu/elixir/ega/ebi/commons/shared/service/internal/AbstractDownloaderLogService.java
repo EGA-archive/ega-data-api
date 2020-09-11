@@ -54,7 +54,7 @@ public abstract class AbstractDownloaderLogService implements DownloaderLogServi
         EventEntry eev = new EventEntry();
         eev.setEventId("0");
         // CLient IP
-        String ipAddress = request.getHeader("X-FORWARDED-FOR");
+        String ipAddress = request.getHeader("client-ip");
         if (ipAddress == null) {
             ipAddress = request.getRemoteAddr();
         }
@@ -91,7 +91,7 @@ public abstract class AbstractDownloaderLogService implements DownloaderLogServi
         dle.setDownloadSpeed(speed);
         dle.setDownloadStatus(success ? "success" : "failed");
         dle.setFileId(fileId);
-        String ipAddress = request.getHeader("X-FORWARDED-FOR");
+        String ipAddress = request.getHeader("client-ip");
         if (ipAddress == null) {
             ipAddress = request.getRemoteAddr();
         }
