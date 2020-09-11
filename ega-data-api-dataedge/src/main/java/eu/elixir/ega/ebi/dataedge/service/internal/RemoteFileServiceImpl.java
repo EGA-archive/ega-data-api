@@ -205,41 +205,8 @@ public class RemoteFileServiceImpl implements FileService {
                 // Callback Function for Resttemplate
                 // Get Data Stream from RES ReEncryptionService
                 // -----------------------------------------------------------------
-                ResponseExtractor<HttpResult> responseExtractor = response_ -> {
-                    List<String> get = response_.getHeaders().get("X-Session"); // RES session UUID
-                    long b = 0;
-                    String inHashtext = "";
-                    try (InputStream inOrig = response_.getBody()) {
-                        // If the stream is encrypted, and coordinates are specified,
-                        // there is a possibility that 0-15 extra bytes are sent, because
-                        // of the 16-byte AES Block size - read these bytes before moving on
-                        if (destinationFormat.toLowerCase().startsWith("aes") && destinationIV != null
-                                && destinationIV.length() > 0) {
-                            long blockStart = (startCoordinate / 16) * 16;
-                            int blockDelta = (int) (startCoordinate - blockStart);
-                            if (blockDelta > 0)
-                                inOrig.read(new byte[blockDelta]);
-                        }
+                ResponseExtractor<HttpResult> responseExtractor = responseExtractor(destinationFormat, destinationIV, startCoordinate, outDigestStream, sessionId);
 
-                        // Input stream from RES, wrap in DigestStream
-                        MessageDigest inDigest = MessageDigest.getInstance("MD5");
-                        try (DigestInputStream inDigestStream = new DigestInputStream(inOrig, inDigest)) {
-
-                            // The actual Data Transfer - copy bytes from RES to Http connection to client
-                            b = ByteStreams.copy(inDigestStream, outDigestStream); // in, outputStream
-
-                            // Done - Close Streams and obtain MD5 of received Stream
-                            inHashtext = getDigestText(inDigest.digest());
-                        }
-                    } catch (Throwable t) {
-                        String errorMessage = t.toString();
-                        log.error(sessionId + "RemoteFileServiceImpl Error 1: " + errorMessage);
-                        throw new GeneralStreamingException(sessionId + errorMessage, 7);
-                    }
-
-                    // return number of bytes copied, RES session header, and MD5 of RES input stream
-                    return new HttpResult(b, get, inHashtext); // This is the result of the RestTemplate
-                };
                 // -----------------------------------------------------------------
 
                 /*
@@ -252,24 +219,24 @@ public class RemoteFileServiceImpl implements FileService {
                 timeDelta = System.currentTimeMillis();
                 int cnt = 2;
                 do {
-                    xferResult = restTemplate.execute(getResUri(fileId, destinationFormat, destinationKey,
-                            destinationIV, startCoordinate, endCoordinate), HttpMethod.GET, requestCallback,
+                    xferResult = restTemplate.execute(getResUri(fileId, destinationFormat, destinationKey, 
+                            destinationIV, startCoordinate, endCoordinate), HttpMethod.GET, requestCallback, 
                             responseExtractor);
                 } while (xferResult.getBytes() <= 0 && cnt-- > 0);
                 timeDelta = System.currentTimeMillis() - timeDelta;
 
             }
         } catch (Throwable t) { // Log Error!
-            log.info(sessionId + "Get file received error");
-            log.error(sessionId + "RemoteFileServiceImpl Error 2: " + t.toString());
-            String errorMessage = fileId + ":" + destinationFormat + ":" + startCoordinate + ":" + endCoordinate + ":" + t.toString();
-            if(errorMessage!=null && errorMessage.length() > 256) {
-                errorMessage = errorMessage.substring(0,256);
+            log.error(sessionId + " Throwable execute error " , t);
+            String errorMessage = fileId + ":" + destinationFormat + ":" + startCoordinate + ":" + endCoordinate + ":"
+                    + t.toString();
+            if (errorMessage != null && errorMessage.length() > 256) {
+                errorMessage = errorMessage.substring(0, 256);
             }
-            EventEntry eev = downloaderLogService.createEventEntry(errorMessage,  "file");
+            EventEntry eev = downloaderLogService.createEventEntry(errorMessage, "file");
             downloaderLogService.logEvent(eev);
 
-            throw new GeneralStreamingException(sessionId + t.toString(), 4);
+            throw new GeneralStreamingException(sessionId +" "+ t.toString(), 4);
         } finally {
             if (xferResult != null) {
 
@@ -288,6 +255,41 @@ public class RemoteFileServiceImpl implements FileService {
                 downloaderLogService.logDownload(dle);
             }
         }
+    }
+
+    private ResponseExtractor<HttpResult> responseExtractor(final String destinationFormat, final String destinationIV,
+            final long startCoordinate, final OutputStream outDigestStream, final String sessionId) {
+        return response_ -> {
+            List<String> get = response_.getHeaders().get("X-Session"); // RES session UUID
+            long b = 0;
+            String inHashtext = "";
+            try {
+                // If the stream is encrypted, and coordinates are specified,
+                // there is a possibility that 0-15 extra bytes are sent, because
+                // of the 16-byte AES Block size - read these bytes before moving on
+                InputStream inOrig = response_.getBody();
+                if (destinationFormat.toLowerCase().startsWith("aes") && destinationIV != null
+                        && destinationIV.length() > 0) {
+                    long blockStart = (startCoordinate / 16) * 16;
+                    int blockDelta = (int) (startCoordinate - blockStart);
+                    if (blockDelta > 0)
+                        inOrig.read(new byte[blockDelta]);
+                }
+                // Input stream from RES, wrap in DigestStream
+                MessageDigest inDigest = MessageDigest.getInstance("MD5");
+                try (DigestInputStream inDigestStream = new DigestInputStream(inOrig, inDigest)) {
+                    // The actual Data Transfer - copy bytes from RES to Http connection to client
+                    b = ByteStreams.copy(inDigestStream, outDigestStream); // in, outputStream
+                    inHashtext = getDigestText(inDigest.digest());
+                }
+            } catch (Throwable t) {
+                log.error(sessionId + " Throwable responseExtractor error ", t);
+                throw new GeneralStreamingException(sessionId + " " + t.getMessage(), 7);
+            }
+            // return number of bytes copied, RES session header, and MD5 of RES input
+            // stream
+            return new HttpResult(b, get, inHashtext); // This is the result of the RestTemplate
+        };
     }
 
     /**
