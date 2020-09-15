@@ -284,7 +284,9 @@ public class CacheResServiceImpl implements ResService {
             throw new GeneralStreamingException(sessionId + " Error Location: " + errorLocation + "\n" + ex.toString(), 10);
         } finally {
             try {
-                in.close();
+                if (in != null) {
+                    in.close();
+                }
                 encryptedDigestOut.close();
                 eOut.close();
             } catch (Exception ex) {
