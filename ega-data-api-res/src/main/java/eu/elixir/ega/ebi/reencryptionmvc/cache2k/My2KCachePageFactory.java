@@ -42,7 +42,6 @@ import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
 import java.util.Optional;
 
 /**
@@ -50,14 +49,16 @@ import java.util.Optional;
  */
 @Slf4j
 public class My2KCachePageFactory {
+    private final CloseableHttpClient httpClient;
     private Cache<String, EgaAESFileHeader> myHeaderCache;
     private final int pageSize;
     private final LoadBalancerClient loadBalancer;
     private final FireCommons fireCommons;
     private final S3Commons s3Commons;
 
-    public My2KCachePageFactory(Cache<String, EgaAESFileHeader> myHeaderCache, LoadBalancerClient loadBalancer,
+    public My2KCachePageFactory(final CloseableHttpClient httpClient, Cache<String, EgaAESFileHeader> myHeaderCache, LoadBalancerClient loadBalancer,
                                 int pageSize, FireCommons fireCommons, S3Commons s3Commons) {
+        this.httpClient = httpClient;
         this.myHeaderCache = myHeaderCache;
         this.loadBalancer = loadBalancer;
         this.pageSize = pageSize;
@@ -92,12 +93,10 @@ public class My2KCachePageFactory {
         pageSize_ = pageSize > pageSize_ ? pageSize_ : pageSize;
 
         byte[] buffer = new byte[(int) pageSize_];
-        try (CloseableHttpClient localHttpclient = HttpClientBuilder.create().build()) {
-            // Attempt loading page 3 times (mask object store read errors)
             int pageCnt = 0;
             boolean pageSuccess = false;
             do {
-                try (CloseableHttpResponse response = localHttpclient.execute(request)) {
+                try (CloseableHttpResponse response = httpClient.execute(request)) {
                     if (response.getStatusLine().getStatusCode() != 200
                             && response.getStatusLine().getStatusCode() != 206) {
                         log.error("FIRE error loading Cache Page Code "
@@ -118,6 +117,10 @@ public class My2KCachePageFactory {
                 }
             } while (!pageSuccess && pageCnt++ < 3);
 
+            if(!pageSuccess) {
+                throw new ServerErrorException("FIRE error can't read data, file id " + id + " ,page " +cachePage);
+            }
+            
             // Decrypt, store plain in cache
             try {
                 byte[] newIV = new byte[16]; // IV always 16 bytes long
@@ -127,10 +130,9 @@ public class My2KCachePageFactory {
             } catch (Exception ex) {
                 log.error("Error decrypting '" + byteRange + "' id '" + id + "' " + ex.getMessage(), ex);
                 throw new ServerErrorException("Error decrypting '" + byteRange + "' id '" + id + "' " + ex.getMessage(), ex);
+            } finally {
+                request.releaseConnection();
             }
-        } finally {
-            request.releaseConnection();
-        }
     }
 
     private EgaAESFileHeader getEgaAESFileHeader(String id) throws IOException {

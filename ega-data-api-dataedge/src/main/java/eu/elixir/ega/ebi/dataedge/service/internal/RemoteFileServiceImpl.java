@@ -263,11 +263,11 @@ public class RemoteFileServiceImpl implements FileService {
             List<String> get = response_.getHeaders().get("X-Session"); // RES session UUID
             long b = 0;
             String inHashtext = "";
-            try {
+            try(InputStream inOrig = response_.getBody()) {
                 // If the stream is encrypted, and coordinates are specified,
                 // there is a possibility that 0-15 extra bytes are sent, because
                 // of the 16-byte AES Block size - read these bytes before moving on
-                InputStream inOrig = response_.getBody();
+                
                 if (destinationFormat.toLowerCase().startsWith("aes") && destinationIV != null
                         && destinationIV.length() > 0) {
                     long blockStart = (startCoordinate / 16) * 16;
