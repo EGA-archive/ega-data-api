@@ -115,9 +115,8 @@ public class My2KCachePageFactory {
                 }
             } while (!pageSuccess && pageCnt++ < 3);
 
-            if(!pageSuccess) {
+            if(!pageSuccess)
                 throw new ServerErrorException("FIRE error can't read data, file id " + id + " ,page " +cachePage);
-            }
             
             // Decrypt, store plain in cache
             try {

@@ -287,11 +287,12 @@ public class CacheResServiceImpl implements ResService {
             throw new GeneralStreamingException(sessionId + " Error Location: " + errorLocation + "\n" + ex.toString(), 10);
         } finally {
             try {
-                if (in != null) {
+                if (in != null)
                     in.close();
-                }
-                encryptedDigestOut.close();
-                eOut.close();
+                if (encryptedDigestOut != null)
+                    encryptedDigestOut.close();
+                if (eOut != null)
+                    eOut.close();
             } catch (Exception ex) {
                 log.error(sessionId + " Error Location: " + errorLocation + "\n" + ex.toString(), ex);
                 throw new GeneralStreamingException(sessionId.concat(" ").concat(ex.toString()), 5);
