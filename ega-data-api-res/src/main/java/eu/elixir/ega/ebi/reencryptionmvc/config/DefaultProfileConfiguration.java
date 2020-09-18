@@ -2,6 +2,7 @@ package eu.elixir.ega.ebi.reencryptionmvc.config;
 
 import java.util.Base64;
 
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.cache2k.Cache;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
@@ -46,10 +47,10 @@ public class DefaultProfileConfiguration {
     @Bean
     @Primary
     public ResService initCacheResService(KeyService keyService, Cache<String, EgaAESFileHeader> myHeaderCache,
-            My2KCachePageFactory pageDownloader, IFireService fireService) {
+            My2KCachePageFactory pageDownloader, IFireService fireService, CloseableHttpClient httpClient) {
         return new CacheResServiceImpl(keyService, myHeaderCache, pageDownloader,
                 new FireCommons(fireURL, base64EncodedCredentials(), fireService),
-                new S3Commons(awsKey, awsSecretKey, awsEndpointUrl, awsRegion));
+                new S3Commons(awsKey, awsSecretKey, awsEndpointUrl, awsRegion), httpClient);
     }
 
     @Bean

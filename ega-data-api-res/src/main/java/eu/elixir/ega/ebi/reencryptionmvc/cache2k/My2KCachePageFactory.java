@@ -27,11 +27,9 @@ import eu.elixir.ega.ebi.reencryptionmvc.util.S3Commons;
 import htsjdk.samtools.seekablestream.cipher.ebi.Glue;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
 import org.cache2k.Cache;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
 
@@ -139,10 +137,8 @@ public class My2KCachePageFactory {
         if (!myHeaderCache.containsKey(id)) { // Get Header (once in 24h)
             EgaFile[] files;
             String encryptionKey;
-            try (CloseableHttpClient localHttpclient = HttpClientBuilder.create().build()) {
-                files = getEgaFile(id, localHttpclient);
-                encryptionKey = getEncryptionKey(id, localHttpclient);
-            }
+            files = getEgaFile(id);
+            encryptionKey = getEncryptionKey(id);
 
             ArchiveSource source = new ArchiveSource(files[0].getFileName(), files[0].getFileSize(), "", "aes256", encryptionKey, null);
             String sourceKey = source.getEncryptionKey();
@@ -159,42 +155,48 @@ public class My2KCachePageFactory {
         return myHeaderCache.get(id);
     }
 
-    private String getEncryptionKey(String id, HttpClient localHttpclient) throws IOException {
+    private String getEncryptionKey(String id) throws IOException {
         String keyServerRequestUri = getServiceURL("KEYSERVER") + "/keys/filekeys/" + id;
         HttpGet keyRequest = new HttpGet(keyServerRequestUri);
 
         // encryptionKey
-        HttpResponse response = localHttpclient.execute(keyRequest);
-        if (response.getStatusLine().getStatusCode() != 200) {
-            throw new ServerErrorException("Retrieve header at: '" + keyServerRequestUri + "' returned error code: '" +
-                    response.getStatusLine().getStatusCode() + "' File id", id);
+        try (CloseableHttpResponse response = httpClient.execute(keyRequest)) {
+            if (response.getStatusLine().getStatusCode() != 200) {
+                throw new ServerErrorException("Retrieve header at: '" + keyServerRequestUri + "' returned error code: '" +
+                        response.getStatusLine().getStatusCode() + "' File id", id);
+            }
+            BufferedReader reader = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
+            String encryptionKey = reader.readLine().trim();
+            reader.close();
+            if (encryptionKey == null || encryptionKey.length() == 0) {
+                throw new ServerErrorException("Retrieved header at: '" + keyServerRequestUri + "' is empty. File id", id);
+            }
+            return encryptionKey;
+        } catch (IOException ex) {
+            throw new ServerErrorException("Error Retrieve header File data", id);
         }
-        BufferedReader reader = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
-        String encryptionKey = reader.readLine().trim();
-        reader.close();
-        if (encryptionKey == null || encryptionKey.length() == 0) {
-            throw new ServerErrorException("Retrieved header at: '" + keyServerRequestUri + "' is empty. File id", id);
-        }
-        return encryptionKey;
     }
 
-    private EgaFile[] getEgaFile(String id, HttpClient localHttpclient) throws IOException {
+    private EgaFile[] getEgaFile(String id) throws IOException {
         String fileDatabaseURL = getServiceURL("FILEDATABASE");
         HttpGet sourceRequest = new HttpGet(fileDatabaseURL + "/file/" + id);
 
         // EgaFile
-        HttpResponse sourceResponse = localHttpclient.execute(sourceRequest);
-        if (sourceResponse.getEntity() == null)
-            throw new ServerErrorException("Error Attempting to Load Cache Header File data ", id);
-        BufferedReader reader = new BufferedReader(
-                new InputStreamReader(sourceResponse.getEntity().getContent()));
-        Gson gson = new Gson();
-        EgaFile[] files = gson.fromJson(reader, EgaFile[].class);
-        reader.close();
-        if (files == null || files.length == 0) {
+        try (CloseableHttpResponse sourceResponse = httpClient.execute(sourceRequest)) {
+            if (sourceResponse.getEntity() == null)
+                throw new ServerErrorException("Error Attempting to Load Cache Header File data ", id);
+            BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(sourceResponse.getEntity().getContent()));
+            Gson gson = new Gson();
+            EgaFile[] files = gson.fromJson(reader, EgaFile[].class);
+            reader.close();
+            if (files == null || files.length == 0) {
+                throw new ServerErrorException("Error Loading Cache Header File data", id);
+            }
+            return files;
+        } catch (IOException ex) {
             throw new ServerErrorException("Error Loading Cache Header File data", id);
         }
-        return files;
     }
 
     private Optional<EgaAESFileHeader> getFileEncryptionHeader(String path, String httpAuth, long fileSize, String sourceKey) {
@@ -211,8 +213,7 @@ public class My2KCachePageFactory {
         }
 
         byte[] IV = new byte[16];
-        try (CloseableHttpClient httpclient = HttpClientBuilder.create().build();
-             CloseableHttpResponse response = httpclient.execute(request);
+        try (CloseableHttpResponse response = httpClient.execute(request);
              DataInputStream content = new DataInputStream(response.getEntity().getContent());) {
             content.readFully(IV);
             return Optional.of(new EgaAESFileHeader(IV, "aes256", fileSize, url, sourceKey));
