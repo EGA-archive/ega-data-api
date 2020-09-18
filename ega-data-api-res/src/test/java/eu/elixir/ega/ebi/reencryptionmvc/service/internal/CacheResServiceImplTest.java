@@ -83,6 +83,9 @@ public class CacheResServiceImplTest {
     @Mock
     private S3Commons s3Commons;
 
+    @Mock
+    private CloseableHttpClient httpClient;
+    
     @Before
     public void initMocks() {
         MockitoAnnotations.initMocks(this);
@@ -123,10 +126,9 @@ public class CacheResServiceImplTest {
 
         mockStatic(HttpClientBuilder.class);
         when(HttpClientBuilder.create()).thenReturn(mockHttpClientBuilder);
-        when(HttpClientBuilder.create()).thenReturn(mockHttpClientBuilder);
         when(mockHttpClientBuilder.build()).thenReturn(mockCloseableHttpClient);
 
-        when(mockCloseableHttpClient.execute(any())).thenReturn(mockHttpResponse);
+        when(httpClient.execute(any())).thenReturn(mockHttpResponse);
         when(mockHttpResponse.getEntity()).thenReturn(mockHttpEntity);
         when(mockHttpEntity.getContent()).thenReturn(new ByteArrayInputStream(inputData.getBytes()));
         when(myAwsConfig.getAwsAccessKeyId()).thenReturn("accessKeyId");

@@ -238,9 +238,7 @@
                                 <imageTag>${image.version}</imageTag>
                                 <imageTag>latest</imageTag>
                             </imageTags>
-                            <entryPoint>["java", "${debug.config}${debug.dataedge.htsget.port}", "-jar",
-                                "/${project.build.finalName}.jar"]
-                            </entryPoint>
+                            <entryPoint>["java", "${debug.config}${debug.dataedge.htsget.port}", "-jar", "/${project.build.finalName}.jar"]</entryPoint>
                             <resources>
                                 <resource>
                                     <targetPath>/</targetPath>

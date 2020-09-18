@@ -103,9 +103,11 @@ public class MyConfiguration {
     }
 
     @Bean
-    public My2KCachePageFactory myPageFactory(Cache<String, EgaAESFileHeader> myCache, LoadBalancerClient loadBalancer,  IFireService fireService) throws Exception {
+    public My2KCachePageFactory myPageFactory(final CloseableHttpClient httpClient, 
+            Cache<String, EgaAESFileHeader> myCache, LoadBalancerClient loadBalancer, IFireService fireService) throws Exception {
         int pagesize = 1024 * 1024 * 12;    // 12 MB Page Size
-        return new My2KCachePageFactory(myCache,
+        return new My2KCachePageFactory(httpClient, 
+                myCache,
                 loadBalancer,
                 pagesize,
                 new FireCommons(fireURL, base64EncodedCredentials(), fireService), 

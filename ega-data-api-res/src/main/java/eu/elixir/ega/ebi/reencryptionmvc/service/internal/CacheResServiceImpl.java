@@ -129,14 +129,17 @@ public class CacheResServiceImpl implements ResService {
     private My2KCachePageFactory pageDowloader;
     private FireCommons fireCommons;
     private S3Commons s3Commons;
+    private CloseableHttpClient httpClient;
 
     public CacheResServiceImpl(KeyService keyService, Cache<String, EgaAESFileHeader> myHeaderCache,
-                               My2KCachePageFactory pageDowloader, FireCommons fireCommons, S3Commons s3Commons) {
+                               My2KCachePageFactory pageDowloader, FireCommons fireCommons, S3Commons s3Commons,
+                               CloseableHttpClient httpClient) {
         this.keyService = keyService;
         this.myHeaderCache = myHeaderCache;
         this.pageDowloader = pageDowloader;
         this.fireCommons = fireCommons;
         this.s3Commons = s3Commons;
+        this.httpClient = httpClient;
     }
 
     /*
@@ -284,9 +287,12 @@ public class CacheResServiceImpl implements ResService {
             throw new GeneralStreamingException(sessionId + " Error Location: " + errorLocation + "\n" + ex.toString(), 10);
         } finally {
             try {
-                in.close();
-                encryptedDigestOut.close();
-                eOut.close();
+                if (in != null)
+                    in.close();
+                if (encryptedDigestOut != null)
+                    encryptedDigestOut.close();
+                if (eOut != null)
+                    eOut.close();
             } catch (Exception ex) {
                 log.error(sessionId + " Error Location: " + errorLocation + "\n" + ex.toString(), ex);
                 throw new GeneralStreamingException(sessionId.concat(" ").concat(ex.toString()), 5);
@@ -581,8 +587,7 @@ public class CacheResServiceImpl implements ResService {
         fireCommons.addAuthenticationForFireRequest(httpAuth, url, request);
         request.addHeader("Range", "bytes=0-16");
 
-        try (CloseableHttpClient httpclient = HttpClientBuilder.create().build();
-             CloseableHttpResponse response = httpclient.execute(request)) {
+        try (CloseableHttpResponse response = httpClient.execute(request)) {
             if (response == null || response.getEntity() == null) {
                 response_.setStatus(534);
                 throw new ServerErrorException(sessionId + "LoadHeader: Error obtaining input stream for ", url);

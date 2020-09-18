@@ -95,7 +95,7 @@ public class FileController {
     @GetMapping(value = "/archive/{id}")
     @ResponseBody
     public void getArchiveFile(@PathVariable("id") String id,
-                               @RequestParam(value = "destinationFormat", defaultValue = "plain") String destinationFormat,
+                               @RequestParam(value = "destinationFormat", required = false, defaultValue = "plain") String destinationFormat,
                                @RequestParam(value = "destinationKey", required = false) String destinationKey,
                                @RequestParam(value = "destinationIV", required = false) String destinationIV,
                                @RequestParam(value = "startCoordinate", required = false, defaultValue = "0") long startCoordinate,
