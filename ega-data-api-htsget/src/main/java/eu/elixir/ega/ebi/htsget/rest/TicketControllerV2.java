@@ -84,7 +84,7 @@ public class TicketControllerV2 {
 
     @RequestMapping(value = "/files/{id}", method = GET)
     public HtsgetResponseV2 getFile(@PathVariable String id,
-                                    @RequestParam String format,
+                                    @RequestParam(defaultValue = "BAM") String format,
                                     @RequestParam(name = "class") Optional<String> requestClass,
                                     @RequestParam Optional<String> referenceName,
                                     @RequestParam Optional<Long> start,
