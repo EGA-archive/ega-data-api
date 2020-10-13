@@ -16,7 +16,7 @@
 		<java.version>1.8</java.version>
 		<restassured.version>2.9.0</restassured.version>
 		<jsonpath.version>2.3.0</jsonpath.version>
-		<junit.version>4.12</junit.version>
+		<junit.version>4.13.1</junit.version>
 		<json.version>20180813</json.version>
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
