@@ -100,12 +100,19 @@ public class FileController {
                                @RequestParam(value = "destinationIV", required = false) String destinationIV,
                                @RequestParam(value = "startCoordinate", required = false, defaultValue = "0") long startCoordinate,
                                @RequestParam(value = "endCoordinate", required = false, defaultValue = "0") long endCoordinate,
+                               @RequestHeader(value = "Range", required = false, defaultValue = "") String range,
                                HttpServletRequest request,
                                HttpServletResponse response) {
 
         // Resolve Archive ID to actual File Path/URL - Needs Organization-Specific Implementation!
         ArchiveSource source = archiveService.getArchiveFile(id, request, response);
 
+        if (range.length() > 0 && range.startsWith("bytes=") && startCoordinate == 0 && endCoordinate == 0) {
+            String[] ranges = range.substring("bytes=".length()).split("-");
+            startCoordinate = Long.valueOf(ranges[0]);
+            endCoordinate = Long.valueOf(ranges[1]) + 1;
+        }
+        
         // Merge execution with fully specified function
         getFile(source.getEncryptionFormat(),
                 source.getEncryptionKey(),
