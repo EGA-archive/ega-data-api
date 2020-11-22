@@ -32,3 +32,9 @@ spring.oauth2.resource.userInfoUri:
 server.ssl.key-store-type: ${KEY_STORE_TYPE:PKCS12}
 server.ssl.key-store: ${KEY_STORE:/dataedge.p12}
 server.ssl.key-store-password: ${KEY_STORE_PASSWORD:changeit}
+
+# Configuration for RES properties
+res.connection.pool.size: 16
+res.connection.pool.keepalive.ms: 5000
+res.connection.timeout.connect.ms: 2500
+res.connection.timeout.read.ms: 0

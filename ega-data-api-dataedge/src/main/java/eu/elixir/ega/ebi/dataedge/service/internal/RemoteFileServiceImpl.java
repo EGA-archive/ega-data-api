@@ -25,6 +25,7 @@ import eu.elixir.ega.ebi.commons.exception.InternalErrorException;
 import eu.elixir.ega.ebi.commons.exception.NoContentException;
 import eu.elixir.ega.ebi.commons.exception.PermissionDeniedException;
 import eu.elixir.ega.ebi.commons.exception.UnavailableForLegalReasonsException;
+import eu.elixir.ega.ebi.dataedge.utils.SimpleSeekableStream;
 import eu.elixir.ega.ebi.commons.shared.dto.DownloadEntry;
 import eu.elixir.ega.ebi.commons.shared.dto.EventEntry;
 import eu.elixir.ega.ebi.commons.shared.dto.File;
@@ -33,7 +34,6 @@ import eu.elixir.ega.ebi.commons.shared.dto.MyExternalConfig;
 import eu.elixir.ega.ebi.commons.shared.service.DownloaderLogService;
 import eu.elixir.ega.ebi.commons.shared.service.FileInfoService;
 import eu.elixir.ega.ebi.dataedge.dto.*;
-import eu.elixir.ega.ebi.htsjdk.samtools.seekablestream.EgaSeekableCachedResStream;
 import eu.elixir.ega.ebi.htsjdk.variant.vcf.MyVCFFileReader;
 import eu.elixir.ega.ebi.dataedge.service.FileLengthService;
 import eu.elixir.ega.ebi.dataedge.service.FileService;
@@ -52,6 +52,7 @@ import htsjdk.variant.variantcontext.writer.VariantContextWriterBuilder;
 import htsjdk.variant.vcf.VCFHeader;
 import lombok.extern.slf4j.Slf4j;
 
+import okhttp3.OkHttpClient;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
@@ -90,6 +91,9 @@ import static org.apache.catalina.connector.OutputBuffer.DEFAULT_BUFFER_SIZE;
 @EnableDiscoveryClient
 @Slf4j
 public class RemoteFileServiceImpl implements FileService {
+
+    @Autowired
+    private OkHttpClient client;
 
     @Autowired
     private LoadBalancerClient loadBalancer;
@@ -352,7 +356,7 @@ public class RemoteFileServiceImpl implements FileService {
             URL resURL;
             try {
                 resURL = new URL(resURL() + "/file/archive/" + reqFile.getFileId()); // Just specify file ID
-                SeekableStream cIn = new EgaSeekableCachedResStream(resURL, null, null, reqFile.getFileSize()); // Deals with coordinates
+                SeekableStream cIn = new SimpleSeekableStream(resURL, client, 4096, reqFile.getFileSize()); // Deals with coordinates
                 SamReader reader = (x == null) ?
                         (SamReaderFactory.make()            // BAM File
                                 .validationStringency(ValidationStringency.LENIENT)
@@ -453,8 +457,17 @@ public class RemoteFileServiceImpl implements FileService {
 
                 // BAM/CRAM File
                 URL resURL = new URL(resURL() + "/file/archive/" + reqFile.getFileId()); // Just specify file ID
-                SeekableStream cIn = (new EgaSeekableCachedResStream(resURL, null, null, reqFile.getFileSize())).setExtension(extension); // Deals with coordinates
-                //bIn = new SeekableBufferedStream(cIn);
+
+                // HTSJDK works out if the stream is a BAM or a CRAM file from the extension on the URI but RES URIs do
+                // not have extensions, so override the name returned by getSource
+                final String finalExtension = extension;
+                SeekableStream cIn = new SimpleSeekableStream(resURL, client, 4096, reqFile.getFileSize()){
+                    @Override
+                    public String getSource() {
+                        return super.getSource() + "." + finalExtension;
+                    }
+                };
+
                 // BAI/CRAI File
                 FileIndexFile fileIndexFile = getFileIndexFile(reqFile.getFileId());
                 if(fileIndexFile == null || StringUtils.isEmpty(fileIndexFile.getIndexFileId())) {
@@ -463,7 +476,7 @@ public class RemoteFileServiceImpl implements FileService {
 
                 File reqIndexFile = fileInfoService.getFileInfo(fileIndexFile.getIndexFileId());
                 URL indexUrl = new URL(resURL() + "/file/archive/" + fileIndexFile.getIndexFileId()); // Just specify index ID
-                SeekableStream cIndexIn = (new EgaSeekableCachedResStream(indexUrl, null, null, reqIndexFile.getFileSize()));
+                SeekableStream cIndexIn = (new SimpleSeekableStream(indexUrl, client, 4096, reqIndexFile.getFileSize()));
 
                 inputResource = SamInputResource.of(cIn).index(cIndexIn);
             } catch (Exception ex) {
