@@ -15,7 +15,7 @@
  * limitations under the License.
  *
  */
-package eu.elixir.ega.ebi.commons.shared;
+package eu.elixir.ega.ebi.dataedge.utils;
 
 import htsjdk.samtools.seekablestream.SeekableStream;
 import okhttp3.OkHttpClient;
@@ -43,15 +43,21 @@ public class SimpleSeekableStream extends SeekableStream {
     }
 
     public SimpleSeekableStream(URL url, OkHttpClient client, int chunkSize) throws IOException {
-        this.uri = url;
-        this.chunkSize = chunkSize;
-        this.client = client;
+        this(url, client, chunkSize, getContentLength(url, client));
+    }
 
+    protected static Long getContentLength(URL url, OkHttpClient client) throws IOException {
         String contentLengthValue = client.newCall(new Request.Builder().url(url).head().build())
                 .execute()
                 .header(HttpHeaders.CONTENT_LENGTH);
+        return Long.parseLong(contentLengthValue);
+    }
 
-        this.length = Long.parseLong(contentLengthValue);
+    public SimpleSeekableStream(URL url, OkHttpClient client, int chunkSize, long length) throws IOException {
+        this.uri = url;
+        this.chunkSize = chunkSize;
+        this.client = client;
+        this.length = length;
     }
 
     @Override

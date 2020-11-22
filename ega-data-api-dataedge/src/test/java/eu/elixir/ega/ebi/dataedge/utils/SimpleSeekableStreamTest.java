@@ -15,7 +15,7 @@
  * limitations under the License.
  *
  */
-package eu.elixir.ega.ebi.commons.shared;
+package eu.elixir.ega.ebi.dataedge.utils;
 
 import okhttp3.OkHttpClient;
 import org.apache.commons.io.IOUtils;
