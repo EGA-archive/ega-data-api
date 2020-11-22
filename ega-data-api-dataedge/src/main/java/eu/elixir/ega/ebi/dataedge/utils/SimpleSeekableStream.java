@@ -93,7 +93,7 @@ public class SimpleSeekableStream extends SeekableStream {
         if (buffer == null || position < bufferPosition || position >= bufferPosition + buffer.length) {
             Request request = new Request.Builder()
                     .url(uri)
-                    .addHeader(HttpHeaders.RANGE, String.format("bytes=%d-%d", position, position + chunkSize - 1))
+                    .addHeader(HttpHeaders.RANGE, String.format("bytes=%d-%d", position, Math.min(position + chunkSize, length) - 1))
                     .build();
 
             Response response = client.newCall(request).execute();
