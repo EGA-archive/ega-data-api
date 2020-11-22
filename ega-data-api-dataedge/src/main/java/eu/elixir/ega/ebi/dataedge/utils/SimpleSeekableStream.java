@@ -20,6 +20,7 @@ package eu.elixir.ega.ebi.dataedge.utils;
 import htsjdk.samtools.seekablestream.SeekableStream;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.Response;
 import org.springframework.http.HttpHeaders;
 
 import java.io.IOException;
@@ -95,10 +96,9 @@ public class SimpleSeekableStream extends SeekableStream {
                     .addHeader(HttpHeaders.RANGE, String.format("bytes=%d-%d", position, position + chunkSize - 1))
                     .build();
 
-            buffer = client.newCall(request)
-                    .execute()
-                    .body()
-                    .bytes();
+            Response response = client.newCall(request).execute();
+
+            buffer = response.body().bytes();
 
             bufferPosition = position;
         }

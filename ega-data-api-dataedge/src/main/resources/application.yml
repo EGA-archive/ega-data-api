@@ -38,3 +38,6 @@ res.connection.pool.size: 16
 res.connection.pool.keepalive.ms: 5000
 res.connection.timeout.connect.ms: 2500
 res.connection.timeout.read.ms: 0
+res.connection.chunksize.header: 4096
+res.connection.chunksize.data: 20971520
+res.connection.chunksize.index: 1048576

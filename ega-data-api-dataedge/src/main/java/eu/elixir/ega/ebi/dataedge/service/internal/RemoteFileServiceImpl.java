@@ -55,6 +55,7 @@ import lombok.extern.slf4j.Slf4j;
 import okhttp3.OkHttpClient;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
@@ -100,6 +101,15 @@ public class RemoteFileServiceImpl implements FileService {
 
     @Autowired
     private RestTemplate restTemplate;
+
+    @Value("${res.connection.chunksize.header}")
+    private int resHeaderChunkSize;
+
+    @Value("${res.connection.chunksize.data}")
+    private int resDataChunkSize;
+
+    @Value("${res.connection.chunksize.index}")
+    private int resIndexChunkSize;
 
     // Database Repositories/Services
 
@@ -356,7 +366,7 @@ public class RemoteFileServiceImpl implements FileService {
             URL resURL;
             try {
                 resURL = new URL(resURL() + "/file/archive/" + reqFile.getFileId()); // Just specify file ID
-                SeekableStream cIn = new SimpleSeekableStream(resURL, client, 4096, reqFile.getFileSize()); // Deals with coordinates
+                SeekableStream cIn = new SimpleSeekableStream(resURL, client, resHeaderChunkSize, reqFile.getFileSize()); // Deals with coordinates
                 SamReader reader = (x == null) ?
                         (SamReaderFactory.make()            // BAM File
                                 .validationStringency(ValidationStringency.LENIENT)
@@ -461,7 +471,7 @@ public class RemoteFileServiceImpl implements FileService {
                 // HTSJDK works out if the stream is a BAM or a CRAM file from the extension on the URI but RES URIs do
                 // not have extensions, so override the name returned by getSource
                 final String finalExtension = extension;
-                SeekableStream cIn = new SimpleSeekableStream(resURL, client, 4096, reqFile.getFileSize()){
+                SeekableStream cIn = new SimpleSeekableStream(resURL, client, resDataChunkSize, reqFile.getFileSize()) {
                     @Override
                     public String getSource() {
                         return super.getSource() + "." + finalExtension;
@@ -476,7 +486,7 @@ public class RemoteFileServiceImpl implements FileService {
 
                 File reqIndexFile = fileInfoService.getFileInfo(fileIndexFile.getIndexFileId());
                 URL indexUrl = new URL(resURL() + "/file/archive/" + fileIndexFile.getIndexFileId()); // Just specify index ID
-                SeekableStream cIndexIn = (new SimpleSeekableStream(indexUrl, client, 4096, reqIndexFile.getFileSize()));
+                SeekableStream cIndexIn = (new SimpleSeekableStream(indexUrl, client, resIndexChunkSize, reqIndexFile.getFileSize()));
 
                 inputResource = SamInputResource.of(cIn).index(cIndexIn);
             } catch (Exception ex) {
