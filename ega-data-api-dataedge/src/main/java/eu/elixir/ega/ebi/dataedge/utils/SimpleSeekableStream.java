@@ -21,16 +21,22 @@ import htsjdk.samtools.seekablestream.SeekableStream;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 
 import java.io.IOException;
 import java.net.URL;
 
 public class SimpleSeekableStream extends SeekableStream {
 
+    // Build logger
+    private static final Logger logger = LoggerFactory.getLogger(SimpleSeekableStream.class);
+
     private static final int DEFAULT_CHUNK_SIZE = 4096;
 
-    private final URL uri;
+    private final URL url;
     private final int chunkSize;
     private final long length;
     private final OkHttpClient client;
@@ -48,14 +54,17 @@ public class SimpleSeekableStream extends SeekableStream {
     }
 
     protected static Long getContentLength(URL url, OkHttpClient client) throws IOException {
-        String contentLengthValue = client.newCall(new Request.Builder().url(url).head().build())
-                .execute()
-                .header(HttpHeaders.CONTENT_LENGTH);
-        return Long.parseLong(contentLengthValue);
+        Response response;
+
+        do {
+            response = client.newCall(new Request.Builder().url(url).head().build()).execute();
+        } while (responseShouldRetry(response, url));
+
+        return Long.parseLong(response.header(HttpHeaders.CONTENT_LENGTH));
     }
 
     public SimpleSeekableStream(URL url, OkHttpClient client, int chunkSize, long length) throws IOException {
-        this.uri = url;
+        this.url = url;
         this.chunkSize = chunkSize;
         this.client = client;
         this.length = length;
@@ -92,15 +101,33 @@ public class SimpleSeekableStream extends SeekableStream {
     protected void fillBufferWithChunk(long position) throws IOException {
         if (buffer == null || position < bufferPosition || position >= bufferPosition + buffer.length) {
             Request request = new Request.Builder()
-                    .url(uri)
+                    .url(url)
                     .addHeader(HttpHeaders.RANGE, String.format("bytes=%d-%d", position, Math.min(position + chunkSize, length) - 1))
                     .build();
 
-            Response response = client.newCall(request).execute();
+            Response response;
+            do {
+                response = client.newCall(request).execute();
+            } while (responseShouldRetry(response, url));
 
             buffer = response.body().bytes();
 
             bufferPosition = position;
+
+        }
+    }
+
+    private static boolean responseShouldRetry(Response response, URL uri) throws IOException {
+        switch (HttpStatus.valueOf(response.code())) {
+            case OK:
+            case PARTIAL_CONTENT:
+                return false;
+            case SERVICE_UNAVAILABLE:
+                logger.warn("Got SERVICE_UNAVAILABLE when requesting {}, will retry", uri);
+                return true;
+            default:
+                logger.error("Unexpected status code {} when requesting {}", response.code(), uri);
+                throw new IOException(String.format("Unexpected HTTP response from %s: code %d", uri, response.code()));
         }
     }
 
@@ -135,6 +162,6 @@ public class SimpleSeekableStream extends SeekableStream {
 
     @Override
     public String getSource() {
-        return uri.toString();
+        return url.toString();
     }
 }

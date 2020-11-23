@@ -20,7 +20,6 @@ package eu.elixir.ega.ebi.dataedge.utils;
 import okhttp3.OkHttpClient;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpHeaders;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -76,6 +75,8 @@ public class SimpleSeekableStreamTest {
                 return response;
             }
         });
+
+        mockServerClient.when(request("/missing-data")).respond(HttpResponse.notFoundResponse());
     }
 
     @Test
@@ -152,5 +153,18 @@ public class SimpleSeekableStreamTest {
 
         // Assert
         assertEquals(uri.toString(), stream.getSource());
+    }
+
+    @Test(expected = IOException.class)
+    public void missingResourceThrowsIOException() throws URISyntaxException, IOException {
+        // Arrange
+        URL uri = new URL("http://localhost:" + mockServerRule.getPort() + "/missing-data");
+
+        // Act
+        SimpleSeekableStream stream = new SimpleSeekableStream(uri, client, 1234);
+        byte[] wholeFile = IOUtils.toByteArray(stream);
+
+        // Assert
+
     }
 }
