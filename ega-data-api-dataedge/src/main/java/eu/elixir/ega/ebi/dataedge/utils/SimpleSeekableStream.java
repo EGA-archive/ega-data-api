@@ -84,12 +84,12 @@ public class SimpleSeekableStream extends SeekableStream {
         if (eof())
             return -1;
 
-        prepareToReadAt(position);
+        fillBufferWithChunk(position);
 
         return buffer[(int) ((position++) - bufferPosition)];
     }
 
-    protected void prepareToReadAt(long position) throws IOException {
+    protected void fillBufferWithChunk(long position) throws IOException {
         if (buffer == null || position < bufferPosition || position >= bufferPosition + buffer.length) {
             Request request = new Request.Builder()
                     .url(uri)
@@ -112,7 +112,7 @@ public class SimpleSeekableStream extends SeekableStream {
         int bytesToRead = (int) Math.min(length, this.length - position);
         int bytesRead = 0;
         while (bytesRead < bytesToRead) {
-            prepareToReadAt(position);
+            fillBufferWithChunk(position);
             int bytesToCopy = (int) Math.min(buffer.length - (position - bufferPosition), bytesToRead - bytesRead);
             System.arraycopy(buffer, (int) (position - bufferPosition), bytes, offset + bytesRead, bytesToCopy);
             position += bytesToCopy;

@@ -37,6 +37,8 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.List;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockserver.model.HttpRequest.request;
 
 public class SimpleSeekableStreamTest {
@@ -60,7 +62,7 @@ public class SimpleSeekableStreamTest {
 
                 String rangeHeader = httpRequest.getFirstHeader(HttpHeaders.RANGE);
                 List<HttpRange> ranges = HttpRange.parseRanges(rangeHeader);
-                Assert.assertEquals(1, ranges.size());
+                assertEquals(1, ranges.size());
 
                 HttpRange range = ranges.get(0);
                 long rangeStart = range.getRangeStart(RESOURCE_SIZE);
@@ -86,13 +88,13 @@ public class SimpleSeekableStreamTest {
         byte[] wholeFile = IOUtils.toByteArray(stream);
 
         // Assert
-        Assert.assertEquals(RESOURCE_SIZE.longValue(), stream.length());
-        Assert.assertEquals(RESOURCE_SIZE.longValue(), stream.position());
-        Assert.assertTrue(stream.eof());
-        Assert.assertEquals(RESOURCE_SIZE.longValue(), wholeFile.length);
+        assertEquals(RESOURCE_SIZE.longValue(), stream.length());
+        assertEquals(RESOURCE_SIZE.longValue(), stream.position());
+        assertTrue(stream.eof());
+        assertEquals(RESOURCE_SIZE.longValue(), wholeFile.length);
 
         for (int i = 0; i < wholeFile.length; i++) {
-            Assert.assertEquals(i % 0xff, ((int) wholeFile[i]) & 0xff);
+            assertEquals(i % 0xff, ((int) wholeFile[i]) & 0xff);
         }
 
         mockServerClient.verify(request().withPath("/test-data").withMethod("GET"), VerificationTimes.atLeast(2));
@@ -107,9 +109,9 @@ public class SimpleSeekableStreamTest {
         SimpleSeekableStream stream = new SimpleSeekableStream(uri, client, 100);
 
         // Assert
-        Assert.assertEquals(0, stream.read());
-        Assert.assertEquals(1, stream.read());
-        Assert.assertEquals(2, stream.read());
+        assertEquals(0, stream.read());
+        assertEquals(1, stream.read());
+        assertEquals(2, stream.read());
     }
 
     @Test
@@ -126,7 +128,7 @@ public class SimpleSeekableStreamTest {
 
         // Assert
         for (int i = 0; i < 20; ++i) {
-            Assert.assertEquals(i + 90, buffer[i]);
+            assertEquals(i + 90, buffer[i]);
         }
     }
 
@@ -149,6 +151,6 @@ public class SimpleSeekableStreamTest {
         SimpleSeekableStream stream = new SimpleSeekableStream(uri, client, 1234);
 
         // Assert
-        Assert.assertEquals(uri.toString(), stream.getSource());
+        assertEquals(uri.toString(), stream.getSource());
     }
 }

@@ -51,10 +51,10 @@ public class ResConnectionConfig {
                 .retryOnConnectionFailure(true)
                 .connectionPool(connectionPool);
 
-        if (resConnectionConnectTimeout != 0)
+        if (resConnectionConnectTimeout > 0)
             builder = builder.connectTimeout(resConnectionConnectTimeout, TimeUnit.MILLISECONDS);
 
-        if (resConnectionReadTimeout != 0)
+        if (resConnectionReadTimeout > 0)
             builder = builder.readTimeout(resConnectionReadTimeout, TimeUnit.MILLISECONDS);
 
         return builder.build();
