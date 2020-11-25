@@ -18,6 +18,7 @@ package eu.elixir.ega.ebi.dataedge.service.internal;
 import eu.elixir.ega.ebi.commons.exception.InternalErrorException;
 import eu.elixir.ega.ebi.commons.exception.NoContentException;
 import eu.elixir.ega.ebi.commons.exception.UnavailableForLegalReasonsException;
+import eu.elixir.ega.ebi.dataedge.utils.SimpleSeekableStream;
 import eu.elixir.ega.ebi.commons.shared.dto.File;
 import eu.elixir.ega.ebi.commons.shared.dto.FileDataset;
 import eu.elixir.ega.ebi.commons.shared.dto.FileIndexFile;
@@ -27,7 +28,6 @@ import eu.elixir.ega.ebi.commons.shared.service.FileInfoService;
 import eu.elixir.ega.ebi.dataedge.dto.*;
 import eu.elixir.ega.ebi.dataedge.service.FileLengthService;
 import eu.elixir.ega.ebi.dataedge.service.KeyService;
-import eu.elixir.ega.ebi.htsjdk.samtools.seekablestream.EgaSeekableCachedResStream;
 import eu.elixir.ega.ebi.htsjdk.variant.vcf.MyVCFFileReader;
 import htsjdk.samtools.SAMFileHeader;
 import htsjdk.samtools.SamInputResource;
@@ -76,7 +76,6 @@ import static eu.elixir.ega.ebi.commons.config.Constants.FILEDATABASE_SERVICE;
 /**
  * Test class for {@link RemoteFileServiceImpl}.
  *
- * @author amohan
  */
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({RemoteFileServiceImpl.class, SamReaderFactory.class})
@@ -279,7 +278,7 @@ public class RemoteFileServiceImplTest {
         final ResponseEntity<Long> forSize = mock(ResponseEntity.class);
         final ResponseEntity<FileIndexFile[]> forResponseEntity = mock(ResponseEntity.class);
         final HttpResult xferResult = mock(HttpResult.class);
-        final EgaSeekableCachedResStream egaSeekableCachedResStream = mock(EgaSeekableCachedResStream.class);
+        final SimpleSeekableStream simpleSeekableStream = mock(SimpleSeekableStream.class);
         final SamReaderFactory samReaderFactory = mock(SamReaderFactory.class);
         final SamReader samReader = mock(SamReader.class);
         final MyVCFFileReader myVCFFileReader = mock(MyVCFFileReader.class);
@@ -311,7 +310,7 @@ public class RemoteFileServiceImplTest {
         when(myVCFFileReader.getFileHeader()).thenReturn(vcfHeader);
         when(myVCFFileReader.iterator()).thenReturn(closeableIterator);
 
-        whenNew(EgaSeekableCachedResStream.class).withAnyArguments().thenReturn(egaSeekableCachedResStream);
+        whenNew(SimpleSeekableStream.class).withAnyArguments().thenReturn(simpleSeekableStream);
         whenNew(MyVCFFileReader.class).withAnyArguments().thenReturn(myVCFFileReader);
 
         mockStatic(SamReaderFactory.class);

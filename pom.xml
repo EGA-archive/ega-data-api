@@ -82,9 +82,5 @@
             <id>gitlab-maven</id>
             <url>https://gitlab.ebi.ac.uk/api/v4/groups/428/-/packages/maven</url>
         </repository>
-        <repository>
-            <id>gitlab-maven2</id>
-            <url>https://gitlab.ebi.ac.uk/api/v4/projects/2047/packages/maven</url>
-        </repository>
     </repositories>
 </project>
