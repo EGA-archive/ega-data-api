@@ -24,17 +24,20 @@ cache:
   paths:
     - .m2/repository
 
+variables:
+  MAVEN_OPTS: "-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository"
+
 ## Diffent stages for the CICD of Data API
 unitTest:
   stage: unitTest
   before_script:
-    - mvn dependency:purge-local-repository install -DskipTests=true -P production -Dmaven.javadoc.skip=true -B -V -DskipDockerPush
+    - mvn install -DskipTests=true -P production -Dmaven.javadoc.skip=true -B -V -DskipDockerPush
   script: mvn test
 
 integrationTest:
   stage: integrationTest
   before_script:
-    - mvn dependency:purge-local-repository install -DskipTests=true -P production -Dmaven.javadoc.skip=true -B -V -DskipDockerPush
+    - mvn install -DskipTests=true -P production -Dmaven.javadoc.skip=true -B -V -DskipDockerPush
 #    - sudo service postgresql stop
     - mkdir -p /usr/local/share/ca-certificates/ca/
     - cp extras/certificate/rootCA.pem /usr/local/share/ca-certificates/ca/CA.crt
