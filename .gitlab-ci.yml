@@ -7,6 +7,14 @@
 
 image: maven:3.6.3-openjdk-8-slim
 
+# Add the service of docker in docker to allow us to compile the docker images and include the environment variables as specified
+# https://docs.gitlab.com/runner/executors/kubernetes.html#using-dockerdind
+services:
+  - docker:dind
+variables:
+  DOCKER_HOST: tcp://docker:2375
+  DOCKER_DRIVER: overlay2
+
 ## List of jobs:
 stages:
   - unitTest
