@@ -41,9 +41,9 @@ integrationTest:
   before_script:
     - mvn install -DskipTests=true -P production -Dmaven.javadoc.skip=true -B -V -DskipDockerPush
 #    - sudo service postgresql stop
-    - mkdir -p /usr/local/share/ca-certificates/ca/
-    - cp extras/certificate/rootCA.pem /usr/local/share/ca-certificates/ca/CA.crt
-    - chmod 644 /usr/local/share/ca-certificates/ca/CA.crt
+    - mkdir -p /usr/local/share/ca-certificates/
+    - cp extras/certificate/rootCA.pem /usr/local/share/ca-certificates/CA.crt
+    - chmod 644 /usr/local/share/ca-certificates/CA.crt
     - update-ca-certificates
     - docker build -t ega-data-api/ega-dataedge  --file Dockerfile.dataedge .
     - docker build -t ega-data-api/ega-res  --file Dockerfile.res .
@@ -55,7 +55,7 @@ integrationTest:
     - sleep 90
     - cd ../ega-data-api-it
   script:
-    - mvn test "-Dkey.url=http://ega-integration-test" "-Dfile.url=http://ega-integration-test" "-Dres.url=http://ega-integration-test" "-Ddataedge.url=http://ega-integration-test"
+    - mvn test "-Dkey.url=https://ega-integration-test" "-Dfile.url=https://ega-integration-test" "-Dres.url=https://ega-integration-test" "-Ddataedge.url=https://ega-integration-test"
 
 imageBuild:
   stage: imageBuild
