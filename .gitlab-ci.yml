@@ -10,7 +10,8 @@ image: dockerhub.ebi.ac.uk/ega/ega-data-api-build-container:latest
 # Add the service of docker in docker to allow us to compile the docker images
 # https://docs.gitlab.com/runner/executors/kubernetes.html#using-dockerdind
 services:
-  - docker:dind
+  - name: docker:dind
+    alias: ega-integration-test
 
 ## List of jobs:
 stages:
@@ -54,7 +55,7 @@ integrationTest:
     - sleep 90
     - cd ../ega-data-api-it
   script:
-    - mvn test
+    - mvn test "-Dkey.url=https://ega-integration-test" "-Dfile.url=https://ega-integration-test" "-Dres.url=https://ega-integration-test" "-Ddataedge.url=https://ega-integration-test"
 
 imageBuild:
   stage: imageBuild
