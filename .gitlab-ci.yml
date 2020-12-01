@@ -30,12 +30,14 @@ cache:
 ## Diffent stages for the CICD of Data API
 #unitTest:
 #  stage: unitTest
+#  image: maven:3.6.3-openjdk-8-slim
   #before_script:
   #  - mvn dependency:purge-local-repository install -DskipTests=true -P production -Dmaven.javadoc.skip=true -B -V -DskipDockerPush
 #  script: mvn test
 
 integrationTest:
   stage: integrationTest
+  image: docker:dind
   before_script:
     - docker info
     - mvn dependency:purge-local-repository install -DskipTests=true -P production -Dmaven.javadoc.skip=true -B -V -DskipDockerPush
