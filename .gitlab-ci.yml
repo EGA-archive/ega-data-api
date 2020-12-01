@@ -7,17 +7,14 @@
 
 image: dockerhub.ebi.ac.uk/ega/ega-data-api-build-container:latest
 
-# Add the service of docker in docker to allow us to compile the docker images and include the environment variables as specified
+# Add the service of docker in docker to allow us to compile the docker images
 # https://docs.gitlab.com/runner/executors/kubernetes.html#using-dockerdind
 services:
   - docker:dind
-#variables:
-#  DOCKER_HOST: tcp://docker:2375
-#  DOCKER_DRIVER: overlay2
 
 ## List of jobs:
 stages:
-  #- unitTest
+  - unitTest
   - integrationTest
   - imageBuild
 
@@ -28,23 +25,21 @@ cache:
     - .m2/repository
 
 ## Diffent stages for the CICD of Data API
-#unitTest:
-#  stage: unitTest
-#  image: maven:3.6.3-openjdk-8-slim
-  #before_script:
-  #  - mvn dependency:purge-local-repository install -DskipTests=true -P production -Dmaven.javadoc.skip=true -B -V -DskipDockerPush
-#  script: mvn test
+unitTest:
+  stage: unitTest
+  before_script:
+    - mvn dependency:purge-local-repository install -DskipTests=true -P production -Dmaven.javadoc.skip=true -B -V -DskipDockerPush
+  script: mvn test
 
 integrationTest:
   stage: integrationTest
   before_script:
-    - docker info
     - mvn dependency:purge-local-repository install -DskipTests=true -P production -Dmaven.javadoc.skip=true -B -V -DskipDockerPush
-    - sudo service postgresql stop
-    - sudo mkdir -p /usr/local/share/ca-certificates/ca/
-    - sudo cp extras/certificate/rootCA.pem /usr/local/share/ca-certificates/ca/CA.crt
-    - sudo chmod 644 /usr/local/share/ca-certificates/ca/CA.crt
-    - sudo update-ca-certificates
+#    - sudo service postgresql stop
+    - mkdir -p /usr/local/share/ca-certificates/ca/
+    - cp extras/certificate/rootCA.pem /usr/local/share/ca-certificates/ca/CA.crt
+    - chmod 644 /usr/local/share/ca-certificates/ca/CA.crt
+    - update-ca-certificates
     - docker build -t ega-data-api/ega-dataedge  --file Dockerfile.dataedge .
     - docker build -t ega-data-api/ega-res  --file Dockerfile.res .
     - docker build -t ega-data-api/ega-keyserver  --file Dockerfile.keyserver .
