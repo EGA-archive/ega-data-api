@@ -5,39 +5,13 @@
 #
 # For general lifecycle information see https://maven.apache.org/guides/introduction/introduction-to-the-lifecycle.html
 
-variables:
-  # This will suppress any download for dependencies and plugins or upload messages which would clutter the console log.
-  # `showDateTime` will show the passed time in milliseconds. You need to specify `--batch-mode` to make this work.
-  MAVEN_OPTS: "-Dhttps.protocols=TLSv1.2 -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=WARN -Dorg.slf4j.simpleLogger.showDateTime=true -Djava.awt.headless=true"
-  # As of Maven 3.3.0 instead of this you may define these options in `.mvn/maven.config` so the same config is used
-  # when running from the command line.
-  MAVEN_CLI_OPTS: "--batch-mode --errors --show-version --settings $CI_PROJECT_DIR/.m2/settings-for-gitlab.xml --activate-profiles ega-ingestion-local-test -DtrimStackTrace=false -Dmaven.javadoc.skip=true"
-
-  # The wnameless/oracle-xe-11g-r2 Docker image threw an "ORA-01882: timezone region not found" exception.
-  # The easiest solution, according to https://stackoverflow.com/a/26616140/1003471, was to set the timezone:
-  TZ: "GMT"
-
-  POSTGRES_DB: "file_manager"
-  POSTGRES_USER: "file_manager_user"
-  POSTGRES_PASSWORD: "file_manager_password"
-
-  MYSQL_ROOT_PASSWORD: "root_password"
-  MYSQL_DATABASE: "ega_audit_ve_vault_archive_test"
-  MYSQL_USER: "audit_user"
-  MYSQL_PASSWORD: "audit_password"
-
-
 image: maven:3.6.3-openjdk-8-slim
 
 ## List of jobs:
-list:
+stages:
   - unitTest
   - integrationTest
   - imageBuild
-
-services:
-  script:
-      - mvn dependency:purge-local-repository install -DskipTests=true -P production -Dmaven.javadoc.skip=true -B -V -DskipDockerPush
 
 # Cache downloaded dependencies and plugins between builds.
 # To keep cache across branches add 'key: "$CI_JOB_NAME"'
@@ -48,11 +22,14 @@ cache:
 ## Diffent stages for the CICD of Data API
 unitTest:
   stage: unitTest
-    script: mvn test
+  before_script:
+    - mvn dependency:purge-local-repository install -DskipTests=true -P production -Dmaven.javadoc.skip=true -B -V -DskipDockerPush
+  script: mvn test
 
 integrationTest:
   stage: integrationTest
   before_script:
+    - mvn dependency:purge-local-repository install -DskipTests=true -P production -Dmaven.javadoc.skip=true -B -V -DskipDockerPush
     - sudo service postgresql stop
     - sudo mkdir -p /usr/local/share/ca-certificates/ca/
     - sudo cp extras/certificate/rootCA.pem /usr/local/share/ca-certificates/ca/CA.crt
@@ -72,6 +49,8 @@ integrationTest:
 
 imageBuild:
   stage: imageBuild
-  only: master
+  only:
+    - master
+  before_script:
+    - mvn dependency:purge-local-repository install -DskipTests=true -P production -Dmaven.javadoc.skip=true -B -V -DskipDockerPush
   script: ./extras/travis_push_docker_hub.sh
-
