@@ -11,7 +11,7 @@ image: dockerhub.ebi.ac.uk/ega/ega-data-api-build-container:latest
 # https://docs.gitlab.com/runner/executors/kubernetes.html#using-dockerdind
 services:
   - name: docker:dind
-    alias: ega-integration-test
+    alias: dataedge
 
 ## List of jobs:
 stages:
@@ -55,7 +55,7 @@ integrationTest:
     - sleep 90
     - cd ../ega-data-api-it
   script:
-    - mvn test "-Dkey.url=https://ega-integration-test" "-Dfile.url=https://ega-integration-test" "-Dres.url=https://ega-integration-test" "-Ddataedge.url=https://ega-integration-test"
+    - mvn test "-Dkey.url=https://dataedge" "-Dfile.url=https://dataedge" "-Dres.url=https://dataedge" "-Ddataedge.url=https://dataedge"
 
 imageBuild:
   stage: imageBuild
