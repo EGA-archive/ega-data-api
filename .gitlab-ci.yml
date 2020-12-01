@@ -37,7 +37,7 @@ cache:
 
 integrationTest:
   stage: integrationTest
-  image: docker:dind
+  image: docker:19.03.12-dind
   before_script:
     - docker info
     - mvn dependency:purge-local-repository install -DskipTests=true -P production -Dmaven.javadoc.skip=true -B -V -DskipDockerPush
