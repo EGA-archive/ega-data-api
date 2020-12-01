@@ -17,7 +17,7 @@ variables:
 
 ## List of jobs:
 stages:
-  - unitTest
+  #- unitTest
   - integrationTest
   - imageBuild
 
@@ -28,15 +28,16 @@ cache:
     - .m2/repository
 
 ## Diffent stages for the CICD of Data API
-unitTest:
-  stage: unitTest
+#unitTest:
+#  stage: unitTest
   #before_script:
   #  - mvn dependency:purge-local-repository install -DskipTests=true -P production -Dmaven.javadoc.skip=true -B -V -DskipDockerPush
-  script: mvn test
+#  script: mvn test
 
 integrationTest:
   stage: integrationTest
   before_script:
+    - docker info
     - mvn dependency:purge-local-repository install -DskipTests=true -P production -Dmaven.javadoc.skip=true -B -V -DskipDockerPush
     - sudo service postgresql stop
     - sudo mkdir -p /usr/local/share/ca-certificates/ca/
