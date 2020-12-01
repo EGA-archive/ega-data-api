@@ -26,6 +26,7 @@ cache:
 
 variables:
   MAVEN_OPTS: "-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository"
+  TRAVIS_BUILD_DIR: $CI_PROJECT_DIR
 
 ## Diffent stages for the CICD of Data API
 unitTest:
@@ -49,7 +50,7 @@ integrationTest:
     - docker build -t ega-data-api/ega-filedatabase  --file Dockerfile.filedatabase .
     - docker build -t ega-data-api/ega-postgres --file extras/postgresdb/Dockerfile .
     - cd extras && source ./variables.sh
-    - TRAVIS_BUILD_DIR=/builds docker-compose up -d
+    - docker-compose up -d
     - sleep 90
     - cd ../ega-data-api-it
   script:
