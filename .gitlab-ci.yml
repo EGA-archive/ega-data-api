@@ -5,7 +5,7 @@
 #
 # For general lifecycle information see https://maven.apache.org/guides/introduction/introduction-to-the-lifecycle.html
 
-image: maven:3.6.3-openjdk-8-slim
+image: dockerhub.ebi.ac.uk/ega/ega-data-api-build-container:latest
 
 # Add the service of docker in docker to allow us to compile the docker images and include the environment variables as specified
 # https://docs.gitlab.com/runner/executors/kubernetes.html#using-dockerdind
