@@ -46,7 +46,7 @@ integrationTest:
     - docker build -t ega-data-api/ega-filedatabase  --file Dockerfile.filedatabase .
     - docker build -t ega-data-api/ega-postgres --file extras/postgresdb/Dockerfile .
     - cd extras && source ./variables.sh
-    - docker-compose up -d
+    - TRAVIS_BUILD_DIR=/builds docker-compose up -d
     - sleep 90
     - cd ../ega-data-api-it
   script:
