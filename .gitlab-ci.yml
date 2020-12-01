@@ -55,7 +55,7 @@ integrationTest:
     - sleep 90
     - cd ../ega-data-api-it
   script:
-    - mvn test "-Dkey.url=https://ega-integration-test" "-Dfile.url=https://ega-integration-test" "-Dres.url=https://ega-integration-test" "-Ddataedge.url=https://ega-integration-test"
+    - mvn test "-Dkey.url=http://ega-integration-test" "-Dfile.url=http://ega-integration-test" "-Dres.url=http://ega-integration-test" "-Ddataedge.url=http://ega-integration-test"
 
 imageBuild:
   stage: imageBuild
