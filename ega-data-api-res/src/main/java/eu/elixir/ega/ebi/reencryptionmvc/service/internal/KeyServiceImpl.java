@@ -90,4 +90,12 @@ public class KeyServiceImpl implements KeyService {
         return forEntity.getBody();
     }
 
+    @Override
+    public String getEncryptionAlgorithm(String fileId) {
+        ResponseEntity<String> forEntity = restTemplate.getForEntity(KEYS_SERVICE + "/keys/encryptionalgorithm/{fileId}", String.class, fileId);
+        if (forEntity.getStatusCodeValue() != 200) {
+            log.error("Error to retrieve decryption keys with HTTP return code {} ", forEntity.getStatusCode());
+        }
+        return forEntity.getBody();
+    }
 }

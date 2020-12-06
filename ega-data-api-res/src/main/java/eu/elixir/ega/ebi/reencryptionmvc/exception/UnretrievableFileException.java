@@ -1,5 +1,6 @@
 /*
- * Copyright 2017 ELIXIR EGA
+ *
+ * Copyright 2020 EMBL - European Bioinformatics Institute
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,25 +13,19 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
  */
-package eu.elixir.ega.ebi.reencryptionmvc.service;
+package eu.elixir.ega.ebi.reencryptionmvc.exception;
 
-import eu.elixir.ega.ebi.reencryptionmvc.dto.KeyPath;
-import org.springframework.cache.annotation.Cacheable;
+public class UnretrievableFileException extends Exception {
+    private final String fileId;
 
-/**
- * @author asenf
- */
-@Cacheable
-public interface KeyService {
+    public UnretrievableFileException(String fileId) {
+        super("Encryption format not supported");
+        this.fileId = fileId;
+    }
 
-    String getFileKey(String fileId);
-
-    KeyPath getKeyPath(String key);
-
-    String getPublicKey(String id);
-
-    String getPrivateKey(String id);
-
-    String getEncryptionAlgorithm(String id);
+    public String getFileId() {
+        return fileId;
+    }
 }

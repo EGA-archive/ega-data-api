@@ -123,4 +123,21 @@ public class KeyServiceImplTest {
         assertThat(key, equalTo(keyMock));
     }
 
+    /**
+     * Test method for {@link KeyServiceImpl#getEncryptionAlgorithm(String)}. Verify the encryption
+     * algorithm.
+     */
+    @Test
+    public void testGetEncryptionAlgorithm() {
+        final ResponseEntity<String> mockResponseEntity = mock(ResponseEntity.class);
+        final String encryptionAlgorithmMock = "body Output";
+        when(restTemplate.getForEntity(KEYS_SERVICE + "/keys/encryptionalgorithm/{fileId}", String.class, "fileId"))
+                .thenReturn(mockResponseEntity);
+        when(mockResponseEntity.getBody()).thenReturn(encryptionAlgorithmMock);
+
+        final String key = keyServiceImpl.getEncryptionAlgorithm("fileId");
+
+        assertThat(key, equalTo(encryptionAlgorithmMock));
+    }
+
 }
