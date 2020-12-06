@@ -17,16 +17,12 @@
  */
 package eu.elixir.ega.ebi.dataedge.config;
 
-import eu.elixir.ega.ebi.dataedge.service.FileDatabaseClientService;
+import eu.elixir.ega.ebi.dataedge.service.FileMetaService;
 import eu.elixir.ega.ebi.dataedge.service.KeyService;
 import eu.elixir.ega.ebi.dataedge.service.NuFileService;
 import eu.elixir.ega.ebi.dataedge.service.internal.EBINuFileService;
-import eu.elixir.ega.ebi.dataedge.service.internal.FileDatabaseClientServiceImpl;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.client.RestTemplate;
 import uk.ac.ebi.ega.fire.service.IFireService;
 
 @Configuration
@@ -34,20 +30,8 @@ public class EBINuFileServiceConfig {
 
     @Bean
     public NuFileService nuFileService(KeyService keyService,
-                                       FileDatabaseClientService fileDatabase,
+                                       FileMetaService fileDatabase,
                                        IFireService fireService) {
         return new EBINuFileService(keyService, fileDatabase, fireService);
     }
-
-    @Bean
-    @LoadBalanced
-    public RestTemplate fileDatabaseRestTemplate() {
-        return new RestTemplate();
-    }
-
-    @Bean
-    public FileDatabaseClientService fileDatabaseClient(@Qualifier("fileDatabaseRestTemplate") RestTemplate restTemplate) {
-        return new FileDatabaseClientServiceImpl(restTemplate);
-    }
-
 }

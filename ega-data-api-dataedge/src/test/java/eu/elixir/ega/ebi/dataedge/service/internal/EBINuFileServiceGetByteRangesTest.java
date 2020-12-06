@@ -22,7 +22,7 @@ import eu.elixir.ega.ebi.dataedge.exception.EgaFileNotFoundException;
 import eu.elixir.ega.ebi.dataedge.exception.FileNotAvailableException;
 import eu.elixir.ega.ebi.dataedge.exception.RangesNotSatisfiableException;
 import eu.elixir.ega.ebi.dataedge.exception.UnretrievableFileException;
-import eu.elixir.ega.ebi.dataedge.service.FileDatabaseClientService;
+import eu.elixir.ega.ebi.dataedge.service.FileMetaService;
 import eu.elixir.ega.ebi.dataedge.service.KeyService;
 import htsjdk.samtools.seekablestream.cipher.ebi.Glue;
 import org.apache.commons.io.IOUtils;
@@ -62,6 +62,7 @@ import java.util.HashMap;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
@@ -82,7 +83,7 @@ public class EBINuFileServiceGetByteRangesTest {
     @MockBean
     private KeyService keyService;
     @MockBean
-    private FileDatabaseClientService fileDatabaseClientService;
+    private FileMetaService fileMetaService;
     @MockBean
     private IFireService fireService;
     public EBINuFileServiceGetByteRangesTest(String encryptionType, long rangeStart, long rangeEnd) {
@@ -161,13 +162,13 @@ public class EBINuFileServiceGetByteRangesTest {
         mockFile.setFileId(MOCK_FILE_ID);
         mockFile.setDisplayFilePath(firePath);
         mockFile.setFileSize(payload.length);
-        when(fileDatabaseClientService.getById(MOCK_FILE_ID)).thenReturn(mockFile);
+        when(fileMetaService.getFile(any(), eq(MOCK_FILE_ID), any())).thenReturn(mockFile);
 
         when(keyService.getEncryptionAlgorithm(MOCK_FILE_ID)).thenReturn(encryptionType);
         when(keyService.getFileKey(MOCK_FILE_ID)).thenReturn(ENCRYPTION_KEY);
 
         // Act: get the bytes from the file
-        InputStream stream = service.getSpecificByteRange(MOCK_FILE_ID, startByte, endByte);
+        InputStream stream = service.getSpecificByteRange(MOCK_FILE_ID, startByte, endByte, null, null);
 
         // Assert: make sure we got the expected number of bytes and they are what we expected
         assertNotNull(stream);
@@ -182,9 +183,9 @@ public class EBINuFileServiceGetByteRangesTest {
     protected static class Configuration {
         @Bean
         public EBINuFileService ebiNuFileService(KeyService keyService,
-                                                 FileDatabaseClientService fileDatabaseClientService,
+                                                 FileMetaService fileMetaService,
                                                  IFireService fireService) {
-            return new EBINuFileService(keyService, fileDatabaseClientService, fireService);
+            return new EBINuFileService(keyService, fileMetaService, fireService);
         }
     }
 }
