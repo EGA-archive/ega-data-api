@@ -15,12 +15,12 @@
  * limitations under the License.
  *
  */
-package eu.elixir.ega.ebi.reencryptionmvc.service;
+package eu.elixir.ega.ebi.dataedge.service;
 
-import eu.elixir.ega.ebi.reencryptionmvc.exception.EgaFileNotFoundException;
-import eu.elixir.ega.ebi.reencryptionmvc.exception.FileNotAvailableException;
-import eu.elixir.ega.ebi.reencryptionmvc.exception.RangesNotSatisfiableException;
-import eu.elixir.ega.ebi.reencryptionmvc.exception.UnretrievableFileException;
+import eu.elixir.ega.ebi.dataedge.exception.EgaFileNotFoundException;
+import eu.elixir.ega.ebi.dataedge.exception.FileNotAvailableException;
+import eu.elixir.ega.ebi.dataedge.exception.RangesNotSatisfiableException;
+import eu.elixir.ega.ebi.dataedge.exception.UnretrievableFileException;
 
 import java.io.InputStream;
 

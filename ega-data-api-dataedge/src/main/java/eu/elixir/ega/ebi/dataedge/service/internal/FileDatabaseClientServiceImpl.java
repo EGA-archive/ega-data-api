@@ -15,16 +15,18 @@
  * limitations under the License.
  *
  */
-package eu.elixir.ega.ebi.reencryptionmvc.service.internal;
+package eu.elixir.ega.ebi.dataedge.service.internal;
 
-import eu.elixir.ega.ebi.reencryptionmvc.dto.EgaFile;
-import eu.elixir.ega.ebi.reencryptionmvc.exception.EgaFileNotFoundException;
-import eu.elixir.ega.ebi.reencryptionmvc.service.FileDatabaseClientService;
+import eu.elixir.ega.ebi.commons.config.Constants;
+import eu.elixir.ega.ebi.commons.shared.dto.File;
+import eu.elixir.ega.ebi.dataedge.exception.EgaFileNotFoundException;
+import eu.elixir.ega.ebi.dataedge.service.FileDatabaseClientService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
-import static eu.elixir.ega.ebi.reencryptionmvc.config.Constants.FILEDATABASE_SERVICE;
+import static eu.elixir.ega.ebi.commons.config.Constants.FILEDATABASE_SERVICE;
+
 
 public class FileDatabaseClientServiceImpl implements FileDatabaseClientService {
 
@@ -35,8 +37,8 @@ public class FileDatabaseClientServiceImpl implements FileDatabaseClientService 
     }
 
     @Override
-    public EgaFile getById(String egaFileId) throws EgaFileNotFoundException {
-        ResponseEntity<EgaFile[]> responseEntity = restTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}", EgaFile[].class, egaFileId);
+    public File getById(String egaFileId) throws EgaFileNotFoundException {
+        ResponseEntity<File[]> responseEntity = restTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}", File[].class, egaFileId);
         if (responseEntity.getStatusCode() == HttpStatus.NOT_FOUND)
             throw new EgaFileNotFoundException(egaFileId);
 

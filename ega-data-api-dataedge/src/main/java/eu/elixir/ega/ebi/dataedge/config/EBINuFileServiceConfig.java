@@ -15,13 +15,13 @@
  * limitations under the License.
  *
  */
-package eu.elixir.ega.ebi.reencryptionmvc.config;
+package eu.elixir.ega.ebi.dataedge.config;
 
-import eu.elixir.ega.ebi.reencryptionmvc.service.FileDatabaseClientService;
-import eu.elixir.ega.ebi.reencryptionmvc.service.KeyService;
-import eu.elixir.ega.ebi.reencryptionmvc.service.NuFileService;
-import eu.elixir.ega.ebi.reencryptionmvc.service.internal.EBINuFileService;
-import eu.elixir.ega.ebi.reencryptionmvc.service.internal.FileDatabaseClientServiceImpl;
+import eu.elixir.ega.ebi.dataedge.service.FileDatabaseClientService;
+import eu.elixir.ega.ebi.dataedge.service.KeyService;
+import eu.elixir.ega.ebi.dataedge.service.NuFileService;
+import eu.elixir.ega.ebi.dataedge.service.internal.EBINuFileService;
+import eu.elixir.ega.ebi.dataedge.service.internal.FileDatabaseClientServiceImpl;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.context.annotation.Bean;

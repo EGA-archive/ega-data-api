@@ -15,15 +15,16 @@
  * limitations under the License.
  *
  */
-package eu.elixir.ega.ebi.reencryptionmvc.service.internal;
+package eu.elixir.ega.ebi.dataedge.service.internal;
 
-import eu.elixir.ega.ebi.reencryptionmvc.dto.EgaFile;
-import eu.elixir.ega.ebi.reencryptionmvc.exception.EgaFileNotFoundException;
-import eu.elixir.ega.ebi.reencryptionmvc.exception.FileNotAvailableException;
-import eu.elixir.ega.ebi.reencryptionmvc.exception.RangesNotSatisfiableException;
-import eu.elixir.ega.ebi.reencryptionmvc.exception.UnretrievableFileException;
-import eu.elixir.ega.ebi.reencryptionmvc.service.FileDatabaseClientService;
-import eu.elixir.ega.ebi.reencryptionmvc.service.KeyService;
+import eu.elixir.ega.ebi.commons.shared.dto.File;
+import eu.elixir.ega.ebi.dataedge.exception.EgaFileNotFoundException;
+import eu.elixir.ega.ebi.dataedge.exception.FileNotAvailableException;
+import eu.elixir.ega.ebi.dataedge.exception.RangesNotSatisfiableException;
+import eu.elixir.ega.ebi.dataedge.exception.UnretrievableFileException;
+import eu.elixir.ega.ebi.dataedge.service.FileDatabaseClientService;
+import eu.elixir.ega.ebi.dataedge.service.KeyService;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,8 +52,16 @@ import static org.mockito.Mockito.when;
 @Import(EBINuFileServiceTest.Configuration.class)
 public class EBINuFileServiceTest {
 
-    private static final EgaFile MOCK_FILE = new EgaFile(
-            "EGATEST-0001", "test-file", "path/to/test/file", 1234L, "test-status", ""
+    private static final File MOCK_FILE = new File(
+            "EGATEST-0001",
+            "EGA-TEST-DATASET",
+            "test-file",
+            "path/to/test/file",
+            "test-file",
+            1234L,
+            "test-checksum",
+            "test-checksum-type",
+            "test-status"
     );
     @Autowired
     private EBINuFileService service;
@@ -73,7 +82,7 @@ public class EBINuFileServiceTest {
         long plainSize = service.getPlainFileSize(MOCK_FILE.getFileId());
 
         // Assert: Check that the size matches what we said for the mock file
-        assertEquals(MOCK_FILE.getFileSize(), plainSize);
+        Assert.assertEquals(MOCK_FILE.getFileSize(), plainSize);
     }
 
     @Test
@@ -86,7 +95,7 @@ public class EBINuFileServiceTest {
         long plainSize = service.getPlainFileSize(MOCK_FILE.getFileId());
 
         // Assert: Check that the size matches what we said for the mock file minus 16 bytes for the IV header
-        assertEquals(MOCK_FILE.getFileSize() - 16L, plainSize);
+        Assert.assertEquals(MOCK_FILE.getFileSize() - 16L, plainSize);
     }
 
     @Test
@@ -104,7 +113,7 @@ public class EBINuFileServiceTest {
 
         // Assert: we got the exception and it is the right file ID
         assertNotNull(exception);
-        assertEquals(MOCK_FILE.getFileId(), exception.getFileId());
+        Assert.assertEquals(MOCK_FILE.getFileId(), exception.getFileId());
     }
 
     @Test
@@ -124,7 +133,7 @@ public class EBINuFileServiceTest {
 
         // Assert: we got the exception and it is the right file ID
         assertNotNull(exception);
-        assertEquals(MOCK_FILE.getFileId(), exception.getFileId());
+        Assert.assertEquals(MOCK_FILE.getFileId(), exception.getFileId());
     }
 
     @Test
@@ -143,7 +152,7 @@ public class EBINuFileServiceTest {
 
         // Assert: we got the exception and it is the right file ID
         assertNotNull(exception);
-        assertEquals(MOCK_FILE.getFileId(), exception.getFileId());
+        Assert.assertEquals(MOCK_FILE.getFileId(), exception.getFileId());
     }
 
     @Test
@@ -161,7 +170,7 @@ public class EBINuFileServiceTest {
 
         // Assert: we got the exception and it is the right file ID
         assertNotNull(exception);
-        assertEquals(MOCK_FILE.getFileId(), exception.getFileId());
+        Assert.assertEquals(MOCK_FILE.getFileId(), exception.getFileId());
     }
 
     @Test
@@ -181,7 +190,7 @@ public class EBINuFileServiceTest {
 
         // Assert: we got the exception and it is the right file ID
         assertNotNull(exception);
-        assertEquals(MOCK_FILE.getFileId(), exception.getFileId());
+        Assert.assertEquals(MOCK_FILE.getFileId(), exception.getFileId());
         assertTrue(exception.getCause() instanceof FireServiceException);
     }
 
@@ -203,9 +212,9 @@ public class EBINuFileServiceTest {
 
         // Assert: we got the exception and it is the right file ID and ranges
         assertNotNull(exception);
-        assertEquals(MOCK_FILE.getFileId(), exception.getFileId());
-        assertEquals(MOCK_FILE.getFileSize() - 50L, exception.getRangeStart());
-        assertEquals(MOCK_FILE.getFileSize() + 50L, exception.getRangeEnd());
+        Assert.assertEquals(MOCK_FILE.getFileId(), exception.getFileId());
+        Assert.assertEquals(MOCK_FILE.getFileSize() - 50L, exception.getRangeStart());
+        Assert.assertEquals(MOCK_FILE.getFileSize() + 50L, exception.getRangeEnd());
     }
 
     @TestConfiguration

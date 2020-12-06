@@ -15,18 +15,19 @@
  * limitations under the License.
  *
  */
-package eu.elixir.ega.ebi.reencryptionmvc.service.internal;
+package eu.elixir.ega.ebi.dataedge.service.internal;
 
-import eu.elixir.ega.ebi.reencryptionmvc.dto.EgaFile;
-import eu.elixir.ega.ebi.reencryptionmvc.exception.EgaFileNotFoundException;
-import eu.elixir.ega.ebi.reencryptionmvc.exception.FileNotAvailableException;
-import eu.elixir.ega.ebi.reencryptionmvc.service.FileDatabaseClientService;
+import eu.elixir.ega.ebi.commons.config.Constants;
+import eu.elixir.ega.ebi.commons.shared.dto.File;
+import eu.elixir.ega.ebi.dataedge.exception.EgaFileNotFoundException;
+import eu.elixir.ega.ebi.dataedge.exception.FileNotAvailableException;
+import eu.elixir.ega.ebi.dataedge.service.FileDatabaseClientService;
+import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
-import static eu.elixir.ega.ebi.reencryptionmvc.config.Constants.FILEDATABASE_SERVICE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
@@ -38,15 +39,15 @@ public class FileDatabaseClientServiceTest {
     public void ifFileDatabaseCallIsOK_ReturnsFileDatabaseEntity() throws EgaFileNotFoundException, FileNotAvailableException {
         // Arrange: Make the rest template return an OK response
         final String fileId = "test-file";
-        final EgaFile file = new EgaFile();
+        final File file = new File();
 
         RestTemplate template = mock(RestTemplate.class);
-        when(template.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}", EgaFile[].class, fileId))
-                .thenReturn(new ResponseEntity<>(new EgaFile[]{file}, HttpStatus.OK));
+        when(template.getForEntity(Constants.FILEDATABASE_SERVICE + "/file/{fileId}", File[].class, fileId))
+                .thenReturn(new ResponseEntity<>(new File[]{file}, HttpStatus.OK));
         FileDatabaseClientService client = new FileDatabaseClientServiceImpl(template);
 
         // Act: get the entity
-        EgaFile response = client.getById(fileId);
+        File response = client.getById(fileId);
 
         // Assert: check we got the right file
         assertSame(file, response);
@@ -58,7 +59,7 @@ public class FileDatabaseClientServiceTest {
         final String fileId = "test-file";
 
         RestTemplate template = mock(RestTemplate.class);
-        when(template.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}", EgaFile[].class, fileId))
+        when(template.getForEntity(Constants.FILEDATABASE_SERVICE + "/file/{fileId}", File[].class, fileId))
                 .thenReturn(new ResponseEntity<>(HttpStatus.NOT_FOUND));
         FileDatabaseClientService client = new FileDatabaseClientServiceImpl(template);
 
@@ -72,6 +73,6 @@ public class FileDatabaseClientServiceTest {
 
         // Assert: check we got the right exception
         assertNotNull(exception);
-        assertEquals(fileId, exception.getFileId());
+        Assert.assertEquals(fileId, exception.getFileId());
     }
 }

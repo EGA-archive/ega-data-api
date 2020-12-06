@@ -15,16 +15,16 @@
  * limitations under the License.
  *
  */
-package eu.elixir.ega.ebi.reencryptionmvc.exception;
+package eu.elixir.ega.ebi.dataedge.exception;
 
-public class EgaFileNotFoundException extends Exception {
+public class FileNotAvailableException extends Exception {
     private final String fileId;
 
-    public EgaFileNotFoundException(String fileId) {
+    public FileNotAvailableException(String fileId) {
         this.fileId = fileId;
     }
 
-    public EgaFileNotFoundException(String fileId, Throwable cause) {
+    public FileNotAvailableException(String fileId, Throwable cause) {
         super(cause);
         this.fileId = fileId;
     }

@@ -15,15 +15,15 @@
  * limitations under the License.
  *
  */
-package eu.elixir.ega.ebi.reencryptionmvc.service.internal;
+package eu.elixir.ega.ebi.dataedge.service.internal;
 
-import eu.elixir.ega.ebi.reencryptionmvc.dto.EgaFile;
-import eu.elixir.ega.ebi.reencryptionmvc.exception.EgaFileNotFoundException;
-import eu.elixir.ega.ebi.reencryptionmvc.exception.FileNotAvailableException;
-import eu.elixir.ega.ebi.reencryptionmvc.exception.RangesNotSatisfiableException;
-import eu.elixir.ega.ebi.reencryptionmvc.exception.UnretrievableFileException;
-import eu.elixir.ega.ebi.reencryptionmvc.service.FileDatabaseClientService;
-import eu.elixir.ega.ebi.reencryptionmvc.service.KeyService;
+import eu.elixir.ega.ebi.commons.shared.dto.File;
+import eu.elixir.ega.ebi.dataedge.exception.EgaFileNotFoundException;
+import eu.elixir.ega.ebi.dataedge.exception.FileNotAvailableException;
+import eu.elixir.ega.ebi.dataedge.exception.RangesNotSatisfiableException;
+import eu.elixir.ega.ebi.dataedge.exception.UnretrievableFileException;
+import eu.elixir.ega.ebi.dataedge.service.FileDatabaseClientService;
+import eu.elixir.ega.ebi.dataedge.service.KeyService;
 import htsjdk.samtools.seekablestream.cipher.ebi.Glue;
 import org.apache.commons.io.IOUtils;
 import org.junit.Before;
@@ -157,7 +157,7 @@ public class EBINuFileServiceGetByteRangesTest {
                 });
 
         // * Set up a mock file in the filedatabase
-        EgaFile mockFile = new EgaFile();
+        File mockFile = new File();
         mockFile.setFileId(MOCK_FILE_ID);
         mockFile.setDisplayFilePath(firePath);
         mockFile.setFileSize(payload.length);

@@ -18,6 +18,7 @@ package eu.elixir.ega.ebi.dataedge.service.internal;
 import static eu.elixir.ega.ebi.commons.config.Constants.KEYS_SERVICE;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -32,12 +33,21 @@ import lombok.extern.slf4j.Slf4j;
 public class KeyServiceImpl implements KeyService{
     @Autowired
     private RestTemplate restTemplate;
+
+    @Override
+    public String getFileKey(String fileId) {
+        ResponseEntity<String> forEntity = restTemplate.getForEntity(KEYS_SERVICE + "/keys/filekeys/{fileId}", String.class, fileId);
+        if (forEntity.getStatusCodeValue()!=200){
+            log.error("Error to retrieve decryption keys with HTTP return code {} ",forEntity.getStatusCode());
+        }
+        return forEntity.getBody();
+    }
     
     @Override
     public String getEncryptionAlgorithm(String fileId) {
         ResponseEntity<String> forEntity = restTemplate.getForEntity(KEYS_SERVICE + "/keys/encryptionalgorithm/{fileId}", String.class, fileId);
         if (forEntity.getStatusCodeValue()!=200){
-            log.error("Error to retrieve decryption keys with HTTP return code {} ",forEntity.getStatusCode());
+            log.error("Error to retrieve encryption algorithm with HTTP return code {} ",forEntity.getStatusCode());
         }
         return forEntity.getBody();
     } 

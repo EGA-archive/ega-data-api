@@ -16,5 +16,6 @@
 package eu.elixir.ega.ebi.dataedge.service;
 
 public interface KeyService {
+    String getFileKey(String fileId);
     String getEncryptionAlgorithm(String fileId);
 }

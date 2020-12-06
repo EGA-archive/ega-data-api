@@ -15,19 +15,19 @@
  * limitations under the License.
  *
  */
-package eu.elixir.ega.ebi.reencryptionmvc.service.internal;
+package eu.elixir.ega.ebi.dataedge.service.internal;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
-import eu.elixir.ega.ebi.reencryptionmvc.dto.EgaFile;
-import eu.elixir.ega.ebi.reencryptionmvc.exception.EgaFileNotFoundException;
-import eu.elixir.ega.ebi.reencryptionmvc.exception.FileNotAvailableException;
-import eu.elixir.ega.ebi.reencryptionmvc.exception.RangesNotSatisfiableException;
-import eu.elixir.ega.ebi.reencryptionmvc.exception.UnretrievableFileException;
-import eu.elixir.ega.ebi.reencryptionmvc.service.FileDatabaseClientService;
-import eu.elixir.ega.ebi.reencryptionmvc.service.KeyService;
-import eu.elixir.ega.ebi.reencryptionmvc.service.NuFileService;
-import eu.elixir.ega.ebi.reencryptionmvc.util.DecryptionUtils;
+import eu.elixir.ega.ebi.commons.shared.dto.File;
+import eu.elixir.ega.ebi.dataedge.exception.EgaFileNotFoundException;
+import eu.elixir.ega.ebi.dataedge.exception.FileNotAvailableException;
+import eu.elixir.ega.ebi.dataedge.exception.RangesNotSatisfiableException;
+import eu.elixir.ega.ebi.dataedge.exception.UnretrievableFileException;
+import eu.elixir.ega.ebi.dataedge.service.FileDatabaseClientService;
+import eu.elixir.ega.ebi.dataedge.service.KeyService;
+import eu.elixir.ega.ebi.dataedge.service.NuFileService;
+import eu.elixir.ega.ebi.dataedge.utils.DecryptionUtils;
 import htsjdk.samtools.seekablestream.cipher.ebi.Glue;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.BoundedInputStream;
@@ -70,7 +70,7 @@ public class EBINuFileService implements NuFileService {
         return getPlainFileSize(fileDatabase.getById(fileId), keyService.getEncryptionAlgorithm(fileId));
     }
 
-    private long getPlainFileSize(EgaFile file, String encryptionFormat) throws UnretrievableFileException {
+    private long getPlainFileSize(File file, String encryptionFormat) throws UnretrievableFileException {
         long size = file.getFileSize();
 
         if (encryptionFormat.equals("aes128") || encryptionFormat.equals("aes256")) {
@@ -84,7 +84,7 @@ public class EBINuFileService implements NuFileService {
 
     @Override
     public InputStream getSpecificByteRange(String fileId, long start, long end) throws EgaFileNotFoundException, UnretrievableFileException, FileNotAvailableException, RangesNotSatisfiableException {
-        EgaFile file = fileDatabase.getById(fileId);
+        File file = fileDatabase.getById(fileId);
         String encryptionAlgorithm = keyService.getEncryptionAlgorithm(fileId);
 
         long plainFileSize = getPlainFileSize(file, encryptionAlgorithm);
@@ -110,7 +110,7 @@ public class EBINuFileService implements NuFileService {
         }
     }
 
-    private InputStream decryptAES(EgaFile file, String algorithm, final long start, final long end) throws IOException, FileNotAvailableException, URISyntaxException, FireServiceException, ClientProtocolException {
+    private InputStream decryptAES(File file, String algorithm, final long start, final long end) throws IOException, FileNotAvailableException, URISyntaxException, FireServiceException, ClientProtocolException {
 
         // AES works in blocks of 16 bytes so we have to request always whole blocks
         final int startPadding = (int) (start % 16);

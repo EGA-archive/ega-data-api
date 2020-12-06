@@ -15,7 +15,7 @@
  * limitations under the License.
  *
  */
-package eu.elixir.ega.ebi.reencryptionmvc.exception;
+package eu.elixir.ega.ebi.dataedge.exception;
 
 public class RangesNotSatisfiableException extends Exception {
     private final String fileId;

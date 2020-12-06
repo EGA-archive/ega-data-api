@@ -15,11 +15,11 @@
  * limitations under the License.
  *
  */
-package eu.elixir.ega.ebi.reencryptionmvc.service;
+package eu.elixir.ega.ebi.dataedge.service;
 
-import eu.elixir.ega.ebi.reencryptionmvc.dto.EgaFile;
-import eu.elixir.ega.ebi.reencryptionmvc.exception.EgaFileNotFoundException;
-import eu.elixir.ega.ebi.reencryptionmvc.exception.FileNotAvailableException;
+import eu.elixir.ega.ebi.commons.shared.dto.File;
+import eu.elixir.ega.ebi.dataedge.exception.EgaFileNotFoundException;
+import eu.elixir.ega.ebi.dataedge.exception.FileNotAvailableException;
 
 public interface FileDatabaseClientService {
 
@@ -31,5 +31,5 @@ public interface FileDatabaseClientService {
      * @throws EgaFileNotFoundException  The file was not found in the database
      * @throws FileNotAvailableException The file was found but is not available
      */
-    EgaFile getById(String egaFileId) throws EgaFileNotFoundException, FileNotAvailableException;
+    File getById(String egaFileId) throws EgaFileNotFoundException, FileNotAvailableException;
 }
