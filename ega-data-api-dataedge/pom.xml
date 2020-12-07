@@ -64,6 +64,13 @@
             <groupId>eu.elixir.ega.ebi</groupId>
             <artifactId>ega-htsjdk</artifactId>
             <version>1.0.0</version>
+            <exclusions>
+                <!-- version of async-http-client used by EGA-HtsJdk breaks the mockserver -->
+                <exclusion>
+                    <groupId>org.asynchttpclient</groupId>
+                    <artifactId>async-http-client</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.squareup.okhttp3</groupId>
