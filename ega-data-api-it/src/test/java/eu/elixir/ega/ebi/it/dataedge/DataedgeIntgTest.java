@@ -9,6 +9,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.json.JSONObject;
 import org.junit.Test;
+import org.junit.Ignore;
 
 import com.jayway.restassured.response.Response;
 
@@ -30,6 +31,7 @@ public class DataedgeIntgTest extends DataedgeBase {
      * @throws Exception
      */
     @Test
+    @Ignore // disabled because it does not access fire properly
     public void testGetFile() throws Exception {
         final Response response = REQUEST.get(FILE_PATH + fileId + "?destinationFormat=plain");
         response.then().assertThat().statusCode(SC_OK);
