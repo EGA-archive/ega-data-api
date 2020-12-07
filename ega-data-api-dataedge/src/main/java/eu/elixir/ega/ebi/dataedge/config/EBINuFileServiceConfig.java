@@ -17,7 +17,7 @@
  */
 package eu.elixir.ega.ebi.dataedge.config;
 
-import eu.elixir.ega.ebi.dataedge.service.FileMetaService;
+import eu.elixir.ega.ebi.commons.shared.service.FileInfoService;
 import eu.elixir.ega.ebi.dataedge.service.KeyService;
 import eu.elixir.ega.ebi.dataedge.service.NuFileService;
 import eu.elixir.ega.ebi.dataedge.service.internal.EBINuFileService;
@@ -50,9 +50,9 @@ public class EBINuFileServiceConfig {
 
     @Bean
     public NuFileService nuFileService(KeyService keyService,
-                                       FileMetaService fileDatabase,
+                                       FileInfoService fileInfoService,
                                        IFireService fireService) {
-        return new EBINuFileService(keyService, fileDatabase, fireService);
+        return new EBINuFileService(keyService, fileInfoService, fireService);
     }
 
     @ConfigurationProperties(prefix = "httpclient.connection")

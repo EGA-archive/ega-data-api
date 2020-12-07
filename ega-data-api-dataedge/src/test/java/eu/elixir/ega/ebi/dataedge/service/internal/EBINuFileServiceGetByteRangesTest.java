@@ -18,11 +18,11 @@
 package eu.elixir.ega.ebi.dataedge.service.internal;
 
 import eu.elixir.ega.ebi.commons.shared.dto.File;
+import eu.elixir.ega.ebi.commons.shared.service.FileInfoService;
 import eu.elixir.ega.ebi.dataedge.exception.EgaFileNotFoundException;
 import eu.elixir.ega.ebi.dataedge.exception.FileNotAvailableException;
 import eu.elixir.ega.ebi.dataedge.exception.RangesNotSatisfiableException;
 import eu.elixir.ega.ebi.dataedge.exception.UnretrievableFileException;
-import eu.elixir.ega.ebi.dataedge.service.FileMetaService;
 import eu.elixir.ega.ebi.dataedge.service.KeyService;
 import htsjdk.samtools.seekablestream.cipher.ebi.Glue;
 import org.apache.commons.io.IOUtils;
@@ -83,7 +83,7 @@ public class EBINuFileServiceGetByteRangesTest {
     @MockBean
     private KeyService keyService;
     @MockBean
-    private FileMetaService fileMetaService;
+    private FileInfoService fileInfoService;
     @MockBean
     private IFireService fireService;
     public EBINuFileServiceGetByteRangesTest(String encryptionType, long rangeStart, long rangeEnd) {
@@ -162,13 +162,14 @@ public class EBINuFileServiceGetByteRangesTest {
         mockFile.setFileId(MOCK_FILE_ID);
         mockFile.setDisplayFilePath(firePath);
         mockFile.setFileSize(payload.length);
-        when(fileMetaService.getFile(any(), eq(MOCK_FILE_ID), any())).thenReturn(mockFile);
+        mockFile.setFileStatus("available");
+        when(fileInfoService.getFileInfo(any())).thenReturn(mockFile);
 
         when(keyService.getEncryptionAlgorithm(MOCK_FILE_ID)).thenReturn(encryptionType);
         when(keyService.getFileKey(MOCK_FILE_ID)).thenReturn(ENCRYPTION_KEY);
 
         // Act: get the bytes from the file
-        InputStream stream = service.getSpecificByteRange(MOCK_FILE_ID, startByte, endByte, null, null);
+        InputStream stream = service.getSpecificByteRange(MOCK_FILE_ID, startByte, endByte);
 
         // Assert: make sure we got the expected number of bytes and they are what we expected
         assertNotNull(stream);
@@ -183,9 +184,9 @@ public class EBINuFileServiceGetByteRangesTest {
     protected static class Configuration {
         @Bean
         public EBINuFileService ebiNuFileService(KeyService keyService,
-                                                 FileMetaService fileMetaService,
+                                                 FileInfoService fileInfoService,
                                                  IFireService fireService) {
-            return new EBINuFileService(keyService, fileMetaService, fireService);
+            return new EBINuFileService(keyService, fileInfoService, fireService);
         }
     }
 }

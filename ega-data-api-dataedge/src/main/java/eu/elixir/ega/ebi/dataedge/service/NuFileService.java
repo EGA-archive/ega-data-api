@@ -21,7 +21,6 @@ import eu.elixir.ega.ebi.dataedge.exception.EgaFileNotFoundException;
 import eu.elixir.ega.ebi.dataedge.exception.FileNotAvailableException;
 import eu.elixir.ega.ebi.dataedge.exception.RangesNotSatisfiableException;
 import eu.elixir.ega.ebi.dataedge.exception.UnretrievableFileException;
-import org.springframework.security.core.Authentication;
 
 import java.io.InputStream;
 
@@ -31,14 +30,12 @@ public interface NuFileService {
      * Retrieve the plain file size for a specific EGA FileId.
      *
      * @param fileId The ID of the file
-     * @param auth
-     * @param sessionId
      * @return The plain file size (i.e. the size when it is unencrypted)
      * @throws EgaFileNotFoundException   the given file ID could not be found
      * @throws UnretrievableFileException the file is encrypted in an unsupported format
      * @throws FileNotAvailableException  the file exists but is not available
      */
-    long getPlainFileSize(String fileId, Authentication auth, String sessionId)
+    long getPlainFileSize(String fileId)
             throws EgaFileNotFoundException,
             UnretrievableFileException,
             FileNotAvailableException;
@@ -48,11 +45,9 @@ public interface NuFileService {
      * The range is [start, end] inclusive.
      * The byte range will be returned as plain (unencrypted) data.
      *
-     * @param fileId The ID of the file
-     * @param start  The position of the first byte to return
-     * @param end    The position of the last byte to return
-     * @param auth
-     * @param sessionId
+     * @param fileId    The ID of the file
+     * @param start     The position of the first byte to return
+     * @param end       The position of the last byte to return
      * @return A stream for reading the unencrypted bytes
      * @throws EgaFileNotFoundException      the given file ID could not be found
      * @throws UnretrievableFileException    the file is encrypted in an unsupported format
@@ -60,7 +55,7 @@ public interface NuFileService {
      * @throws RangesNotSatisfiableException the specified byte range could not be satisfied
      *                                       (e.g. past the end of the file)
      */
-    InputStream getSpecificByteRange(String fileId, long start, long end, Authentication auth, String sessionId)
+    InputStream getSpecificByteRange(String fileId, long start, long end)
             throws EgaFileNotFoundException,
             UnretrievableFileException,
             FileNotAvailableException,

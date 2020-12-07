@@ -21,18 +21,17 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
 import eu.elixir.ega.ebi.commons.exception.NotFoundException;
 import eu.elixir.ega.ebi.commons.shared.dto.File;
+import eu.elixir.ega.ebi.commons.shared.service.FileInfoService;
 import eu.elixir.ega.ebi.dataedge.exception.EgaFileNotFoundException;
 import eu.elixir.ega.ebi.dataedge.exception.FileNotAvailableException;
 import eu.elixir.ega.ebi.dataedge.exception.RangesNotSatisfiableException;
 import eu.elixir.ega.ebi.dataedge.exception.UnretrievableFileException;
-import eu.elixir.ega.ebi.dataedge.service.FileMetaService;
 import eu.elixir.ega.ebi.dataedge.service.KeyService;
 import eu.elixir.ega.ebi.dataedge.service.NuFileService;
 import eu.elixir.ega.ebi.dataedge.utils.DecryptionUtils;
 import htsjdk.samtools.seekablestream.cipher.ebi.Glue;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.BoundedInputStream;
-import org.springframework.security.core.Authentication;
 import uk.ac.ebi.ega.fire.exceptions.ClientProtocolException;
 import uk.ac.ebi.ega.fire.exceptions.FireServiceException;
 import uk.ac.ebi.ega.fire.service.IFireService;
@@ -54,13 +53,13 @@ import java.util.concurrent.TimeUnit;
 public class EBINuFileService implements NuFileService {
 
     private final KeyService keyService;
-    private final FileMetaService fileMetaService;
+    private final FileInfoService fileInfoService;
     private final IFireService fireClientService;
     private final LoadingCache<String, byte[]> aesHeaderCache;
 
-    public EBINuFileService(KeyService keyService, FileMetaService fileMetaService, IFireService fireClientService) {
+    public EBINuFileService(KeyService keyService, FileInfoService fileInfoService, IFireService fireClientService) {
         this.keyService = keyService;
-        this.fileMetaService = fileMetaService;
+        this.fileInfoService = fileInfoService;
         this.fireClientService = fireClientService;
         this.aesHeaderCache = Caffeine.newBuilder()
                 .expireAfterAccess(1, TimeUnit.DAYS)
@@ -68,21 +67,22 @@ public class EBINuFileService implements NuFileService {
     }
 
     @Override
-    public long getPlainFileSize(String fileId, Authentication auth, String sessionId) throws EgaFileNotFoundException, UnretrievableFileException, FileNotAvailableException {
+    public long getPlainFileSize(String fileId) throws EgaFileNotFoundException, UnretrievableFileException, FileNotAvailableException {
 
-        return getPlainFileSize(getFile(fileId, auth, sessionId), keyService.getEncryptionAlgorithm(fileId));
+        return getPlainFileSize(getFile(fileId), keyService.getEncryptionAlgorithm(fileId));
     }
 
-    private File getFile(String fileId, Authentication auth, String sessionId) throws EgaFileNotFoundException, FileNotAvailableException {
+    private File getFile(String fileId) throws EgaFileNotFoundException, FileNotAvailableException {
         File file;
         try {
-            file = fileMetaService.getFile(auth, fileId, sessionId);
-        } catch(NotFoundException exception) {
+            file = fileInfoService.getFileInfo(fileId);
+        } catch (NotFoundException exception) {
             throw new EgaFileNotFoundException(fileId);
         }
-        if (file.getFileId() == null) {
+
+        if (!file.getFileStatus().equals("available"))
             throw new FileNotAvailableException(fileId);
-        }
+
         return file;
     }
 
@@ -99,8 +99,8 @@ public class EBINuFileService implements NuFileService {
     }
 
     @Override
-    public InputStream getSpecificByteRange(String fileId, long start, long end, Authentication auth, String sessionId) throws EgaFileNotFoundException, UnretrievableFileException, FileNotAvailableException, RangesNotSatisfiableException {
-        File file = getFile(fileId, auth, sessionId);
+    public InputStream getSpecificByteRange(String fileId, long start, long end) throws EgaFileNotFoundException, UnretrievableFileException, FileNotAvailableException, RangesNotSatisfiableException {
+        File file = getFile(fileId);
         String encryptionAlgorithm = keyService.getEncryptionAlgorithm(fileId);
 
         long plainFileSize = getPlainFileSize(file, encryptionAlgorithm);

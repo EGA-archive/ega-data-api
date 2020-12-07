@@ -19,11 +19,11 @@ package eu.elixir.ega.ebi.dataedge.service.internal;
 
 import eu.elixir.ega.ebi.commons.exception.NotFoundException;
 import eu.elixir.ega.ebi.commons.shared.dto.File;
+import eu.elixir.ega.ebi.commons.shared.service.FileInfoService;
 import eu.elixir.ega.ebi.dataedge.exception.EgaFileNotFoundException;
 import eu.elixir.ega.ebi.dataedge.exception.FileNotAvailableException;
 import eu.elixir.ega.ebi.dataedge.exception.RangesNotSatisfiableException;
 import eu.elixir.ega.ebi.dataedge.exception.UnretrievableFileException;
-import eu.elixir.ega.ebi.dataedge.service.FileMetaService;
 import eu.elixir.ega.ebi.dataedge.service.KeyService;
 import org.junit.Assert;
 import org.junit.Test;
@@ -42,13 +42,10 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URISyntaxException;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
 
 @RunWith(SpringRunner.class)
@@ -64,25 +61,25 @@ public class EBINuFileServiceTest {
             1234L,
             "test-checksum",
             "test-checksum-type",
-            "test-status"
+            "available"
     );
     @Autowired
     private EBINuFileService service;
     @MockBean
     private KeyService keyService;
     @MockBean
-    private FileMetaService fileMetaService;
+    private FileInfoService fileInfoService;
     @MockBean
     private IFireService fireService;
 
     @Test
     public void canGetPlainFileSize_OfPlainFile() throws EgaFileNotFoundException, UnretrievableFileException, FileNotAvailableException {
         // Arrange: Set up a mock file in the FileDatabase
-        when(fileMetaService.getFile(any(), eq(MOCK_FILE.getFileId()), any())).thenReturn(MOCK_FILE);
+        when(fileInfoService.getFileInfo(MOCK_FILE.getFileId())).thenReturn(MOCK_FILE);
         when(keyService.getEncryptionAlgorithm(MOCK_FILE.getFileId())).thenReturn("plain");
 
         // Act: Get the size of the mock file
-        long plainSize = service.getPlainFileSize(MOCK_FILE.getFileId(), null, null);
+        long plainSize = service.getPlainFileSize(MOCK_FILE.getFileId());
 
         // Assert: Check that the size matches what we said for the mock file
         Assert.assertEquals(MOCK_FILE.getFileSize(), plainSize);
@@ -91,11 +88,11 @@ public class EBINuFileServiceTest {
     @Test
     public void canGetPlainFileSize_OfAesEncryptedFile() throws EgaFileNotFoundException, UnretrievableFileException, FileNotAvailableException {
         // Arrange: Set up a mock file in the FileDatabase
-        when(fileMetaService.getFile(any(), eq(MOCK_FILE.getFileId()), any())).thenReturn(MOCK_FILE);
+        when(fileInfoService.getFileInfo(MOCK_FILE.getFileId())).thenReturn(MOCK_FILE);
         when(keyService.getEncryptionAlgorithm(MOCK_FILE.getFileId())).thenReturn("aes256");
 
         // Act: Get the size of the mock file
-        long plainSize = service.getPlainFileSize(MOCK_FILE.getFileId(), null, null);
+        long plainSize = service.getPlainFileSize(MOCK_FILE.getFileId());
 
         // Assert: Check that the size matches what we said for the mock file minus 16 bytes for the IV header
         Assert.assertEquals(MOCK_FILE.getFileSize() - 16L, plainSize);
@@ -104,12 +101,12 @@ public class EBINuFileServiceTest {
     @Test
     public void ifFileDoesNotExist_ThrowsEgaFileNotFoundException() throws EgaFileNotFoundException, UnretrievableFileException, FileNotAvailableException {
         // Arrange: File database cannot find this file
-        when(fileMetaService.getFile(any(), eq(MOCK_FILE.getFileId()), any())).thenThrow(new NotFoundException("Not found"));
+        when(fileInfoService.getFileInfo(MOCK_FILE.getFileId())).thenThrow(new NotFoundException("Not found"));
 
         // Act: get the size of the file that does not exist
         EgaFileNotFoundException exception = null;
         try {
-            service.getPlainFileSize(MOCK_FILE.getFileId(), null, null);
+            service.getPlainFileSize(MOCK_FILE.getFileId());
         } catch (EgaFileNotFoundException e) {
             exception = e;
         }
@@ -122,14 +119,14 @@ public class EBINuFileServiceTest {
     @Test
     public void ifFileIsNotFoundOnFire_ThrowsEgaFileNotFoundException() throws FileNotAvailableException, IOException, RangesNotSatisfiableException, UnretrievableFileException, EgaFileNotFoundException, URISyntaxException, FireServiceException, ClientProtocolException {
         // Arrange: File database contains this file but Fire throws not found
-        when(fileMetaService.getFile(any(), eq(MOCK_FILE.getFileId()), any())).thenReturn(MOCK_FILE);
+        when(fileInfoService.getFileInfo(MOCK_FILE.getFileId())).thenReturn(MOCK_FILE);
         when(keyService.getEncryptionAlgorithm(MOCK_FILE.getFileId())).thenReturn("plain");
         when(fireService.downloadByteRangeByPath(anyString(), anyLong(), anyLong())).thenThrow(new FileNotFoundException());
 
         // Act: download bytes from the file
         EgaFileNotFoundException exception = null;
         try {
-            service.getSpecificByteRange(MOCK_FILE.getFileId(), 0, 100, null, null);
+            service.getSpecificByteRange(MOCK_FILE.getFileId(), 0, 100);
         } catch (EgaFileNotFoundException e) {
             exception = e;
         }
@@ -142,13 +139,13 @@ public class EBINuFileServiceTest {
     @Test
     public void ifFileIsEncryptedInNonSupportedFormat_ThrowsUnretrievableFileException() throws EgaFileNotFoundException, FileNotAvailableException {
         // Arrange: Set up a mock file in an unsupported encrypted format
-        when(fileMetaService.getFile(any(), eq(MOCK_FILE.getFileId()), any())).thenReturn(MOCK_FILE);
+        when(fileInfoService.getFileInfo(MOCK_FILE.getFileId())).thenReturn(MOCK_FILE);
         when(keyService.getEncryptionAlgorithm(MOCK_FILE.getFileId())).thenReturn("symmetricgpg");
 
         // Act: Get the size of the file in the unsupported format
         UnretrievableFileException exception = null;
         try {
-            service.getPlainFileSize(MOCK_FILE.getFileId(), null, null);
+            service.getPlainFileSize(MOCK_FILE.getFileId());
         } catch (UnretrievableFileException e) {
             exception = e;
         }
@@ -161,12 +158,16 @@ public class EBINuFileServiceTest {
     @Test
     public void ifFileExistsButIsNotAvailable_ThrowsFileNotAvailableException() throws EgaFileNotFoundException, UnretrievableFileException, FileNotAvailableException {
         // Arrange: Set up a mock file that is not available
-        when(fileMetaService.getFile(any(), eq(MOCK_FILE.getFileId()), any())).thenReturn(new File());
+        File unavailableFile = new File();
+        unavailableFile.setFileSize(1234L);
+        unavailableFile.setFileStatus("unavailable");
+        when(fileInfoService.getFileInfo(MOCK_FILE.getFileId())).thenReturn(unavailableFile);
+        when(keyService.getEncryptionAlgorithm(MOCK_FILE.getFileId())).thenReturn("aes256");
 
         // Act: Get the size of the file that is not available
         FileNotAvailableException exception = null;
         try {
-            service.getPlainFileSize(MOCK_FILE.getFileId(), null, null);
+            service.getPlainFileSize(MOCK_FILE.getFileId());
         } catch (FileNotAvailableException e) {
             exception = e;
         }
@@ -179,14 +180,14 @@ public class EBINuFileServiceTest {
     @Test
     public void ifFireConnectionFails_ThrowsFileNotAvailableException() throws EgaFileNotFoundException, FileNotAvailableException, IOException, RangesNotSatisfiableException, UnretrievableFileException, URISyntaxException, FireServiceException, ClientProtocolException {
         // Arrange: File database contains this file but Fire throws a generic exception
-        when(fileMetaService.getFile(any(), eq(MOCK_FILE.getFileId()), any())).thenReturn(MOCK_FILE);
+        when(fileInfoService.getFileInfo(MOCK_FILE.getFileId())).thenReturn(MOCK_FILE);
         when(keyService.getEncryptionAlgorithm(MOCK_FILE.getFileId())).thenReturn("plain");
         when(fireService.downloadByteRangeByPath(anyString(), anyLong(), anyLong())).thenThrow(new FireServiceException("Test error", new RuntimeException()));
 
         // Act: download bytes from the file
         FileNotAvailableException exception = null;
         try {
-            service.getSpecificByteRange(MOCK_FILE.getFileId(), 0, 100, null, null);
+            service.getSpecificByteRange(MOCK_FILE.getFileId(), 0, 100);
         } catch (FileNotAvailableException e) {
             exception = e;
         }
@@ -200,7 +201,7 @@ public class EBINuFileServiceTest {
     @Test
     public void ifSpecifiedRangesCanNotBeSatisfied_ThrowsRangesNoSatisfiableException() throws EgaFileNotFoundException, FileNotAvailableException, UnretrievableFileException {
         // Arrange: Set up a mock file
-        when(fileMetaService.getFile(any(), eq(MOCK_FILE.getFileId()), any())).thenReturn(MOCK_FILE);
+        when(fileInfoService.getFileInfo(MOCK_FILE.getFileId())).thenReturn(MOCK_FILE);
         when(keyService.getEncryptionAlgorithm(MOCK_FILE.getFileId())).thenReturn("plain");
 
         // Act: Request a range that goes past the end of the file
@@ -208,7 +209,7 @@ public class EBINuFileServiceTest {
         try {
             service.getSpecificByteRange(MOCK_FILE.getFileId(),
                     MOCK_FILE.getFileSize() - 50L,
-                    MOCK_FILE.getFileSize() + 50L, null, null);
+                    MOCK_FILE.getFileSize() + 50L);
         } catch (RangesNotSatisfiableException e) {
             exception = e;
         }
@@ -224,9 +225,9 @@ public class EBINuFileServiceTest {
     protected static class Configuration {
         @Bean
         public EBINuFileService ebiNuFileService(KeyService keyService,
-                                                 FileMetaService fileMetaService,
+                                                 FileInfoService fileInfoService,
                                                  IFireService fireService) {
-            return new EBINuFileService(keyService, fileMetaService, fireService);
+            return new EBINuFileService(keyService, fileInfoService, fireService);
         }
     }
 }
