@@ -89,9 +89,9 @@ public class EBINuFileService implements NuFileService {
     private long getPlainFileSize(File file, String encryptionFormat) throws UnretrievableFileException {
         long size = file.getFileSize();
 
-        if (encryptionFormat.equals("aes128") || encryptionFormat.equals("aes256")) {
+        if ("aes128".equals(encryptionFormat) || "aes256".equals(encryptionFormat)) {
             size -= 16L;
-        } else if (!encryptionFormat.equals("plain")) {
+        } else if (!"plain".equals(encryptionFormat)) {
             throw new UnretrievableFileException(file.getFileId());
         }
 
@@ -140,7 +140,7 @@ public class EBINuFileService implements NuFileService {
                 fireEndByte + 16);
 
         SecretKey key = Glue.getInstance().getKey(keyService.getFileKey(file.getFileId()).toCharArray(),
-                algorithm.equals("aes128") ? 128 : 256);
+                "aes128".equals(algorithm) ? 128 : 256);
 
         byte[] header = aesHeaderCache.get(file.getDisplayFilePath());
         assert header != null;
