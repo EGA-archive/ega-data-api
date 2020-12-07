@@ -80,7 +80,7 @@ public class EBINuFileService implements NuFileService {
             throw new EgaFileNotFoundException(fileId);
         }
 
-        if (!file.getFileStatus().equals("available"))
+        if (!"available".equals(file.getFileStatus()))
             throw new FileNotAvailableException(fileId);
 
         return file;
