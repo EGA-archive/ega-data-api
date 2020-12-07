@@ -52,6 +52,11 @@ import java.util.concurrent.TimeUnit;
 
 public class EBINuFileService implements NuFileService {
 
+    public static final String ENCRYPTION_AES128 = "aes128";
+    public static final String ENCRYPTION_AES256 = "aes256";
+    public static final String ENCRYPTION_PLAIN = "plain";
+    public static final String FILE_STATUS_AVAILABLE = "available";
+
     private final KeyService keyService;
     private final FileInfoService fileInfoService;
     private final IFireService fireClientService;
@@ -80,7 +85,7 @@ public class EBINuFileService implements NuFileService {
             throw new EgaFileNotFoundException(fileId);
         }
 
-        if (!"available".equals(file.getFileStatus()))
+        if (!FILE_STATUS_AVAILABLE.equals(file.getFileStatus()))
             throw new FileNotAvailableException(fileId);
 
         return file;
@@ -89,9 +94,9 @@ public class EBINuFileService implements NuFileService {
     private long getPlainFileSize(File file, String encryptionFormat) throws UnretrievableFileException {
         long size = file.getFileSize();
 
-        if ("aes128".equals(encryptionFormat) || "aes256".equals(encryptionFormat)) {
+        if (ENCRYPTION_AES128.equals(encryptionFormat) || ENCRYPTION_AES256.equals(encryptionFormat)) {
             size -= 16L;
-        } else if (!"plain".equals(encryptionFormat)) {
+        } else if (!ENCRYPTION_PLAIN.equals(encryptionFormat)) {
             throw new UnretrievableFileException(file.getFileId());
         }
 
@@ -109,11 +114,11 @@ public class EBINuFileService implements NuFileService {
 
         try {
             switch (encryptionAlgorithm) {
-                case "plain": {
+                case ENCRYPTION_PLAIN: {
                     return fireClientService.downloadByteRangeByPath(file.getDisplayFilePath(), start, end);
                 }
-                case "aes128":
-                case "aes256": {
+                case ENCRYPTION_AES128:
+                case ENCRYPTION_AES256: {
                     return decryptAES(file, encryptionAlgorithm, start, end);
                 }
                 default:
@@ -140,7 +145,7 @@ public class EBINuFileService implements NuFileService {
                 fireEndByte + 16);
 
         SecretKey key = Glue.getInstance().getKey(keyService.getFileKey(file.getFileId()).toCharArray(),
-                "aes128".equals(algorithm) ? 128 : 256);
+                ENCRYPTION_AES128.equals(algorithm) ? 128 : 256);
 
         byte[] header = aesHeaderCache.get(file.getDisplayFilePath());
         assert header != null;

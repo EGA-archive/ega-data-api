@@ -60,6 +60,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 
+import static eu.elixir.ega.ebi.dataedge.service.internal.EBINuFileService.ENCRYPTION_AES128;
+import static eu.elixir.ega.ebi.dataedge.service.internal.EBINuFileService.ENCRYPTION_AES256;
+import static eu.elixir.ega.ebi.dataedge.service.internal.EBINuFileService.ENCRYPTION_PLAIN;
+import static eu.elixir.ega.ebi.dataedge.service.internal.EBINuFileService.FILE_STATUS_AVAILABLE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Matchers.any;
@@ -99,15 +103,15 @@ public class EBINuFileServiceGetByteRangesTest {
             plainData[i] = (byte) (i % 0xff);
         }
         encryptedData = new HashMap<>();
-        encryptedData.put("plain", plainData);
-        encryptedData.put("aes128", encryptAes(plainData, 128));
-        encryptedData.put("aes256", encryptAes(plainData, 256));
+        encryptedData.put(ENCRYPTION_PLAIN, plainData);
+        encryptedData.put(ENCRYPTION_AES128, encryptAes(plainData, 128));
+        encryptedData.put(ENCRYPTION_AES256, encryptAes(plainData, 256));
     }
 
     @Parameterized.Parameters(name = "Encryption \"{0}\", range [{1}-{2}]")
     public static Collection<Object[]> parameters() {
         Collection<Object[]> params = new ArrayList<>();
-        for (String encryptionType : new String[]{"plain", "aes128", "aes256"}) {
+        for (String encryptionType : new String[]{ENCRYPTION_PLAIN, ENCRYPTION_AES128, ENCRYPTION_AES256}) {
             for (long i = 0; i < MOCK_FILE_PLAIN_SIZE - 1; i += 10) {
                 params.add(new Object[]{encryptionType, i, i + 9});
                 params.add(new Object[]{encryptionType, i / 2, MOCK_FILE_PLAIN_SIZE - 1 - (i / 2)});
@@ -162,7 +166,7 @@ public class EBINuFileServiceGetByteRangesTest {
         mockFile.setFileId(MOCK_FILE_ID);
         mockFile.setDisplayFilePath(firePath);
         mockFile.setFileSize(payload.length);
-        mockFile.setFileStatus("available");
+        mockFile.setFileStatus(FILE_STATUS_AVAILABLE);
         when(fileInfoService.getFileInfo(any())).thenReturn(mockFile);
 
         when(keyService.getEncryptionAlgorithm(MOCK_FILE_ID)).thenReturn(encryptionType);
