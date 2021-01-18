@@ -106,13 +106,16 @@ public class MyConfiguration {
                 .build());
         GuavaCache datasetFile = new GuavaCache("datasetFile", CacheBuilder.newBuilder()
                 .expireAfterWrite(24, TimeUnit.HOURS)
-                .build());        
+                .build());
         GuavaCache indexFile = new GuavaCache("indexFile", CacheBuilder.newBuilder()
                 .expireAfterWrite(24, TimeUnit.HOURS)
-                .build());        
+                .build());
+        GuavaCache datasetsGa4gh = new GuavaCache("datasetsGa4gh", CacheBuilder.newBuilder()
+                .expireAfterWrite(50, TimeUnit.MINUTES)
+                .build());
 
         simpleCacheManager.setCaches(Arrays.asList(tokens, access, reqFile, index, fileHead, headerFile, fileSize,
-                fileFile, fileDatasetFile, datasetFile, indexFile));
+                fileFile, fileDatasetFile, datasetFile, indexFile, datasetsGa4gh));
         return simpleCacheManager;
     }
 

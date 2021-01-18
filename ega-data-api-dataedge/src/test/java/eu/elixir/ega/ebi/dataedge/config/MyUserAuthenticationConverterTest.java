@@ -15,83 +15,48 @@
  */
 package eu.elixir.ega.ebi.dataedge.config;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.mockito.Matchers.any;
-import static org.powermock.api.mockito.PowerMockito.mock;
-import static org.powermock.api.mockito.PowerMockito.when;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
 import eu.elixir.ega.ebi.commons.config.CustomUsernamePasswordAuthenticationToken;
 import eu.elixir.ega.ebi.commons.config.MyUserAuthenticationConverter;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.oauth2.provider.token.AccessTokenConverter;
 import org.springframework.test.context.TestPropertySource;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static java.util.Arrays.asList;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
+
 /**
  * Test class for {@link MyUserAuthenticationConverter}.
- * 
+ *
  * @author amohan
  */
-@RunWith(PowerMockRunner.class)
+@RunWith(MockitoJUnitRunner.class)
 @PrepareForTest(MyUserAuthenticationConverter.class)
 @TestPropertySource(locations = "classpath:application-test.properties")
 public class MyUserAuthenticationConverterTest {
 
     private final String USERNAME = "user_id";
     private final String USERNAME_VAL = "USERNAME";
-    private final String DATASET1 = "DATASET1";
-    private final String DATASET2 = "DATASET2";
+    private final String DATASET1 = "EGAD00000000001";
+    private final String DATASET2 = "EGAD00000000002";
     private final String AUTHORITIES = AccessTokenConverter.AUTHORITIES;
-    private UserDetails user;
-    private Authentication authentication;
 
-    @SuppressWarnings("rawtypes")
-    private Collection authorities;
+    @Mock
+    private Authentication authentication;
 
     @InjectMocks
     private MyUserAuthenticationConverter myUserAuthenticationConverter;
-
-    @Mock
-    private UserDetailsService userDetailsService;
-
-    @SuppressWarnings("unchecked")
-    @Before
-    public void initMocks() {
-        MockitoAnnotations.initMocks(this);
-        authentication = mock(Authentication.class);
-        user = mock(UserDetails.class);
-        when(authentication.getName()).thenReturn(USERNAME_VAL);
-
-        authorities = new ArrayList<GrantedAuthority>();
-        authorities.add(new SimpleGrantedAuthority(DATASET1));
-        authorities.add(new SimpleGrantedAuthority(DATASET2));
-
-        when(authentication.getAuthorities()).thenReturn(authorities);
-        when(user.getAuthorities()).thenReturn(authorities);
-        when(userDetailsService.loadUserByUsername(any())).thenReturn(user);
-
-    }
 
     /**
      * Test class for
@@ -101,15 +66,12 @@ public class MyUserAuthenticationConverterTest {
     @SuppressWarnings("unchecked")
     @Test
     public void testConvertUserAuthentication() {
+        when(authentication.getName()).thenReturn(USERNAME_VAL);
+
         final Map<String, Object> output = (Map<String, Object>) myUserAuthenticationConverter
                 .convertUserAuthentication(authentication);
 
-        final Set<Object> expectedOutput = new HashSet<Object>();
-        expectedOutput.add(DATASET1);
-        expectedOutput.add(DATASET2);
-
-        assertThat(output.get(USERNAME), equalTo(USERNAME_VAL));
-        assertThat(output.get(AUTHORITIES), equalTo(expectedOutput));
+        assertThat(output.get(USERNAME)).isEqualTo(USERNAME_VAL);
     }
 
     /**
@@ -119,17 +81,29 @@ public class MyUserAuthenticationConverterTest {
      */
     @Test
     public void testExtractAuthentication() {
+        final Map<String, List<String>> authorities = new HashMap<>();
+        final List<String> fileIds = asList(
+                "EGAF00000000001",
+                "EGAF00000000002",
+                "EGAF00000000003",
+                "EGAF00000000004"
+        );
+        authorities.put(DATASET1, fileIds);
+        authorities.put(DATASET2, fileIds);
+
         final Map<String, Object> input = new HashMap<>();
         input.put(USERNAME, USERNAME_VAL);
         input.put(AUTHORITIES, authorities);
-        input.put(DATASET1, Arrays.asList(new String[] { "F1", "F2", "F3", "F4" }));
 
         final CustomUsernamePasswordAuthenticationToken output = (CustomUsernamePasswordAuthenticationToken) myUserAuthenticationConverter
                 .extractAuthentication(input);
 
-        assertThat(output.getPrincipal(), equalTo(user));
-        assertThat(output.getAuthorities(), equalTo(authorities));
-        assertThat(output.getDatasetFileMapping().get(DATASET1), equalTo(input.get(DATASET1)));
+        assertThat(output.getAuthorities())
+                .containsAll(asList(
+                        new SimpleGrantedAuthority(DATASET1),
+                        new SimpleGrantedAuthority(DATASET2)
+                ));
+        assertThat(output.getDatasetFileMapping().get(DATASET1))
+                .isEqualTo(fileIds);
     }
-
 }

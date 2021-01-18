@@ -20,6 +20,10 @@ import eu.elixir.ega.ebi.commons.config.CachingMultipleRemoteTokenService;
 import eu.elixir.ega.ebi.commons.config.CachingRemoteTokenService;
 import eu.elixir.ega.ebi.commons.config.MyAccessTokenConverter;
 import eu.elixir.ega.ebi.commons.config.MyUserAuthenticationConverter;
+import eu.elixir.ega.ebi.commons.shared.service.FileDatasetService;
+import eu.elixir.ega.ebi.commons.shared.service.Ga4ghService;
+import eu.elixir.ega.ebi.commons.shared.service.JWTService;
+import eu.elixir.ega.ebi.commons.shared.service.UserDetailsService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
@@ -90,12 +94,17 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
     // This is a bit of a Hack! MitreID doesn't return 'user_name' but 'user_id', The
     // customized User Authentication Converter simply changes the field name for extraction
     @Bean
-    public AccessTokenConverter accessTokenConverter() {
-        //DefaultAccessTokenConverter myAccessTokenConverter = new DefaultAccessTokenConverter();
-        MyAccessTokenConverter myAccessTokenConverter = new MyAccessTokenConverter();
-        myAccessTokenConverter.setUserTokenConverter(new MyUserAuthenticationConverter());
-        return myAccessTokenConverter;
-        //return new DefaultAccessTokenConverter();
+    public AccessTokenConverter accessTokenConverter(final JWTService jwtService,
+                                                     final Ga4ghService ga4ghService,
+                                                     final FileDatasetService fileDatasetService,
+                                                     final UserDetailsService userDetailsService) {
+        return new MyAccessTokenConverter(
+                jwtService,
+                ga4ghService,
+                fileDatasetService,
+                new MyUserAuthenticationConverter(),
+                userDetailsService
+        );
     }
 
     @Profile("enable-aai")
@@ -108,7 +117,8 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
                                                    final @Value("${auth.server.clientsecret}") String clientSecret,
                                                    final @Value("${auth.zuul.server.url}") String zuulCheckTokenUrl,
                                                    final @Value("${auth.zuul.server.clientId}") String zuulClientId,
-                                                   final @Value("${auth.zuul.server.clientsecret}") String zuulClientSecret) {
+                                                   final @Value("${auth.zuul.server.clientsecret}") String zuulClientSecret,
+                                                   final AccessTokenConverter accessTokenConverter) {
 
         final CachingMultipleRemoteTokenService remoteTokenServices = new CachingMultipleRemoteTokenService();
 
@@ -117,7 +127,7 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
         b.setCheckTokenEndpointUrl(checkTokenUrl);
         b.setClientId(clientId);
         b.setClientSecret(clientSecret);
-        b.setAccessTokenConverter(accessTokenConverter());
+        b.setAccessTokenConverter(accessTokenConverter);
         remoteTokenServices.addRemoteTokenService(b);
 
         // ELIXIR AAI

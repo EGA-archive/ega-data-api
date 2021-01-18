@@ -15,6 +15,14 @@
  */
 package eu.elixir.ega.ebi.commons.config;
 
+import com.nimbusds.jwt.SignedJWT;
+import eu.elixir.ega.ebi.commons.shared.service.FileDatasetService;
+import eu.elixir.ega.ebi.commons.shared.service.Ga4ghService;
+import eu.elixir.ega.ebi.commons.shared.service.JWTService;
+import eu.elixir.ega.ebi.commons.shared.service.UserDetailsService;
+import net.minidev.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.AuthorityUtils;
@@ -26,23 +34,60 @@ import org.springframework.security.oauth2.provider.token.AccessTokenConverter;
 import org.springframework.security.oauth2.provider.token.DefaultUserAuthenticationConverter;
 import org.springframework.security.oauth2.provider.token.UserAuthenticationConverter;
 
+import java.net.URI;
+import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+
+import static java.lang.System.currentTimeMillis;
+import static java.util.Optional.empty;
+import static java.util.Optional.of;
+import static java.util.stream.Collectors.toMap;
 
 /**
  * @author asenf
  */
 public class MyAccessTokenConverter implements AccessTokenConverter {
 
-    private UserAuthenticationConverter userTokenConverter = new DefaultUserAuthenticationConverter();
+    private static final Logger LOGGER = LoggerFactory.getLogger(MyAccessTokenConverter.class);
 
+    private UserAuthenticationConverter userTokenConverter;
     private boolean includeGrantType;
+    private final JWTService jwtService;
+    private final Ga4ghService ga4ghService;
+    private final FileDatasetService fileDatasetService;
+    private final UserDetailsService userDetailsService;
+
+    public MyAccessTokenConverter(final JWTService jwtService,
+                                  final Ga4ghService ga4ghService,
+                                  final FileDatasetService fileDatasetService,
+                                  final UserDetailsService userDetailsService) {
+        this.jwtService = jwtService;
+        this.ga4ghService = ga4ghService;
+        this.fileDatasetService = fileDatasetService;
+        this.userTokenConverter = new DefaultUserAuthenticationConverter();
+        this.userDetailsService = userDetailsService;
+    }
+
+    public MyAccessTokenConverter(final JWTService jwtService,
+                                  final Ga4ghService ga4ghService,
+                                  final FileDatasetService fileDatasetService,
+                                  final UserAuthenticationConverter userTokenConverter,
+                                  final UserDetailsService userDetailsService) {
+        this.jwtService = jwtService;
+        this.ga4ghService = ga4ghService;
+        this.fileDatasetService = fileDatasetService;
+        this.userTokenConverter = userTokenConverter;
+        this.userDetailsService = userDetailsService;
+    }
 
     /**
      * Converter for the part of the data in the token representing a user.
@@ -69,6 +114,7 @@ public class MyAccessTokenConverter implements AccessTokenConverter {
      *
      * @param token The authentication token to convert
      * @param authentication Authentication object to extract information from.
+     *
      * @return A {@link HashMap} of authentication tokens
      */
     public Map<String, ?> convertAccessToken(OAuth2AccessToken token, OAuth2Authentication authentication) {
@@ -113,8 +159,9 @@ public class MyAccessTokenConverter implements AccessTokenConverter {
      * information from 'map'.
      *
      * @param value Value to set in the return authentication token
-     * @param map   An authentication map, such as returned from
-     *              {@link convertAccessToken}
+     * @param map An authentication map, such as returned from
+     *         {@link AccessTokenConverter}
+     *
      * @return Access token containing the combined information
      */
     public OAuth2AccessToken extractAccessToken(String value, Map<String, ?> map) {
@@ -140,18 +187,17 @@ public class MyAccessTokenConverter implements AccessTokenConverter {
      * authentication request.
      *
      * @param map An authentication map, such as returned from
-     *            {@link convertAccessToken}
+     *         {@link AccessTokenConverter}
+     *
      * @return An OAuth2 authentication object
      */
     @Override
     public OAuth2Authentication extractAuthentication(Map<String, ?> map) {
+        final List<String> ga4ghDatasets = ga4ghService.getDatasets(getEGAAccountId(map));
+        final Map<String, List<String>> datasetFileMap = getDatasetFileMap(ga4ghDatasets);
 
-        // Add Dataset Permissions as Roles
-        Map<String, Object> info = new HashMap<>(map);
-        if (info.containsKey("Permissions")) {
-            Object get = info.get("Permissions");
-            info.put(AUTHORITIES, get); // OK - Permissions from AAI Response
-        }
+        final Map<String, Object> info = new HashMap<>(map);
+        info.put(AUTHORITIES, datasetFileMap);
 
         Map<String, String> parameters = new HashMap<>();
         Set<String> scope = extractScope(map);
@@ -174,12 +220,60 @@ public class MyAccessTokenConverter implements AccessTokenConverter {
         return new OAuth2Authentication(request, user);
     }
 
+    private String getEGAAccountId(final Map<String, ?> map) {
+        return userDetailsService
+                .getEGAAccountId((String) map.get("user_id"))
+                .orElseGet(() -> userDetailsService
+                        .getEGAAccountIdForElixirId((String) map.get("sub"))
+                        .orElse(""));
+    }
+
+    private boolean isValidToken(final SignedJWT signedJWT) {
+        try {
+            return new Date(currentTimeMillis())
+                    .before(signedJWT.getJWTClaimsSet().getExpirationTime());
+        } catch (ParseException e) {
+            LOGGER.error("Unable to get JWT token expiration time from=" + e.getMessage(), e);
+        }
+        return false;
+    }
+
+    private Optional<String> getDatasetId(final SignedJWT signedJWT) {
+        try {
+            final JSONObject jsonObject = signedJWT.getJWTClaimsSet().toJSONObject();
+            final JSONObject jsonObjectGa4ghVisa = (JSONObject) jsonObject.get("ga4gh_visa_v1");
+            final String type = jsonObjectGa4ghVisa.getAsString("type");
+            if ("ControlledAccessGrants".equals(type)) {
+                final String uri = URI.create(jsonObjectGa4ghVisa.getAsString("value")).getPath();
+                return of(uri.substring(uri.lastIndexOf("/") + 1));
+            }
+        } catch (ParseException e) {
+            LOGGER.error("Unable to get JWT claims as JSON object=" + e.getMessage(), e);
+        }
+        return empty();
+    }
+
+    private Map<String, List<String>> getDatasetFileMap(final List<String> ga4ghDatasets) {
+        return ga4ghDatasets
+                .parallelStream()
+                .map(jwtService::parse)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .filter(jwtService::isValidSignature)
+                .filter(this::isValidToken)
+                .map(this::getDatasetId)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(toMap(datasetId -> datasetId, fileDatasetService::getFileIds));
+    }
+
     /**
      * Extracts the authentication audience (held in the 'AUD' key) from the
      * given authentication map.
      *
      * @param map An authentication map, such as returned from
-     *            {@link convertAccessToken}
+     *         {@link AccessTokenConverter}
+     *
      * @return The extracted authentication audience
      */
     private Collection<String> getAudience(Map<String, ?> map) {
@@ -197,7 +291,8 @@ public class MyAccessTokenConverter implements AccessTokenConverter {
      * given authentication map.
      *
      * @param map An authentication map, such as returned from
-     *            {@link convertAccessToken}
+     *         {@link AccessTokenConverter}
+     *
      * @return The extracted authentication scope
      */
     private Set<String> extractScope(Map<String, ?> map) {
@@ -214,5 +309,4 @@ public class MyAccessTokenConverter implements AccessTokenConverter {
         }
         return scope;
     }
-
 }
