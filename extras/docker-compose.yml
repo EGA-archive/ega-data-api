@@ -6,12 +6,13 @@ services:
       - "9058:9058"
       - "5059:5059"
     environment:
-      - SPRING_PROFILES_ACTIVE=no-oss,LocalEGA
+      - SPRING_PROFILES_ACTIVE=no-oss,LocalEGA,integration-test
       - server.port=9058
       - JWTKEY=${JWTKEY}
       - FILEDATABASE.listOfServers=filedatabase:9051
       - RES2.listOfServers=resserver:9092
       - KEYSERVER.listOfServers=keyserver:9095
+      - PERMISSIONSDATABASESERVER.listOfServers=dataserver:9054
       - ega.ega.external.url=https://ega.ebi.ac.uk:8051/elixir/data/files/
       - ega.ega.cram.fasta=/homes/ega-prod/ngs_dev/Homo_sapiens_assembly38.fasta
       - ega.ega.cram.fasta.a=/homes/ega-prod/ngs_dev/Homo_sapiens_assembly38.fasta 
@@ -19,6 +20,9 @@ services:
       - ega.internal.filedatabase.url=https://FILEDATABASE
       - ega.internal.res.url=https://RES2
       - ega.internal.key.url=https://KEYSERVER
+      - ega.aai.proxy.url=https://ega.ebi.ac.uk:8053/ega-openid-connect-server
+      - ega.aai.proxy.basic-authorization=test-auth
+      - ega.internal.data.url=http://PERMISSIONSDATABASE
     volumes:
       - "$TRAVIS_BUILD_DIR/extras/certificate/rootCA.pem:/etc/ssl/certs/ca-certificates.crt"   
       - "$TRAVIS_BUILD_DIR/extras/certificate/server.p12:/dataedge.p12"               

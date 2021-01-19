@@ -228,6 +228,20 @@ public class MyAccessTokenConverter implements AccessTokenConverter {
                         .orElse(""));
     }
 
+    private Map<String, List<String>> getDatasetFileMap(final List<String> ga4ghDatasets) {
+        return ga4ghDatasets
+                .parallelStream()
+                .map(jwtService::parse)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .filter(jwtService::isValidSignature)
+                .filter(this::isValidToken)
+                .map(this::getDatasetId)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(toMap(datasetId -> datasetId, fileDatasetService::getFileIds));
+    }
+
     private boolean isValidToken(final SignedJWT signedJWT) {
         try {
             return new Date(currentTimeMillis())
@@ -251,20 +265,6 @@ public class MyAccessTokenConverter implements AccessTokenConverter {
             LOGGER.error("Unable to get JWT claims as JSON object=" + e.getMessage(), e);
         }
         return empty();
-    }
-
-    private Map<String, List<String>> getDatasetFileMap(final List<String> ga4ghDatasets) {
-        return ga4ghDatasets
-                .parallelStream()
-                .map(jwtService::parse)
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .filter(jwtService::isValidSignature)
-                .filter(this::isValidToken)
-                .map(this::getDatasetId)
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .collect(toMap(datasetId -> datasetId, fileDatasetService::getFileIds));
     }
 
     /**

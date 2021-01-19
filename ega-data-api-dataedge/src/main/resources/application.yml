@@ -22,6 +22,9 @@ RES2:
 KEYSERVER:
   listOfServers: ${KEYS_SERVERS:keys}
 
+PERMISSIONSDATABASESERVER:
+  listOfServers: ${PERMISSIONS_DATABASE_SERVER:data}
+
 
 ega.ega.external.url:
 ega.ega.cram.fasta.a:
@@ -46,3 +49,7 @@ res:
       header: 4096
       data: 20971520
       index: 1048576
+
+# EGA AAI proxy config
+ega.aai.proxy.url:
+ega.aai.proxy.basic-authorization:

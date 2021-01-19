@@ -17,6 +17,11 @@
  */
 package eu.elixir.ega.ebi.dataedge.config;
 
+import com.nimbusds.jose.jwk.JWKSet;
+import eu.elixir.ega.ebi.commons.config.CachingMultipleRemoteTokenService;
+import eu.elixir.ega.ebi.commons.config.CachingRemoteTokenService;
+import eu.elixir.ega.ebi.commons.config.MyAccessTokenConverter;
+import eu.elixir.ega.ebi.commons.config.MyUserAuthenticationConverter;
 import eu.elixir.ega.ebi.commons.shared.service.FileDatasetService;
 import eu.elixir.ega.ebi.commons.shared.service.Ga4ghService;
 import eu.elixir.ega.ebi.commons.shared.service.JWTService;
@@ -28,11 +33,20 @@ import eu.elixir.ega.ebi.commons.shared.service.internal.UserDetailsServiceImpl;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Profile;
+import org.springframework.core.annotation.Order;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.security.oauth2.provider.token.AccessTokenConverter;
+import org.springframework.security.oauth2.provider.token.RemoteTokenServices;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
@@ -67,6 +81,7 @@ public class DataEdgeConfig {
         );
     }
 
+    @Profile("!integration-test")
     @Bean
     public JWTService initJWTServiceImpl(@Value("${ega.aai.public.jwk.url}") final String jwkPublicKeyURL,
                                          @Value("${ega.aai.public.jwk.connection-timeout}") final int connectTimeout,
@@ -83,6 +98,12 @@ public class DataEdgeConfig {
                 keyId);
     }
 
+    @Profile("integration-test")
+    @Bean
+    public JWTService initJWTServiceImplIntegrationTest() {
+        return new JWTServiceImpl(new JWKSet(), "rsa1");
+    }
+
     @Bean
     public FileDatasetService initFileDatasetServiceImpl(final RestTemplate restTemplate) {
         return new FileDatasetServiceImpl(restTemplate);
@@ -91,5 +112,91 @@ public class DataEdgeConfig {
     @Bean
     public UserDetailsService initUserDetailsServiceImpl(final RestTemplate restTemplate) {
         return new UserDetailsServiceImpl(restTemplate);
+    }
+
+    /**
+     * This is a bit of a Hack! MitreID doesn't return 'user_name' but 'user_id',
+     * The customized User Authentication Converter simply changes the field name
+     * for extraction.
+     *
+     * @return The converted access token
+     */
+    @Bean
+    public AccessTokenConverter accessTokenConverter(final JWTService jwtService,
+                                                     final Ga4ghService ga4ghService,
+                                                     final FileDatasetService fileDatasetService,
+                                                     final UserDetailsService userDetailsService) {
+        return new MyAccessTokenConverter(
+                jwtService,
+                ga4ghService,
+                fileDatasetService,
+                new MyUserAuthenticationConverter(),
+                userDetailsService
+        );
+    }
+
+    /**
+     * Creates a combined token service including both EGA AAI and Elixir AAI
+     * authentication.
+     *
+     * @param request Unused
+     * @param checkTokenUrl EGA AAI token endpoint url
+     * @param clientId Client id for the EGA AAI
+     * @param clientSecret Client secret for the EGA AAI
+     * @param zuulCheckTokenUrl Elixir token endpoint url
+     * @param zuulClientId Elixir AAI ID
+     * @param zuulClientSecret Elixir AAI client
+     *
+     * @return A combined authentication token service
+     */
+    @Profile("enable-aai")
+    @Primary
+    @Bean
+    public RemoteTokenServices remoteTokenServices(HttpServletRequest request,
+                                                   final @Value("${auth.server.url}") String checkTokenUrl,
+                                                   final @Value("${auth.server.clientId}") String clientId,
+                                                   final @Value("${auth.server.clientsecret}") String clientSecret,
+                                                   final @Value("${auth.zuul.server.url}") String zuulCheckTokenUrl,
+                                                   final @Value("${auth.zuul.server.clientId}") String zuulClientId,
+                                                   final @Value("${auth.zuul.server.clientsecret}") String zuulClientSecret,
+                                                   final AccessTokenConverter accessTokenConverter) {
+
+        final CachingMultipleRemoteTokenService remoteTokenServices = new CachingMultipleRemoteTokenService();
+
+        // EGA AAI
+        CachingRemoteTokenService b = new CachingRemoteTokenService();
+        b.setCheckTokenEndpointUrl(checkTokenUrl);
+        b.setClientId(clientId);
+        b.setClientSecret(clientSecret);
+        b.setAccessTokenConverter(accessTokenConverter);
+        remoteTokenServices.addRemoteTokenService(b);
+
+        // ELIXIR AAI
+        CachingRemoteTokenService a = new CachingRemoteTokenService();
+        a.setCheckTokenEndpointUrl(zuulCheckTokenUrl);
+        a.setClientId(zuulClientId);
+        a.setClientSecret(zuulClientSecret);
+        a.setAccessTokenConverter(accessTokenConverter);
+        remoteTokenServices.addRemoteTokenService(a);
+
+        return remoteTokenServices;
+    }
+
+    /**
+     * Sets CORS headers to allow all methods and all hosts.
+     *
+     * @return CORSfilter
+     */
+    @Bean
+    @Order(0)
+    public CorsFilter corsFilter() {
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowCredentials(true);
+        config.addAllowedOrigin("*");
+        config.addAllowedHeader("*");
+        config.addAllowedMethod("*");
+        source.registerCorsConfiguration("/**", config);
+        return new CorsFilter(source);
     }
 }
