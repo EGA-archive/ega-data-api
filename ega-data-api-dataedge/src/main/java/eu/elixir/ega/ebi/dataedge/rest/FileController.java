@@ -15,29 +15,39 @@
  */
 package eu.elixir.ega.ebi.dataedge.rest;
 
-import com.google.common.base.Strings;
-
-import eu.elixir.ega.ebi.commons.exception.InvalidAuthenticationException;
+import eu.elixir.ega.ebi.commons.exception.NotFoundException;
 import eu.elixir.ega.ebi.commons.shared.service.AuthenticationService;
+import eu.elixir.ega.ebi.commons.shared.service.PermissionsService;
+import eu.elixir.ega.ebi.dataedge.exception.EgaFileNotFoundException;
+import eu.elixir.ega.ebi.dataedge.exception.FileNotAvailableException;
+import eu.elixir.ega.ebi.dataedge.exception.RangesNotSatisfiableException;
+import eu.elixir.ega.ebi.dataedge.exception.UnretrievableFileException;
+import eu.elixir.ega.ebi.dataedge.service.NuFileService;
 import lombok.extern.slf4j.Slf4j;
-import eu.elixir.ega.ebi.dataedge.service.FileService;
+import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.List;
+import java.io.InputStream;
+import java.util.UUID;
 
-import static org.springframework.web.bind.annotation.RequestMethod.*;
+import static com.google.common.base.Strings.isNullOrEmpty;
+import static org.springframework.web.bind.annotation.RequestMethod.GET;
+import static org.springframework.web.bind.annotation.RequestMethod.HEAD;
 
-/**
- * @author asenf
- */
 @RestController
 @EnableDiscoveryClient
 @Slf4j
@@ -45,266 +55,79 @@ import static org.springframework.web.bind.annotation.RequestMethod.*;
 public class FileController {
 
     @Autowired
-    private FileService fileService;
+    private AuthenticationService authenticationService;
 
     @Autowired
-    private AuthenticationService authenticationService;
+    private PermissionsService permissionsService;
+
+    @Autowired
+    private NuFileService nuFileService;
 
     /**
      * Writes a requested file, or part of file from the FileService to the supplied
      * response stream.
-     *
-
-     */
-
-    /**
-     *
-     * @param fileId            ELIXIR id of the requested file.
-     * @param destinationFormat Requested destination format, either 'plain', 'aes',
-     *                          or file extension.
-     * @param destinationKey    Encryption key that the result file will be
-     *                          encrypted with.
-     * @param destinationIV     Initialization Vector for for destination file, used
-     *                          when requesting a partial AES encrypted file.
-     * @param startCoordinate   Start coordinate when requesting a partial file.
-     * @param endCoordinate     End coordinate when requesting a partial file.
-     * @param range
-     * @param request           Unused.
-     * @param response          Response stream for the returned data.
      */
     @RequestMapping(value = "/{fileId}", method = GET)
-    public void getFile(@PathVariable String fileId,
-                        @RequestParam(value = "destinationFormat", required = false, defaultValue = "plain") String destinationFormat,
-                        @RequestParam(value = "destinationKey", required = false, defaultValue = "") String destinationKey,
-                        @RequestParam(value = "destinationIV", required = false) String destinationIV,
-                        @RequestParam(value = "startCoordinate", required = false, defaultValue = "0") long startCoordinate,
-                        @RequestParam(value = "endCoordinate", required = false, defaultValue = "0") long endCoordinate,
-                        @RequestHeader(value = "Range", required = false, defaultValue = "") String range,
-                        HttpServletRequest request,
-                        HttpServletResponse response) {
-		String sessionId= Strings.isNullOrEmpty(request.getHeader("Session-Id"))? "" : request.getHeader("Session-Id") + " ";
-		log.info(sessionId + "Get file request started");
-		
-        if (range.length() > 0 && range.startsWith("bytes=") && startCoordinate == 0 && endCoordinate == 0) {
-            String[] ranges = range.substring("bytes=".length()).split("-");
-            startCoordinate = Long.valueOf(ranges[0]);
-            endCoordinate = Long.valueOf(ranges[1]) + 1; // translate into exclusive end coordinate
-        }
+    public ResponseEntity<StreamingResponseBody> getFile(@PathVariable String fileId,
+                                                         @RequestHeader(value = "Range", required = false, defaultValue = "") String range,
+                                                         @RequestHeader(value = "Session-Id", required = false, defaultValue = "<no session id>") String sessionId)
+            throws EgaFileNotFoundException, FileNotAvailableException, UnretrievableFileException, RangesNotSatisfiableException {
 
-        fileService.getFile(fileId,
-                destinationFormat,
-                destinationKey,
-                destinationIV,
-                startCoordinate,
-                endCoordinate,
-                request,
-                response);
+        log.info(sessionId + " Get file request started");
+
+        Authentication auth = authenticationService.getAuthentication();
+        if (!auth.isAuthenticated())
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 
         try {
-            response.flushBuffer();
-        } catch (IOException ex) {
-            log.error(sessionId + ex.getMessage(), ex);
+            permissionsService.getFilePermissionsEntity(fileId);
+        } catch (NotFoundException e) {
+            throw new EgaFileNotFoundException(fileId, e);
         }
+
+        long startCoordinate;
+        long endCoordinate;
+
+        long plainFileSize = nuFileService.getPlainFileSize(fileId);
+
+        if (range.length() > 0 && range.startsWith("bytes=")) {
+            String[] ranges = range.substring("bytes=".length()).split("-");
+            startCoordinate = Long.parseLong(ranges[0]);
+            endCoordinate = Long.parseLong(ranges[1]);
+        } else {
+            startCoordinate = 0;
+            endCoordinate = plainFileSize - 1;
+        }
+
+        InputStream stream = nuFileService.getSpecificByteRange(fileId, startCoordinate, endCoordinate);
+
+        long contentLength = endCoordinate - startCoordinate + 1;
+        HttpStatus status = (contentLength < plainFileSize) ? HttpStatus.PARTIAL_CONTENT : HttpStatus.OK;
+
+        return ResponseEntity.status(status)
+                .contentLength(contentLength)
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(outputStream -> IOUtils.copy(stream, outputStream));
     }
 
     /**
      * Returns the http header for a file identified by fileId. This mainly includes
      * the content length, but also a random UUID for statistics.
      *
-     * @param fileId            ELIXIR id of the requested file
-     * @param destinationFormat Requested destination format.
-     * @param request           Unused.
-     * @param response          Response stream for the returned data.
+     * @param fileId ELIXIR id of the requested file
      */
     @RequestMapping(value = "/{fileId}", method = HEAD)
-    public void getFileHead(@PathVariable String fileId,
-                            @RequestParam(value = "destinationFormat", required = false, defaultValue = "aes128") String destinationFormat,
-                            HttpServletRequest request,
-                            HttpServletResponse response) {
+    public ResponseEntity<?> getFileHead(@PathVariable String fileId)
+            throws EgaFileNotFoundException, FileNotAvailableException, UnretrievableFileException {
 
-        fileService.getFileHead(fileId,
-                destinationFormat,
-                request,
-                response);
-    }
+        long plainFileSize = nuFileService.getPlainFileSize(fileId);
 
-    /**
-     * Experimental - Return a BAM Header.
-     *
-     * @param fileId            ELIXIR id of the requested file.
-     * @param destinationFormat Requested destination format.
-     * @param destinationKey    Encryption key that the result file will be
-     *                          encrypted with.
-     * @return The BAM file header for the file.
-     */
-    @RequestMapping(value = "/{fileId}/header", method = GET)
-    public Object getFileHeader(@PathVariable String fileId,
-                                @RequestParam(value = "destinationFormat", required = false, defaultValue = "aes128") String destinationFormat,
-                                @RequestParam(value = "destinationKey", required = false, defaultValue = "") String destinationKey) {
-
-        return fileService.getFileHeader(fileId,
-                destinationFormat,
-                destinationKey,
-                null);  // This by default makes it BAM
-
-    }
-
-    /**
-     *
-     * @param response
-     */
-    @RequestMapping(value = "/byid/{type}", method = OPTIONS)
-    public void getById_(HttpServletResponse response) {
-        response.addHeader("Access-Control-Request-Method", "GET");
-    }
-
-    // {id} -- 'file', 'sample', 'run', ...
-    /**
-     * Writes a requested file (or part of file), selected by accession, from the
-     * FileService to the supplied response stream.
-     *
-     * @param type              Should be set to 'file'.
-     * @param accession         Local accession ID of the requested file.
-     * @param format            Requested file format. Either 'bam' or 'cram' (case
-     *                          insensitive).
-     * @param reference         FASTA reference name, required for selecting a
-     *                          region with start and end.
-     * @param start             Start coordinate when requesting a partial file.
-     * @param end               End coordinate when requesting a partial file.
-     * @param fields            Data fields to include in the output file.
-     * @param tags              Data tags to include in the output file.
-     * @param notags            Data tags to exclude from the output file.
-     * @param header            Unused.
-     * @param destinationFormat Requested destination format.
-     * @param destinationKey    Unused.
-     * @param request           Unused.
-     * @param response          Response stream for the returned data.
-     */
-    @RequestMapping(value = "/byid/{type}", method = GET)
-    @ResponseBody
-    public void getById(@PathVariable String type,
-                        @RequestParam(value = "accession") String accession,
-                        @RequestParam(value = "format", required = false, defaultValue = "bam") String format,
-                        @RequestParam(value = "chr", required = false, defaultValue = "") String reference,
-                        @RequestParam(value = "start", required = false, defaultValue = "0") long start,
-                        @RequestParam(value = "end", required = false, defaultValue = "0") long end,
-                        @RequestParam(value = "fields", required = false) List<String> fields,
-                        @RequestParam(value = "tags", required = false) List<String> tags,
-                        @RequestParam(value = "notags", required = false) List<String> notags,
-                        @RequestParam(value = "header", required = false, defaultValue = "true") Boolean header,
-                        @RequestParam(value = "destinationFormat", required = false, defaultValue = "plain") String destinationFormat,
-                        @RequestParam(value = "destinationKey", required = false, defaultValue = "") String destinationKey,
-                        HttpServletRequest request,
-                        HttpServletResponse response) {
-        Authentication auth = authenticationService.getAuthentication();
-        if (auth == null) {
-            throw new InvalidAuthenticationException(accession);
-        }
-        fileService.getById(type,
-                accession,
-                format,
-                reference,
-                start,
-                end,
-                fields,
-                tags,
-                notags,
-                header,
-                destinationFormat,
-                destinationKey,
-                request,
-                response);
-    }
-
-    /**
-     *
-     * @param response
-     */
-    @RequestMapping(value = "/variant/byid/{type}", method = OPTIONS)
-    public void getByVariantId_(HttpServletResponse response) {
-        response.addHeader("Access-Control-Request-Method", "GET");
-    }
-
-    /**
-     * Writes a requested file (or part of file), selected by accession, from the
-     * FileService to the supplied response stream.
-     *
-     * @param type              Should be set to 'file'.
-     * @param accession         Local accession ID of the requested file.
-     * @param format            Unused.
-     * @param reference         FASTA reference name, required for selecting a
-     *                          region with start and end.
-     * @param start             Start coordinate when requesting a partial file.
-     * @param end               End coordinate when requesting a partial file.
-     * @param fields            Data fields to include in the output file.
-     * @param tags              Data tags to include in the output file.
-     * @param notags            Data tags to exclude from the output file.
-     * @param header            Unused.
-     * @param destinationFormat Requested destination format.
-     * @param destinationKey    Unused.
-     * @param request           Unused.
-     * @param response          Response stream for the returned data.
-     */
-    @RequestMapping(value = "/variant/byid/{type}", method = GET)
-    @ResponseBody
-    public void getByVariantId(@PathVariable String type,
-                               @RequestParam(value = "accession") String accession,
-                               @RequestParam(value = "format", required = false, defaultValue = "vcf") String format,
-                               @RequestParam(value = "chr", required = false, defaultValue = "") String reference,
-                               @RequestParam(value = "start", required = false, defaultValue = "0") long start,
-                               @RequestParam(value = "end", required = false, defaultValue = "0") long end,
-                               @RequestParam(value = "fields", required = false) List<String> fields,
-                               @RequestParam(value = "tags", required = false) List<String> tags,
-                               @RequestParam(value = "notags", required = false) List<String> notags,
-                               @RequestParam(value = "header", required = false, defaultValue = "true") Boolean header,
-                               @RequestParam(value = "destinationFormat", required = false, defaultValue = "plain") String destinationFormat,
-                               @RequestParam(value = "destinationKey", required = false, defaultValue = "") String destinationKey,
-                               HttpServletRequest request,
-                               HttpServletResponse response) {
-        Authentication auth = authenticationService.getAuthentication();
-        if (auth == null) {
-            throw new InvalidAuthenticationException(accession);
-        }
-        fileService.getVCFById(type,
-                accession,
-                format,
-                reference,
-                start,
-                end,
-                fields,
-                tags,
-                notags,
-                header,
-                destinationFormat,
-                destinationKey,
-                request,
-                response);
-    }
-
-    /**
-     * Writes the content length of a selected file to the reponse parameter, and
-     * returns OK or UNAUTHORIZED wheather the file exists and can be accessible.
-     *
-     * @param fileId    should be "file".
-     * @param accession accession id of the requested file.
-     * @param request   Unused.
-     * @param response  reponse object which will be modified with the content
-     *                  length of the requested file head.
-     * @return httpStatus OK if the file info was accessible, and the reponse was
-     *         modified, otherwise UNAUTHORIZED.
-     */
-    @RequestMapping(value = "/byid/{type}", method = HEAD)
-    @ResponseBody
-    public ResponseEntity getHeadById(@PathVariable String type,
-                                      @RequestParam(value = "accession") String accession,
-                                      HttpServletRequest request,
-                                      HttpServletResponse response) {
-        Authentication auth = authenticationService.getAuthentication();
-        if (auth == null) {
-            throw new InvalidAuthenticationException(accession);
-        }
-
-        return fileService.getHeadById(type, accession, request, response);
+        return ResponseEntity.status(HttpStatus.OK)
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .contentLength(plainFileSize)
+                .header("X-Content-Length", Long.toString(plainFileSize))
+                .header("X-Session", UUID.randomUUID().toString())
+                .build();
     }
 
     /**
@@ -317,4 +140,42 @@ public class FileController {
         return new ResponseEntity(HttpStatus.OK);
     }
 
+    @ExceptionHandler
+    public ResponseEntity<?> handleEgaFileNotFoundException(EgaFileNotFoundException exception) {
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<?> handleUnretrievableFileException(UnretrievableFileException exception, HttpServletRequest request) {
+        String sessionID = request.getHeader("Session-Id");
+        if (isNullOrEmpty(sessionID))
+            sessionID = "<no session ID>";
+        log.error(String.format("%s %s", sessionID, exception.getMessage()), exception);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<?> handleFileNotAvailableException(FileNotAvailableException exception, HttpServletRequest request) {
+        String sessionID = request.getHeader("Session-Id");
+        if (isNullOrEmpty(sessionID))
+            sessionID = "<no session ID>";
+        log.error(String.format("%s %s", sessionID, exception.getMessage()), exception);
+        return new ResponseEntity<>(HttpStatus.UNAVAILABLE_FOR_LEGAL_REASONS);
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<?> handleRangesNotSatisfiableException(RangesNotSatisfiableException exception) {
+        return new ResponseEntity<>(HttpStatus.REQUESTED_RANGE_NOT_SATISFIABLE);
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<?> handleIOException(IOException exception, HttpServletRequest request) {
+
+        String sessionID = request.getHeader("Session-Id");
+        if (isNullOrEmpty(sessionID))
+            sessionID = "<no session ID>";
+        log.error(String.format("%s %s", sessionID, exception.getMessage()), exception);
+
+        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+    }
 }

@@ -148,7 +148,10 @@ public class EBINuFileService implements NuFileService {
                 ENCRYPTION_AES128.equals(algorithm) ? 128 : 256);
 
         byte[] header = aesHeaderCache.get(file.getDisplayFilePath());
-        assert header != null;
+        if (header == null) {
+            aesHeaderCache.invalidate(file.getDisplayFilePath());
+            throw new FireServiceException("Failed to get AES header from cache, probably we could not connect to Fire", null);
+        }
 
         // update the IV for where we are in the file
         if (fireStartByte > 0) {
