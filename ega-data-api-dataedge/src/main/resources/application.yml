@@ -12,6 +12,9 @@ endpoints.refresh.enabled: false
 # Used when a custom token is generated and we have an ASCII encoded key
 security.oauth2.resource.jwt.key-value: ${JWTKEY}
 
+fire.user: testUser
+fire.password: testPassword
+fire.url: testFireUrl
 
 FILEDATABASE:
   listOfServers: ${FILEDATABASE_SERVERS:filedatabase}
@@ -28,6 +31,11 @@ ega.ega.cram.fasta.a:
 ega.ega.cram.fasta.b:
 spring.oauth2.resource.preferTokenInfo: false
 spring.oauth2.resource.userInfoUri:
+
+httpclient.connection.buffer-size: 4096
+httpclient.connection.timeout: 5
+httpclient.connection.max-total: 50
+httpclient.connection.default-max-per-route: 50
 
 server.ssl.key-store-type: ${KEY_STORE_TYPE:PKCS12}
 server.ssl.key-store: ${KEY_STORE:/dataedge.p12}

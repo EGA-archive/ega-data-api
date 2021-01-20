@@ -16,12 +16,7 @@
 package eu.elixir.ega.ebi.reencryptionmvc.service;
 
 import eu.elixir.ega.ebi.reencryptionmvc.dto.KeyPath;
-import org.apache.commons.codec.DecoderException;
-import org.bouncycastle.openpgp.PGPException;
-import org.bouncycastle.openpgp.PGPPublicKey;
 import org.springframework.cache.annotation.Cacheable;
-
-import java.io.IOException;
 
 /**
  * @author asenf
@@ -37,4 +32,5 @@ public interface KeyService {
 
     String getPrivateKey(String id);
 
+    String getEncryptionAlgorithm(String id);
 }
