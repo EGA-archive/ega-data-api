@@ -164,20 +164,20 @@ public class DataEdgeConfig {
         final CachingMultipleRemoteTokenService remoteTokenServices = new CachingMultipleRemoteTokenService();
 
         // EGA AAI
-        CachingRemoteTokenService b = new CachingRemoteTokenService();
-        b.setCheckTokenEndpointUrl(checkTokenUrl);
-        b.setClientId(clientId);
-        b.setClientSecret(clientSecret);
-        b.setAccessTokenConverter(accessTokenConverter);
-        remoteTokenServices.addRemoteTokenService(b);
+        CachingRemoteTokenService egaAAICachingRemoteTokenService = new CachingRemoteTokenService();
+        egaAAICachingRemoteTokenService.setCheckTokenEndpointUrl(checkTokenUrl);
+        egaAAICachingRemoteTokenService.setClientId(clientId);
+        egaAAICachingRemoteTokenService.setClientSecret(clientSecret);
+        egaAAICachingRemoteTokenService.setAccessTokenConverter(accessTokenConverter);
+        remoteTokenServices.addRemoteTokenService(egaAAICachingRemoteTokenService);
 
         // ELIXIR AAI
-        CachingRemoteTokenService a = new CachingRemoteTokenService();
-        a.setCheckTokenEndpointUrl(zuulCheckTokenUrl);
-        a.setClientId(zuulClientId);
-        a.setClientSecret(zuulClientSecret);
-        a.setAccessTokenConverter(accessTokenConverter);
-        remoteTokenServices.addRemoteTokenService(a);
+        CachingRemoteTokenService elixirAAICachingRemoteTokenService = new CachingRemoteTokenService();
+        elixirAAICachingRemoteTokenService.setCheckTokenEndpointUrl(zuulCheckTokenUrl);
+        elixirAAICachingRemoteTokenService.setClientId(zuulClientId);
+        elixirAAICachingRemoteTokenService.setClientSecret(zuulClientSecret);
+        elixirAAICachingRemoteTokenService.setAccessTokenConverter(accessTokenConverter);
+        remoteTokenServices.addRemoteTokenService(elixirAAICachingRemoteTokenService);
 
         return remoteTokenServices;
     }
