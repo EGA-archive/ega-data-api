@@ -48,6 +48,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import static java.lang.System.currentTimeMillis;
+import static java.util.Collections.emptyList;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.stream.Collectors.toMap;
@@ -193,7 +194,16 @@ public class MyAccessTokenConverter implements AccessTokenConverter {
      */
     @Override
     public OAuth2Authentication extractAuthentication(Map<String, ?> map) {
-        final List<String> ga4ghDatasets = ga4ghService.getDatasets(getEGAAccountId(map));
+
+        final List<String> ga4ghDatasets;
+        final String egaAccountId = getEGAAccountId(map);
+
+        if (egaAccountId != null) {
+            ga4ghDatasets = ga4ghService.getDatasets(egaAccountId);
+        } else {
+            ga4ghDatasets = emptyList();
+        }
+
         final Map<String, List<String>> datasetFileMap = getDatasetFileMap(ga4ghDatasets);
 
         final Map<String, Object> info = new HashMap<>(map);
@@ -225,7 +235,7 @@ public class MyAccessTokenConverter implements AccessTokenConverter {
                 .getEGAAccountId((String) map.get("user_id"))
                 .orElseGet(() -> userDetailsService
                         .getEGAAccountIdForElixirId((String) map.get("sub"))
-                        .orElse(""));
+                        .orElse(null));
     }
 
     private Map<String, List<String>> getDatasetFileMap(final List<String> ga4ghDatasets) {
