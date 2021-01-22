@@ -24,15 +24,16 @@ import org.springframework.security.oauth2.provider.token.UserAuthenticationConv
 import org.springframework.util.StringUtils;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import static java.util.Collections.emptyMap;
+
 /**
  * @author asenf
- * <p>
- * Changed field from USERNAME to 'user_id' - looking for a fix in MiterID directly!
+ *         <p>
+ *         Changed field from USERNAME to 'user_id' - looking for a fix in MiterID directly!
  */
 public class MyUserAuthenticationConverter implements UserAuthenticationConverter {
 
@@ -73,48 +74,40 @@ public class MyUserAuthenticationConverter implements UserAuthenticationConverte
         return response;
     }
 
+    @SuppressWarnings("unchecked")
+    @Override
     public Authentication extractAuthentication(Map<String, ?> map) {
         if (map.containsKey(USERNAME)) {
             Object principal = map.get(USERNAME);
-            Collection<? extends GrantedAuthority> authorities = getAuthorities(map);
-            Map<String,  List<String>> datasetFileMapping = getdatasetFileMapping(map, authorities);
+
+            Map<String, List<String>> datasetFileMapping;
+            Collection<? extends GrantedAuthority> authorities;
+
+            if (map.containsKey(AUTHORITIES)) {
+                datasetFileMapping = (Map<String, List<String>>) map.get(AUTHORITIES);
+                authorities = getAuthorities(datasetFileMapping.keySet());
+            } else {
+                authorities = defaultAuthorities;
+                datasetFileMapping = emptyMap();
+            }
+
             if (userDetailsService != null) {
                 UserDetails user = userDetailsService.loadUserByUsername((String) map.get(USERNAME));
                 authorities = user.getAuthorities();
                 principal = user;
             }
-            return new CustomUsernamePasswordAuthenticationToken(principal, "N/A", authorities, datasetFileMapping);
+            return new CustomUsernamePasswordAuthenticationToken(
+                    principal,
+                    "N/A",
+                    authorities,
+                    datasetFileMapping
+            );
         }
         return null;
     }
 
-    private Collection<? extends GrantedAuthority> getAuthorities(Map<String, ?> map) {
-        if (!map.containsKey(AUTHORITIES)) {
-            return defaultAuthorities;
-        }
-        Object authorities = map.get(AUTHORITIES);
-        if (authorities instanceof String) {
-            return AuthorityUtils.commaSeparatedStringToAuthorityList((String) authorities);
-        }
-        if (authorities instanceof Collection) {
-            return AuthorityUtils.commaSeparatedStringToAuthorityList(StringUtils
-                    .collectionToCommaDelimitedString((Collection<?>) authorities));
-        }
-        throw new IllegalArgumentException("Authorities must be either a String or a Collection");
+    private Collection<? extends GrantedAuthority> getAuthorities(Collection<?> authorities) {
+        return AuthorityUtils.commaSeparatedStringToAuthorityList(StringUtils
+                .collectionToCommaDelimitedString(authorities));
     }
-
-    private Map<String, List<String>> getdatasetFileMapping(Map<String, ?> map,
-            Collection<? extends GrantedAuthority> authorities) {
-        Map<String, List<String>> datasetFileMappings = new HashMap<>();
-        if (authorities != null && authorities.size() > 0) {
-            for (GrantedAuthority grantedAuthority : authorities) {
-                String dataSetId = grantedAuthority.getAuthority();
-                if (map.containsKey(dataSetId)) {
-                    datasetFileMappings.put(dataSetId, (List<String>) map.get(dataSetId));
-                }
-            }
-        }
-        return datasetFileMappings;
-    }
-
 }

@@ -15,19 +15,25 @@ public class Constants {
 
     public static String KEYS_SERVICE;
 
+    public static String DATA_SERVICE;
+
     @Value("${ega.internal.filedatabase.url}")
     public void setFileDatabaseService(String filedburl) {
         FILEDATABASE_SERVICE = filedburl;
     }
-    
+
     @Value("${ega.internal.res.url}")
     public void setKeyService(String resurl) {
         RES_SERVICE = resurl;
     }
-    
+
     @Value("${ega.internal.key.url}")
     public void setResService(String keyurl) {
         KEYS_SERVICE = keyurl;
-    } 
+    }
 
+    @Value("${ega.internal.data.url}")
+    public void setDataService(final String dataServiceURL) {
+        DATA_SERVICE = dataServiceURL;
+    }
 }

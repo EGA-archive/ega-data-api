@@ -19,6 +19,10 @@ import eu.elixir.ega.ebi.commons.config.CachingMultipleRemoteTokenService;
 import eu.elixir.ega.ebi.commons.config.CachingRemoteTokenService;
 import eu.elixir.ega.ebi.commons.config.MyAccessTokenConverter;
 import eu.elixir.ega.ebi.commons.config.MyUserAuthenticationConverter;
+import eu.elixir.ega.ebi.commons.shared.service.FileDatasetService;
+import eu.elixir.ega.ebi.commons.shared.service.Ga4ghService;
+import eu.elixir.ega.ebi.commons.shared.service.JWTService;
+import eu.elixir.ega.ebi.commons.shared.service.UserDetailsService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
@@ -72,6 +76,7 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
      * be disabled.
      *
      * @param http
+     *
      * @return
      */
     @Override
@@ -104,81 +109,4 @@ public class OAuth2ResourceConfig extends ResourceServerConfigurerAdapter {
                 .and()
                 .csrf().disable();
     }
-
-    /**
-     * This is a bit of a Hack! MitreID doesn't return 'user_name' but 'user_id',
-     * The customized User Authentication Converter simply changes the field name
-     * for extraction.
-     *
-     * @return The converted access token
-     */
-    @Bean
-    public AccessTokenConverter accessTokenConverter() {
-        MyAccessTokenConverter myAccessTokenConverter = new MyAccessTokenConverter();
-        myAccessTokenConverter.setUserTokenConverter(new MyUserAuthenticationConverter());
-        return myAccessTokenConverter;
-    }
-
-    /**
-     * Creates a combined token service including both EGA AAI and Elixir AAI
-     * authentication.
-     *
-     * @param request Unused
-     * @param checkTokenUrl EGA AAI token endpoint url
-     * @param clientId Client id for the EGA AAI
-     * @param clientSecret Client secret for the EGA AAI
-     * @param zuulCheckTokenUrl Elixir token endpoint url
-     * @param zuulClientId Elixir AAI ID
-     * @param zuulClientSecret Elixir AAI client
-     * @return A combined authentication token service
-     */
-    @Profile("enable-aai")
-    @Primary
-    @Bean
-    public RemoteTokenServices remoteTokenServices(HttpServletRequest request,
-                                                   final @Value("${auth.server.url}") String checkTokenUrl,
-                                                   final @Value("${auth.server.clientId}") String clientId,
-                                                   final @Value("${auth.server.clientsecret}") String clientSecret,
-                                                   final @Value("${auth.zuul.server.url}") String zuulCheckTokenUrl,
-                                                   final @Value("${auth.zuul.server.clientId}") String zuulClientId,
-                                                   final @Value("${auth.zuul.server.clientsecret}") String zuulClientSecret) {
-
-        final CachingMultipleRemoteTokenService remoteTokenServices = new CachingMultipleRemoteTokenService();
-
-        // EGA AAI
-        CachingRemoteTokenService b = new CachingRemoteTokenService();
-        b.setCheckTokenEndpointUrl(checkTokenUrl);
-        b.setClientId(clientId);
-        b.setClientSecret(clientSecret);
-        b.setAccessTokenConverter(accessTokenConverter());
-        remoteTokenServices.addRemoteTokenService(b);
-
-        // ELIXIR AAI
-        CachingRemoteTokenService a = new CachingRemoteTokenService();
-        a.setCheckTokenEndpointUrl(zuulCheckTokenUrl);
-        a.setClientId(zuulClientId);
-        a.setClientSecret(zuulClientSecret);
-        remoteTokenServices.addRemoteTokenService(a);
-
-        return remoteTokenServices;
-    }
-
-    /**
-     * Sets CORS headers to allow all methods and all hosts.
-     *
-     * @return CORSfilter
-     */
-    @Bean
-    @Order(0)
-    public CorsFilter corsFilter() {
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        CorsConfiguration config = new CorsConfiguration();
-        config.setAllowCredentials(true);
-        config.addAllowedOrigin("*");
-        config.addAllowedHeader("*");
-        config.addAllowedMethod("*");
-        source.registerCorsConfiguration("/**", config);
-        return new CorsFilter(source);
-    }
-
 }
