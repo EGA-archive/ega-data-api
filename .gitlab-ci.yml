@@ -61,5 +61,3 @@ imageBuild:
   stage: imageBuild
   script:
     - mvn clean install "-DdockerRegistry=$CI_REGISTRY_IMAGE" "-Dimage.version=$CI_COMMIT_TAG" -P production -DskipTests
-  rules:
-    - if: $CI_COMMIT_TAG
