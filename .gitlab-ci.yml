@@ -32,15 +32,13 @@ variables:
 ## Diffent stages for the CICD of Data API
 unitTest:
   stage: unitTest
-  before_script:
-    - mvn install -DskipTests=true -P production -Dmaven.javadoc.skip=true -B -V -DskipDockerPush
-  script: mvn test
+  script:
+    - mvn test
 
 integrationTest:
   stage: integrationTest
   before_script:
-    - mvn install -DskipTests=true -P production -Dmaven.javadoc.skip=true -B -V -DskipDockerPush
-#    - sudo service postgresql stop
+    - mvn package -DskipTests=true -Dmaven.javadoc.skip=true -B -V
     - mkdir -p /usr/local/share/ca-certificates/
     - cp extras/certificate/rootCA.pem /usr/local/share/ca-certificates/CA.crt
     - chmod 644 /usr/local/share/ca-certificates/CA.crt
