@@ -35,4 +35,4 @@ imageBuild:
     - echo $CI_REGISTRY_IMAGE
     - echo $CI_COMMIT_TAG  
   script:
-    - mvn clean install "-DdockerRegistry=dockerhub.ebi.ac.uk/ega" "-Dimage.version=1.3.3" -P production -DskipTests -DskipDockerPush
+    - mvn clean install "-DdockerRegistry=$CI_REGISTRY_IMAGE" "-Dimage.version=testing-notuse" -P production -DskipTests
