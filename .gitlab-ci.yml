@@ -15,8 +15,6 @@ services:
 
 ## List of jobs:
 stages:
-  - unitTest
-  - integrationTest
   - imageBuild
 
 # Cache downloaded dependencies and plugins between builds.
@@ -29,38 +27,12 @@ variables:
   MAVEN_OPTS: "-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository"
   TRAVIS_BUILD_DIR: $CI_PROJECT_DIR
 
-## Diffent stages for the CICD of Data API
-unitTest:
-  stage: unitTest
-  before_script:
-    - mvn install -DskipTests=true -P production -Dmaven.javadoc.skip=true -B -V -DskipDockerPush
-  script: mvn test
-
-integrationTest:
-  stage: integrationTest
-  before_script:
-    - mvn install -DskipTests=true -P production -Dmaven.javadoc.skip=true -B -V -DskipDockerPush
-#    - sudo service postgresql stop
-    - mkdir -p /usr/local/share/ca-certificates/
-    - cp extras/certificate/rootCA.pem /usr/local/share/ca-certificates/CA.crt
-    - chmod 644 /usr/local/share/ca-certificates/CA.crt
-    - update-ca-certificates
-    - docker build -t ega-data-api/ega-dataedge  --file Dockerfile.dataedge .
-    - docker build -t ega-data-api/ega-res  --file Dockerfile.res .
-    - docker build -t ega-data-api/ega-keyserver  --file Dockerfile.keyserver .
-    - docker build -t ega-data-api/ega-filedatabase  --file Dockerfile.filedatabase .
-    - docker build -t ega-data-api/ega-postgres --file extras/postgresdb/Dockerfile .
-    - cd extras && source ./variables.sh
-    - docker-compose up -d
-    - sleep 90
-    - cd ../ega-data-api-it
-  script:
-    - mvn test "-Dkey.url=https://dataedge" "-Dfile.url=https://dataedge" "-Dres.url=https://dataedge" "-Ddataedge.url=https://dataedge"
-
 imageBuild:
   stage: imageBuild
-  only:
-    - master
+  variables:
+    IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_TAG  
   before_script:
-    - mvn dependency:purge-local-repository install -DskipTests=true -P production -Dmaven.javadoc.skip=true -B -V -DskipDockerPush
-  script: ./extras/travis_push_docker_hub.sh
+    - echo $CI_REGISTRY_IMAGE
+    - echo $CI_COMMIT_TAG  
+  script:
+    - mvn clean install "-DdockerRegistry=dockerhub.ebi.ac.uk/ega" "-Dimage.version=1.3.3" -P production -DskipTests -DskipDockerPush
