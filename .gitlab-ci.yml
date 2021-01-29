@@ -32,9 +32,8 @@ variables:
 ## Diffent stages for the CICD of Data API
 unitTest:
   stage: unitTest
-  before_script:
-    - mvn install -DskipTests=true -P production -Dmaven.javadoc.skip=true -B -V -DskipDockerPush
-  script: mvn test
+  script:
+    - mvn test
 
 integrationTest:
   stage: integrationTest
@@ -59,8 +58,7 @@ integrationTest:
 
 imageBuild:
   stage: imageBuild
+  script:
+    - mvn clean install "-DdockerRegistry=$CI_REGISTRY_IMAGE" "-Dimage.version=$CI_COMMIT_TAG" -P production -DskipTests
   only:
-    - master
-  before_script:
-    - mvn dependency:purge-local-repository install -DskipTests=true -P production -Dmaven.javadoc.skip=true -B -V -DskipDockerPush
-  script: ./extras/travis_push_docker_hub.sh
+    - tags
