@@ -15,28 +15,18 @@
  */
 package eu.elixir.ega.ebi.dataedge.service.internal;
 
-import eu.elixir.ega.ebi.commons.exception.InternalErrorException;
 import eu.elixir.ega.ebi.commons.exception.NoContentException;
 import eu.elixir.ega.ebi.commons.exception.UnavailableForLegalReasonsException;
-import eu.elixir.ega.ebi.dataedge.utils.SimpleSeekableStream;
 import eu.elixir.ega.ebi.commons.shared.dto.File;
 import eu.elixir.ega.ebi.commons.shared.dto.FileDataset;
 import eu.elixir.ega.ebi.commons.shared.dto.FileIndexFile;
 import eu.elixir.ega.ebi.commons.shared.dto.MyExternalConfig;
 import eu.elixir.ega.ebi.commons.shared.service.DownloaderLogService;
 import eu.elixir.ega.ebi.commons.shared.service.FileInfoService;
-import eu.elixir.ega.ebi.dataedge.dto.*;
+import eu.elixir.ega.ebi.dataedge.dto.HttpResult;
 import eu.elixir.ega.ebi.dataedge.service.FileLengthService;
 import eu.elixir.ega.ebi.dataedge.service.KeyService;
-import eu.elixir.ega.ebi.htsjdk.variant.vcf.MyVCFFileReader;
-import htsjdk.samtools.SAMFileHeader;
-import htsjdk.samtools.SamInputResource;
-import htsjdk.samtools.SamReader;
-import htsjdk.samtools.SamReaderFactory;
-import htsjdk.samtools.cram.ref.CRAMReferenceSource;
-import htsjdk.samtools.util.CloseableIterator;
-import htsjdk.variant.variantcontext.VariantContext;
-import htsjdk.variant.vcf.VCFHeader;
+import eu.elixir.ega.ebi.dataedge.utils.SimpleSeekableStream;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -62,23 +52,24 @@ import javax.servlet.http.HttpServletResponse;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
+import static eu.elixir.ega.ebi.commons.config.Constants.FILEDATABASE_SERVICE;
 import static eu.elixir.ega.ebi.commons.config.Constants.RES_SERVICE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
-import static org.powermock.api.mockito.PowerMockito.*;
-
-import static eu.elixir.ega.ebi.commons.config.Constants.FILEDATABASE_SERVICE;
+import static org.powermock.api.mockito.PowerMockito.mock;
+import static org.powermock.api.mockito.PowerMockito.mockStatic;
+import static org.powermock.api.mockito.PowerMockito.when;
+import static org.powermock.api.mockito.PowerMockito.whenNew;
 
 /**
  * Test class for {@link RemoteFileServiceImpl}.
  *
  */
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({RemoteFileServiceImpl.class, SamReaderFactory.class})
+@PrepareForTest({RemoteFileServiceImpl.class})
 @TestPropertySource(locations = "classpath:application-test.properties")
 public class RemoteFileServiceImplTest {
 
@@ -87,7 +78,6 @@ public class RemoteFileServiceImplTest {
     public static final String FILEID = "fileId";
 
     private Authentication authentication;
-    private SAMFileHeader samFileHeader;
 
     @InjectMocks
     private RemoteFileServiceImpl remoteFileServiceImpl;
@@ -165,73 +155,6 @@ public class RemoteFileServiceImplTest {
     }
 
     /**
-     * Test class for
-     * {@link RemoteFileServiceImpl#getFileHeader(Authentication, String, String, String, CRAMReferenceSource)}.
-     * Verify code is executing without errors and checking output
-     * samFileHeaderOutput.
-     */
-    @Test
-    public void testGetFileHeader() {
-        try {
-            final CRAMReferenceSource cramReferenceSource = mock(CRAMReferenceSource.class);
-            final Object samFileHeaderOutput = remoteFileServiceImpl.getFileHeader(FILEID, "plain",
-                    "destinationKey", cramReferenceSource);
-            assertThat(samFileHeaderOutput, equalTo(samFileHeader));
-        } catch (Exception e) {
-            fail("Should not have thrown an exception");
-        }
-    }
-
-    /**
-     * Test class for
-     * {@link RemoteFileServiceImpl#getById(Authentication, String, String, String, String, long, long, List, List, List, boolean, String, String, HttpServletRequest, HttpServletResponse)}.
-     * Verify code is executing without errors.
-     */
-    @Test
-    public void testGetById() {
-        try {
-            remoteFileServiceImpl.getById("file", FILEID, "plain", "reference", 0, 0, null, null, null,
-                    true, "destinationFormat", "destinationKey", new MockHttpServletRequest(),
-                    new MockHttpServletResponse());
-        } catch (Exception e) {
-            fail("Should not have thrown an exception");
-        }
-    }
-
-    /**
-     * Test class for
-     * {@link RemoteFileServiceImpl#getById(Authentication, String, String, String, String, long, long, List, List, List, boolean, String, String, HttpServletRequest, HttpServletResponse)}.
-     * Verify code is throws InternalErrorException.
-     */
-    @Test(expected =  InternalErrorException.class)
-    public void testGetByIdforNullIndexFileId() {
-            final ResponseEntity<FileIndexFile[]> forResponseEntity = mock(ResponseEntity.class);
-            when(forResponseEntity.getBody()).thenReturn(null);
-            when(restTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}/index", FileIndexFile[].class, FILEID))
-            .thenReturn(forResponseEntity);
-            
-            remoteFileServiceImpl.getById("file", FILEID, "plain", "reference", 0, 0, null, null, null,
-                    true, "destinationFormat", "destinationKey", new MockHttpServletRequest(),
-                    new MockHttpServletResponse());
-    }
-    
-    /**
-     * Test class for
-     * {@link RemoteFileServiceImpl#getVCFById(Authentication, String, String, String, String, long, long, List, List, List, boolean, String, String, HttpServletRequest, HttpServletResponse)}.
-     * Verify code is executing without errors.
-     */
-    @Test
-    public void testGetVCFById() {
-        try {
-            remoteFileServiceImpl.getVCFById("file", FILEID, "plain", "reference", 0, 0, null, null,
-                    null, true, "destinationFormat", "destinationKey", new MockHttpServletRequest(),
-                    new MockHttpServletResponse());
-        } catch (Exception e) {
-            fail("Should not have thrown an exception");
-        }
-    }
-
-    /**
      * Test class for {@link RemoteFileServiceImpl#resURL()}. Verify the output
      * resURL.
      */
@@ -279,11 +202,6 @@ public class RemoteFileServiceImplTest {
         final ResponseEntity<FileIndexFile[]> forResponseEntity = mock(ResponseEntity.class);
         final HttpResult xferResult = mock(HttpResult.class);
         final SimpleSeekableStream simpleSeekableStream = mock(SimpleSeekableStream.class);
-        final SamReaderFactory samReaderFactory = mock(SamReaderFactory.class);
-        final SamReader samReader = mock(SamReader.class);
-        final MyVCFFileReader myVCFFileReader = mock(MyVCFFileReader.class);
-        final VCFHeader vcfHeader = mock(VCFHeader.class);
-        final CloseableIterator<VariantContext> closeableIterator = mock(CloseableIterator.class);
 
         final FileDataset[] datasets = {new FileDataset(FILEID, DATASET1)};
         final File f = new File();
@@ -293,7 +211,6 @@ public class RemoteFileServiceImplTest {
         f.setFileSize(100L);
         final File[] file = {f};
         authentication = mock(Authentication.class);
-        samFileHeader = mock(SAMFileHeader.class);
         final FileIndexFile fi = new FileIndexFile();
         fi.setFileId(FILEID);
         fi.setIndexFileId("indexFileId");
@@ -307,20 +224,9 @@ public class RemoteFileServiceImplTest {
         when(forEntity.getBody()).thenReturn(file);
         when(forSize.getBody()).thenReturn(1000L);
         when(forResponseEntity.getBody()).thenReturn(fileIndexFiles);
-        when(myVCFFileReader.getFileHeader()).thenReturn(vcfHeader);
-        when(myVCFFileReader.iterator()).thenReturn(closeableIterator);
 
         whenNew(SimpleSeekableStream.class).withAnyArguments().thenReturn(simpleSeekableStream);
-        whenNew(MyVCFFileReader.class).withAnyArguments().thenReturn(myVCFFileReader);
 
-        mockStatic(SamReaderFactory.class);
-        when(SamReaderFactory.make()).thenReturn(samReaderFactory);
-        when(samReaderFactory.referenceSource(any())).thenReturn(samReaderFactory);
-        when(samReaderFactory.validationStringency(any())).thenReturn(samReaderFactory);
-        when(samReaderFactory.enable(any())).thenReturn(samReaderFactory);
-        when(samReaderFactory.samRecordFactory(any())).thenReturn(samReaderFactory);
-        when(samReaderFactory.open(any(SamInputResource.class))).thenReturn(samReader);
-        when(samReader.getFileHeader()).thenReturn(samFileHeader);
         when(keyService.getEncryptionAlgorithm(FILEID)).thenReturn("aes256");
         FILEDATABASE_SERVICE = "http://filedatabase/";
         RES_SERVICE = "http://res2/";

@@ -7,9 +7,9 @@ import eu.elixir.ega.ebi.commons.shared.dto.MyExternalConfig;
 import eu.elixir.ega.ebi.commons.shared.service.FileInfoService;
 import eu.elixir.ega.ebi.htsget.config.LocalTestData;
 import eu.elixir.ega.ebi.htsget.formats.DataProviderFactory;
-import eu.elixir.ega.ebi.htsget.service.TicketServiceV2;
+import eu.elixir.ega.ebi.htsget.service.TicketService;
 import eu.elixir.ega.ebi.htsget.service.internal.ResClient;
-import eu.elixir.ega.ebi.htsget.service.internal.TicketServiceV2Impl;
+import eu.elixir.ega.ebi.htsget.service.internal.TicketServiceImpl;
 import htsjdk.samtools.seekablestream.SeekableFileStream;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.TestConfiguration;
@@ -24,8 +24,8 @@ import static org.mockito.Mockito.doReturn;
 @TestConfiguration
 public class V2IntegrationTestConfig {
     @Bean
-    public TicketServiceV2 ticketService(FileInfoService fileInfoService, MyExternalConfig externalConfig, ResClient resClient, DataProviderFactory dataProviderFactory) {
-        return new TicketServiceV2Impl(fileInfoService, externalConfig, resClient, dataProviderFactory);
+    public TicketService ticketService(FileInfoService fileInfoService, MyExternalConfig externalConfig, ResClient resClient, DataProviderFactory dataProviderFactory) {
+        return new TicketServiceImpl(fileInfoService, externalConfig, resClient, dataProviderFactory);
     }
 
     @Bean

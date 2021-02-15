@@ -15,7 +15,7 @@ import eu.elixir.ega.ebi.htsget.dto.HtsgetResponseV2;
 import eu.elixir.ega.ebi.htsget.dto.HtsgetUrlV2;
 import eu.elixir.ega.ebi.htsget.formats.DataProvider;
 import eu.elixir.ega.ebi.htsget.formats.DataProviderFactory;
-import eu.elixir.ega.ebi.htsget.service.TicketServiceV2;
+import eu.elixir.ega.ebi.htsget.service.TicketService;
 import htsjdk.samtools.seekablestream.SeekableStream;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
@@ -30,7 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class TicketServiceV2Impl implements TicketServiceV2 {
+public class TicketServiceImpl implements TicketService {
 
     public static final int MAX_BYTES_PER_DATA_BLOCK = 1024 * 1024 * 1024;
 
@@ -43,7 +43,8 @@ public class TicketServiceV2Impl implements TicketServiceV2 {
     private final DataProviderFactory dataProviderFactory;
 
 
-    public TicketServiceV2Impl(FileInfoService fileInfoService, MyExternalConfig externalConfig, ResClient resClient, DataProviderFactory dataProviderFactory) {
+    public TicketServiceImpl(FileInfoService fileInfoService, MyExternalConfig externalConfig, ResClient resClient,
+                             DataProviderFactory dataProviderFactory) {
         this.fileInfoService = fileInfoService;
         this.externalConfig = externalConfig;
         this.resClient = resClient;
@@ -83,9 +84,9 @@ public class TicketServiceV2Impl implements TicketServiceV2 {
         if (!onlyHeader && !referenceName.isPresent()) {
             // user is requesting the entire file
             result.addUrl(new HtsgetUrlV2(baseURI));
-            if (reqFile.getUnencryptedChecksumType() != null && reqFile.getUnencryptedChecksumType().equalsIgnoreCase("md5"))
+            if (reqFile.getUnencryptedChecksumType() != null && reqFile.getUnencryptedChecksumType()
+                    .equalsIgnoreCase("md5"))
                 result.setMd5(reqFile.getUnencryptedChecksum());
-
         } else {
 
             try (SeekableStream dataStream = resClient.getStreamForFile(id)) {
@@ -109,7 +110,8 @@ public class TicketServiceV2Impl implements TicketServiceV2 {
                     }
 
                     try (SeekableStream indexStream = resClient.getStreamForFile(fileIndexFile.getIndexFileId())) {
-                        result.getUrls().addAll(reader.addContentUris(referenceName.get(), start.orElse(0L), end.orElse(Long.MAX_VALUE), baseURI, dataStream, indexStream));
+                        result.getUrls().addAll(reader.addContentUris(referenceName.get(), start.orElse(0L),
+                                end.orElse(Long.MAX_VALUE), baseURI, dataStream, indexStream));
                     }
 
                     result.addUrl(new HtsgetUrlV2(reader.getFooterAsDataUri(), "body"));
@@ -138,7 +140,9 @@ public class TicketServiceV2Impl implements TicketServiceV2 {
             throw new InvalidInputException("Must specify reference name if using start parameter");
     }
 
-    protected boolean checkIfRequestIsOnlyHeader(Optional<String> requestClass, Optional<String> referenceName, Optional<Long> start, Optional<Long> end, Optional<List<Field>> fields, Optional<List<String>> tags, Optional<List<String>> notags) {
+    protected boolean checkIfRequestIsOnlyHeader(Optional<String> requestClass, Optional<String> referenceName,
+                                                 Optional<Long> start, Optional<Long> end, Optional<List<Field>> fields,
+                                                 Optional<List<String>> tags, Optional<List<String>> noTags) {
         if (!requestClass.isPresent())
             return false;
         if (!requestClass.get().equalsIgnoreCase("Header"))
@@ -148,7 +152,7 @@ public class TicketServiceV2Impl implements TicketServiceV2 {
                 end.isPresent() ||
                 fields.isPresent() ||
                 tags.isPresent() ||
-                notags.isPresent())
+                noTags.isPresent())
             throw new InvalidInputException("Other parameters not allow for Header request");
         return true;
     }
@@ -170,12 +174,12 @@ public class TicketServiceV2Impl implements TicketServiceV2 {
                     while (rangeEnd - rangeStart + 1 > MAX_BYTES_PER_DATA_BLOCK) {
                         HttpRange subRange = HttpRange.createByteRange(rangeStart, rangeStart + MAX_BYTES_PER_DATA_BLOCK - 1);
                         HtsgetUrlV2 splitUrl = new HtsgetUrlV2(url.getUrl(), url.getUrlClass());
-                        splitUrl.setHeader(HttpHeaders.RANGE, "bytes=" + subRange.toString());
+                        splitUrl.setHeader(HttpHeaders.RANGE, "bytes=" + subRange);
                         result.add(splitUrl);
                         rangeStart += MAX_BYTES_PER_DATA_BLOCK;
                     }
 
-                    url.setHeader(HttpHeaders.RANGE, "bytes=" + HttpRange.createByteRange(rangeStart, rangeEnd).toString());
+                    url.setHeader(HttpHeaders.RANGE, "bytes=" + HttpRange.createByteRange(rangeStart, rangeEnd));
                 }
 
             }
@@ -194,13 +198,13 @@ public class TicketServiceV2Impl implements TicketServiceV2 {
                                     Optional<Long> end,
                                     Optional<List<Field>> fields,
                                     Optional<List<String>> tags,
-                                    Optional<List<String>> notags)
+                                    Optional<List<String>> noTags)
             throws HtsgetException, NotFoundException, PermissionDeniedException, IOException, URISyntaxException {
 
         if (!(format.equalsIgnoreCase("bam") || format.equalsIgnoreCase("cram")))
             throw new UnsupportedFormatException(format);
 
-        return getFile(id, format, requestClass, referenceName, start, end, fields, tags, notags);
+        return getFile(id, format, requestClass, referenceName, start, end, fields, tags, noTags);
     }
 
     @Override
@@ -212,12 +216,12 @@ public class TicketServiceV2Impl implements TicketServiceV2 {
                                        Optional<Long> end,
                                        Optional<List<Field>> fields,
                                        Optional<List<String>> tags,
-                                       Optional<List<String>> notags)
+                                       Optional<List<String>> noTags)
             throws HtsgetException, NotFoundException, PermissionDeniedException, IOException, URISyntaxException {
 
         if (!(format.equalsIgnoreCase("vcf") || format.equalsIgnoreCase("bcf")))
             throw new UnsupportedFormatException(format);
 
-        return getFile(id, format, requestClass, referenceName, start, end, fields, tags, notags);
+        return getFile(id, format, requestClass, referenceName, start, end, fields, tags, noTags);
     }
 }

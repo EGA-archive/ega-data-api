@@ -10,6 +10,7 @@ import java.util.List;
 @JsonTypeName("htsget")
 @JsonTypeInfo(include = JsonTypeInfo.As.WRAPPER_OBJECT, use = JsonTypeInfo.Id.NAME)
 public class HtsgetResponseV2 {
+
     private String format;
     private List<HtsgetUrlV2> urls;
 

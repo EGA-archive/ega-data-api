@@ -1,128 +1,248 @@
-/*
- * Copyright 2016 ELIXIR EGA
- * Copyright 2016 Alexander Senf
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package eu.elixir.ega.ebi.htsget.rest;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.when;
-import static org.springframework.http.HttpStatus.OK;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
-
-import eu.elixir.ega.ebi.htsget.rest.TicketController;
+import eu.elixir.ega.ebi.commons.config.InvalidAuthenticationException;
+import eu.elixir.ega.ebi.commons.config.InvalidInputException;
+import eu.elixir.ega.ebi.commons.config.InvalidRangeException;
+import eu.elixir.ega.ebi.commons.config.UnsupportedFormatException;
+import eu.elixir.ega.ebi.commons.exception.NotFoundException;
+import eu.elixir.ega.ebi.commons.exception.PermissionDeniedException;
+import eu.elixir.ega.ebi.htsget.dto.HtsgetResponseV2;
+import eu.elixir.ega.ebi.htsget.dto.HtsgetUrlV2;
 import eu.elixir.ega.ebi.htsget.service.TicketService;
-import java.util.List;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import org.apache.http.HttpHeaders;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
+import org.openapi4j.core.exception.ResolutionException;
+import org.openapi4j.core.validation.ValidationException;
+import org.openapi4j.operation.validator.model.impl.Body;
+import org.openapi4j.operation.validator.model.impl.DefaultResponse;
+import org.openapi4j.operation.validator.validation.OperationValidator;
+import org.openapi4j.parser.OpenApi3Parser;
+import org.openapi4j.parser.model.v3.OpenApi3;
+import org.openapi4j.parser.model.v3.Operation;
+import org.openapi4j.parser.model.v3.Path;
+import org.openapi4j.schema.validator.ValidationData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.mock.web.MockHttpServletResponse;
-import org.springframework.mock.web.MockHttpSession;
-import org.springframework.security.core.Authentication;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultMatcher;
 
-/**
- * Test class for {@link TicketController}.
- * 
- * @author amohan
- */
+import java.net.URI;
+import java.net.URL;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyString;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
 @RunWith(SpringRunner.class)
-@WebMvcTest(TicketController.class)
-@TestPropertySource(locations = "classpath:application-test.properties")
+@WebMvcTest(controllers = TicketController.class, secure = false)
 public class TicketControllerTest {
 
+    private static OpenApi3 apiSpec;
     @Autowired
-    private MockMvc mockMvc;
-
+    private MockMvc mvc;
     @MockBean
-    private TicketService ticketService;
+    private TicketService service;
 
-    /**
-     * Test {@link TicketController#getTicket(HttpServletResponse)}. Verify the API
-     * call returns status is OK.
-     * 
-     * @throws Exception
-     */
-    @Test
-    public void testGetTicket() throws Exception {
-        final MockHttpServletResponse response = mockMvc
-                .perform(options("/tickets/files/fileId").session(new MockHttpSession())).andReturn().getResponse();
-        assertThat(response.getStatus(), equalTo(OK.value()));
+    @BeforeClass
+    public static void loadApiSpec() throws ResolutionException, ValidationException {
+        URL spec = Thread.currentThread().getContextClassLoader().getResource("htsget-openapi.yml");
+        apiSpec = new OpenApi3Parser().parse(spec, false);
     }
 
-    /**
-     * Test
-     * {@link TicketController#getTicket(String, String, Integer, String, String, String, String, List, List, List, HttpServletRequest, HttpServletResponse)}.
-     * Verify the API call returns status is OK.
-     * 
-     * @throws Exception
-     */
-    @Test
-    public void testGetTicket2() throws Exception {
-        final MockHttpServletResponse response = mockMvc
-                .perform(get("/tickets/files/fileId").session(new MockHttpSession())).andReturn().getResponse();
-        assertThat(response.getStatus(), equalTo(OK.value()));
-    }
-    
-    /**
-     * Test
-     * {@link TicketController#getVariant(HttpServletResponse)}.
-     * Verify the API call returns status is OK.
-     * 
-     * @throws Exception
-     */
-    @Test
-    public void getVariant() throws Exception {
-        final MockHttpServletResponse response = mockMvc
-                .perform(options("/tickets/variants/fileId").session(new MockHttpSession())).andReturn().getResponse();
-        assertThat(response.getStatus(), equalTo(OK.value()));
-    }
-
-    /**
-     * Test
-     * {@link TicketController#getVariantTicket(String, String, Integer, String, String, String, String, List, List, List, HttpServletRequest, HttpServletResponse)}.
-     * Verify the API call returns status is OK.
-     * 
-     * @throws Exception
-     */
-    @Test
-    public void testGetVariantTicket() throws Exception {
-        final MockHttpServletResponse response = mockMvc
-                .perform(get("/tickets/variants/fileId").session(new MockHttpSession())).andReturn().getResponse();
-        assertThat(response.getStatus(), equalTo(OK.value()));
-    }
-    
-    /**
-     * Common mock method.
-     */
-    @SuppressWarnings("unchecked")
     @Before
-    public void commonMockMethod() {
-        when(ticketService.getVariantTicket(any(String.class), any(String.class),
-                any(Integer.class), any(String.class), any(String.class), any(String.class), any(String.class),
-                any(List.class), any(List.class), any(List.class), any(HttpServletRequest.class),
-                any(HttpServletResponse.class))).thenReturn(null);
+    public void resetMock() {
+        Mockito.reset(service);
     }
+
+    private ResultMatcher conformsToOperation(String operationId) {
+        return mvcResult -> {
+            // Put all of the headers into a map
+            Map<String, Collection<String>> headers = new HashMap<>();
+            for (String headerName : mvcResult.getResponse().getHeaderNames()) {
+                headers.put(headerName, mvcResult.getResponse().getHeaders(headerName));
+            }
+
+            // Make an OpenAPI4J response object out of the mvcResult response
+            DefaultResponse response = new DefaultResponse.Builder(mvcResult.getResponse().getStatus())
+                    .headers(headers)
+                    .body(Body.from(mvcResult.getResponse().getContentAsString()))
+                    .build();
+
+            // Make a validator for this operation
+            Operation operation = apiSpec.getOperationById(operationId);
+            Path path = apiSpec.getPathItemByOperationId(operationId);
+            OperationValidator operationValidator = new OperationValidator(apiSpec, path, operation);
+
+            // Do the validation, collect errors into validationData object
+            ValidationData<Object> validationData = new ValidationData<>();
+            operationValidator.validateHeaders(response, validationData);
+            operationValidator.validateBody(response, validationData);
+
+            // If there were validation errors, throw an exception to fail the test
+            if (!validationData.isValid()) {
+                throw new Exception(validationData.results().toString());
+            }
+        };
+    }
+
+    @Test
+    public void canGetVersion() throws Exception {
+        mvc.perform(get("/htsget/version"))
+                .andExpect(status().isOk())
+                .andExpect(content().string("v1.0.0"));
+    }
+
+    @Test
+    public void canGetRead() throws Exception {
+        Mockito.when(service.getRead(anyString(), anyString(), any(), any(), any(), any(), any(), any(), any())).thenReturn(new HtsgetResponseV2("BAM"));
+        mvc.perform(get("/htsget/reads/1")
+                .header(HttpHeaders.AUTHORIZATION, "dummy"))
+                .andExpect(status().isOk())
+                .andExpect(conformsToOperation("searchReadId"));
+    }
+
+    @Test
+    public void canGetVariant() throws Exception {
+        Mockito.when(service.getVariant(anyString(), anyString(), any(), any(), any(), any(), any(), any(), any())).thenReturn(new HtsgetResponseV2("VCF"));
+        mvc.perform(get("/htsget/variants/1")
+                .header(HttpHeaders.AUTHORIZATION, "dummy"))
+                .andExpect(status().isOk())
+                .andExpect(conformsToOperation("searchVariantId"));
+    }
+
+    @Test
+    public void unknownFormatReturnsUnsupportedFormatError() throws Exception {
+        Mockito.when(service.getRead(anyString(), anyString(), any(), any(), any(), any(), any(), any(), any())).thenThrow(new UnsupportedFormatException("sushi"));
+        mvc.perform(get("/htsget/reads/1?format=sushi")
+                .header(HttpHeaders.AUTHORIZATION, "dummy"))
+                .andExpect(status().is(400))
+                .andExpect(conformsToOperation("searchReadId"))
+                .andExpect(content().json("{\n" +
+                        "   \"htsget\" : {\n" +
+                        "      \"error\": \"UnsupportedFormat\",\n" +
+                        "      \"message\": \"Unsupported Format : sushi\"\n" +
+                        "   }\n" +
+                        "}"));
+    }
+
+    @Test
+    public void wrongInputReturnsInvalidInput() throws Exception {
+        Mockito.when(service.getRead(anyString(), anyString(), any(), any(), any(), any(), any(), any(), any())).thenThrow(new InvalidInputException("sushi"));
+        mvc.perform(get("/htsget/reads/1?format=sushi")
+                .header(HttpHeaders.AUTHORIZATION, "dummy"))
+                .andExpect(status().is(400))
+                .andExpect(conformsToOperation("searchReadId"))
+                .andExpect(content().json("{\n" +
+                        "   \"htsget\" : {\n" +
+                        "      \"error\": \"InvalidInput\",\n" +
+                        "      \"message\": \"Invalid Input : sushi\"\n" +
+                        "   }\n" +
+                        "}"));
+    }
+
+    @Test
+    public void wrongRangeReturnsInvalidRange() throws Exception {
+        Mockito.when(service.getRead(anyString(), anyString(), any(), any(), any(), any(), any(), any(), any())).thenThrow(new InvalidRangeException("sushi"));
+        mvc.perform(get("/htsget/reads/1?format=sushi")
+                .header(HttpHeaders.AUTHORIZATION, "dummy"))
+                .andExpect(status().is(400))
+                .andExpect(conformsToOperation("searchReadId"))
+                .andExpect(content().json("{\n" +
+                        "   \"htsget\" : {\n" +
+                        "      \"error\": \"InvalidRange\",\n" +
+                        "      \"message\": \"Invalid Range : sushi\"\n" +
+                        "   }\n" +
+                        "}"));
+    }
+
+    @Test
+    public void missingCredentialsReturnInvalidAuthentication() throws Exception {
+        Mockito.when(service.getRead(anyString(), anyString(), any(), any(), any(), any(), any(), any(), any())).thenThrow(new InvalidAuthenticationException("sushi"));
+        mvc.perform(get("/htsget/reads/1?format=sushi"))
+                .andExpect(status().is(401))
+                .andExpect(content().json("{\n" +
+                        "   \"htsget\" : {\n" +
+                        "      \"error\": \"InvalidAuthentication\",\n" +
+                        "      \"message\": \"Request missing Authorization header\"\n" +
+                        "   }\n" +
+                        "}"));
+
+    }
+
+    @Test
+    public void wrongCredentialsReturnPermissionDenied() throws Exception {
+        Mockito.when(service.getRead(anyString(), anyString(), any(), any(), any(), any(), any(), any(), any())).thenThrow(new PermissionDeniedException("sushi"));
+        mvc.perform(get("/htsget/reads/1?format=sushi")
+                .header(HttpHeaders.AUTHORIZATION, "invalid"))
+                .andExpect(status().is(403))
+                .andExpect(content().json("{\n" +
+                        "   \"htsget\" : {\n" +
+                        "      \"error\": \"PermissionDenied\",\n" +
+                        "      \"message\": \"Permission Denied : sushi\"\n" +
+                        "   }\n" +
+                        "}"));
+
+    }
+
+    @Test
+    public void requestedResourceNotFoundReturnsNotFound() throws Exception {
+        Mockito.when(service.getRead(anyString(), anyString(), any(), any(), any(), any(), any(), any(), any())).thenThrow(new NotFoundException("Not Found", "sushi"));
+        mvc.perform(get("/htsget/reads/1?format=sushi")
+                .header(HttpHeaders.AUTHORIZATION, "dummy"))
+                .andExpect(status().is(404))
+                .andExpect(content().json("{\n" +
+                        "   \"htsget\" : {\n" +
+                        "      \"error\": \"NotFound\",\n" +
+                        "      \"message\": \"Not Found: sushi\"\n" +
+                        "   }\n" +
+                        "}"));
+
+    }
+
+    @Test
+    public void requestWithOriginHeaderPropagatesHeaderToResponse() throws Exception {
+        mvc.perform(get("/htsget/reads/1").header("Origin", "sushi.com"))
+                .andExpect(header().string("Access-Control-Allow-Origin", "sushi.com"));
+    }
+
+    @Test
+    public void preflightRequestPropagatesOriginAndHeadersToResponse() throws Exception {
+        mvc.perform(options("/htsget/reads/1").header("Origin", "sushi")
+                .header("Access-Control-Request-Method", "GET")
+                .header("Access-Control-Request-Headers", "mochi, nigiri, takoyaki"))
+                .andExpect(header().string("Access-Control-Allow-Origin", "sushi"))
+                .andExpect(header().string("Access-Control-Allow-Headers", "mochi, nigiri, takoyaki"));
+    }
+
+    @Test
+    public void preflightRequestResponseHas30DayMaxAge() throws Exception {
+        mvc.perform(options("/htsget/reads/1").header("Origin", "sushi")
+                .header("Access-Control-Request-Method", "GET")
+                .header("Access-Control-Request-Headers", "mochi, nigiri, takoyaki"))
+                .andExpect(header().string("Access-Control-Max-Age", String.valueOf(30 * 24 * 60 * 60)));
+    }
+
+    @Test
+    public void authoriationHeaderIsCopiedToDataEdgeRequests() throws Exception {
+        HtsgetResponseV2 response = new HtsgetResponseV2("BAM");
+        response.addUrl(new HtsgetUrlV2(URI.create("http://test.uri")));
+        Mockito.when(service.getRead(anyString(), anyString(), any(), any(), any(), any(), any(), any(), any())).thenReturn(response);
+        mvc.perform(get("/htsget/reads/1")
+                .header(HttpHeaders.AUTHORIZATION, "sushi"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.htsget.urls[*].headers.Authorization").value("sushi"));
+    }
+
 
 }

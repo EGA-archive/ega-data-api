@@ -13,7 +13,7 @@ import eu.elixir.ega.ebi.htsget.dto.HtsgetResponseV2;
 import eu.elixir.ega.ebi.htsget.dto.HtsgetUrlV2;
 import eu.elixir.ega.ebi.htsget.formats.DataProvider;
 import eu.elixir.ega.ebi.htsget.formats.DataProviderFactory;
-import eu.elixir.ega.ebi.htsget.service.TicketServiceV2;
+import eu.elixir.ega.ebi.htsget.service.TicketService;
 import htsjdk.samtools.seekablestream.SeekableFileStream;
 import org.junit.Assert;
 import org.junit.Before;
@@ -29,9 +29,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpRange;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -43,10 +41,10 @@ import static org.mockito.Mockito.*;
 
 @Ignore
 @RunWith(SpringRunner.class)
-public class TicketServiceV2Test {
+public class TicketServiceTest {
 
     @Autowired
-    private TicketServiceV2 service;
+    private TicketService service;
 
     @MockBean
     private FileInfoService fileInfoService;
@@ -216,7 +214,7 @@ public class TicketServiceV2Test {
 
             for (HttpRange range : HttpRange.parseRanges(url.getHeaders().get(HttpHeaders.RANGE))) {
                 long rangeLength = range.getRangeEnd(mockDataLength) - range.getRangeStart(mockDataLength) + 1;
-                Assert.assertTrue(rangeLength <= TicketServiceV2Impl.MAX_BYTES_PER_DATA_BLOCK);
+                Assert.assertTrue(rangeLength <= TicketServiceImpl.MAX_BYTES_PER_DATA_BLOCK);
                 totalLength += rangeLength;
             }
         }
@@ -255,8 +253,8 @@ public class TicketServiceV2Test {
     @TestConfiguration
     public static class Config {
         @Bean
-        public TicketServiceV2 ticketService(FileInfoService fileInfoService, MyExternalConfig externalConfig, ResClient resClient, DataProviderFactory dataProviderFactory) {
-            return new TicketServiceV2Impl(fileInfoService, externalConfig, resClient, dataProviderFactory);
+        public TicketService ticketService(FileInfoService fileInfoService, MyExternalConfig externalConfig, ResClient resClient, DataProviderFactory dataProviderFactory) {
+            return new TicketServiceImpl(fileInfoService, externalConfig, resClient, dataProviderFactory);
         }
     }
 

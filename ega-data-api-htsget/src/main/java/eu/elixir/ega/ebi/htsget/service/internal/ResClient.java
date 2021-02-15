@@ -8,6 +8,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 public class ResClient {
+
     private LoadBalancerClient loadBalancer;
 
     public ResClient(LoadBalancerClient loadBalancer) {
@@ -22,4 +23,5 @@ public class ResClient {
     private String resURL() {
         return loadBalancer.choose("RES2").getUri().toString();
     }
+
 }

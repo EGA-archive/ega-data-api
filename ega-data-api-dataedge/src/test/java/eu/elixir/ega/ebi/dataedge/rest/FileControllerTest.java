@@ -93,90 +93,6 @@ public final class FileControllerTest {
     }
 
     /**
-     * Test {@link FileController#getFileHeader(String, String, String)}. Verify the
-     * api call returns status is OK.
-     * 
-     * @throws Exception
-     */
-    @Test
-    public void testGetFileHeader() throws Exception {
-        when(fileService.getFileHeader(any(String.class), any(String.class),
-                any(String.class), any(CRAMReferenceSource.class))).thenReturn(null);
-
-        final MockHttpServletResponse response = mockMvc.perform(get("/files/1/header").session(new MockHttpSession()))
-                .andReturn().getResponse();
-        assertThat(response.getStatus(), equalTo(OK.value()));
-    }
-
-    /**
-     * Test {@link FileController#getById_(HttpServletResponse)}. Verify the
-     * api call returns status is OK.
-     * 
-     * @throws Exception
-     */
-    @Test
-    public void testGetById_() throws Exception {
-        final MockHttpServletResponse response = mockMvc
-                .perform(options("/files/byid/type").session(new MockHttpSession())).andReturn().getResponse();
-        assertThat(response.getStatus(), equalTo(OK.value()));
-    }
-
-    /**
-     * Test {@link FileController#getById(String, String, String, String, long, long, java.util.List, java.util.List, java.util.List, Boolean, String, String, HttpServletRequest, HttpServletResponse)}. Verify the
-     * api call returns status is UNAUTHORIZED.
-     * 
-     * @throws Exception
-     */
-    @Test
-    public void testGetById() throws Exception {
-        final MockHttpServletResponse response = mockMvc
-                .perform(get("/files/byid/type").param("accession", "accession").session(new MockHttpSession()))
-                .andReturn().getResponse();
-        assertThat(response.getStatus(), equalTo(UNAUTHORIZED.value()));
-    }
-
-    /**
-     * Test {@link FileController#getByVariantId_(HttpServletResponse)}. Verify the
-     * api call returns status is UNAUTHORIZED.
-     * 
-     * @throws Exception
-     */
-    @Test
-    public void testGetByVariantId_() throws Exception {
-        final MockHttpServletResponse response = mockMvc
-                .perform(options("/files/variant/byid/type").session(new MockHttpSession())).andReturn().getResponse();
-        assertThat(response.getStatus(), equalTo(OK.value()));
-    }
-
-    /**
-     * Test {@link FileController#getByVariantId(String, String, String, String, long, long, java.util.List, java.util.List, java.util.List, Boolean, String, String, HttpServletRequest, HttpServletResponse)}. Verify the
-     * api call returns status is UNAUTHORIZED.
-     * 
-     * @throws Exception
-     */
-    @Test
-    public void testGetByVariantId() throws Exception {
-        final MockHttpServletResponse response = mockMvc
-                .perform(get("/files/variant/byid/type").param("accession", "accession").session(new MockHttpSession()))
-                .andReturn().getResponse();
-        assertThat(response.getStatus(), equalTo(UNAUTHORIZED.value()));
-    }
-
-    /**
-     * Test {@link FileController#getHeadById(String, String, HttpServletRequest, HttpServletResponse)}. Verify the
-     * api call returns status is UNAUTHORIZED.
-     * 
-     * @throws Exception
-     */
-    @Test
-    public void testGetHeadById() throws Exception {
-        final MockHttpServletResponse response = mockMvc
-                .perform(head("/files/byid/type").param("accession", "accession").session(new MockHttpSession()))
-                .andReturn().getResponse();
-        assertThat(response.getStatus(), equalTo(UNAUTHORIZED.value()));
-    }
-
-    /**
      * Common mock method.
      */
     @Before
@@ -188,4 +104,5 @@ public final class FileControllerTest {
                 any(HttpServletRequest.class), any(HttpServletResponse.class));
 
     }
+
 }
