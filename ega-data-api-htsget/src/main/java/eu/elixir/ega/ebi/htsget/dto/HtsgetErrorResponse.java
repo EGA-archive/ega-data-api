@@ -29,7 +29,7 @@ import lombok.Setter;
 @Getter
 @JsonTypeName("htsget")
 @JsonTypeInfo(include=JsonTypeInfo.As.WRAPPER_OBJECT, use = JsonTypeInfo.Id.NAME)
-public class HtsgetErrorResponse implements HtsgetResponseInterface {
+public class HtsgetErrorResponse {
 
     private String error;
     private String message;

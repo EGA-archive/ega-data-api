@@ -32,9 +32,9 @@ import eu.elixir.ega.ebi.commons.shared.service.internal.Ga4ghServiceImpl;
 import eu.elixir.ega.ebi.commons.shared.service.internal.JWTServiceImpl;
 import eu.elixir.ega.ebi.commons.shared.service.internal.UserDetailsServiceImpl;
 import eu.elixir.ega.ebi.htsget.formats.DataProviderFactory;
-import eu.elixir.ega.ebi.htsget.service.TicketServiceV2;
+import eu.elixir.ega.ebi.htsget.service.TicketService;
 import eu.elixir.ega.ebi.htsget.service.internal.ResClient;
-import eu.elixir.ega.ebi.htsget.service.internal.TicketServiceV2Impl;
+import eu.elixir.ega.ebi.htsget.service.internal.TicketServiceImpl;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
 import org.springframework.context.annotation.Bean;
@@ -62,9 +62,9 @@ import static com.nimbusds.jose.jwk.JWKSet.load;
 public class HtsGetConfiguration {
 
     @Bean
-    public TicketServiceV2 ticketServiceV2(FileInfoService fileInfoService, MyExternalConfig externalConfig,
-                                           ResClient resClient) {
-        return new TicketServiceV2Impl(fileInfoService, externalConfig, resClient, new DataProviderFactory());
+    public TicketService ticketServiceV2(FileInfoService fileInfoService, MyExternalConfig externalConfig,
+                                         ResClient resClient) {
+        return new TicketServiceImpl(fileInfoService, externalConfig, resClient, new DataProviderFactory());
     }
 
     @Bean

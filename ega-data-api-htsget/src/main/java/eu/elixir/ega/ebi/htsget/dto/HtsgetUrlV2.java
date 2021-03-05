@@ -6,6 +6,7 @@ import java.net.URI;
 import java.util.HashMap;
 
 public class HtsgetUrlV2 {
+
     private URI url;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private HashMap<String, String> headers;

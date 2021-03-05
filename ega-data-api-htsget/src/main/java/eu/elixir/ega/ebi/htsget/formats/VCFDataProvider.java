@@ -1,6 +1,5 @@
 package eu.elixir.ega.ebi.htsget.formats;
 
-import eu.elixir.ega.ebi.htsget.dto.HtsgetResponseV2;
 import eu.elixir.ega.ebi.htsget.dto.HtsgetUrlV2;
 import htsjdk.samtools.seekablestream.SeekableStream;
 import htsjdk.samtools.util.BlockCompressedInputStream;

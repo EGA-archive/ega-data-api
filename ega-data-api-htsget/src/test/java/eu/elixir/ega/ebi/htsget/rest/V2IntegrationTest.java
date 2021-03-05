@@ -21,7 +21,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 public class V2IntegrationTest {
 
     @Autowired
-    public TicketControllerV2 controller;
+    public TicketController controller;
 
     @Autowired
     TestRestTemplate restTemplate;

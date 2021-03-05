@@ -17,43 +17,21 @@ package eu.elixir.ega.ebi.dataedge.service.internal;
 
 import com.google.common.base.Strings;
 import com.google.common.io.ByteStreams;
-import com.google.common.io.CountingOutputStream;
-
 import eu.elixir.ega.ebi.commons.exception.GeneralStreamingException;
-import eu.elixir.ega.ebi.commons.exception.IndexNotFoundException;
-import eu.elixir.ega.ebi.commons.exception.InternalErrorException;
 import eu.elixir.ega.ebi.commons.exception.NoContentException;
-import eu.elixir.ega.ebi.commons.exception.PermissionDeniedException;
 import eu.elixir.ega.ebi.commons.exception.UnavailableForLegalReasonsException;
-import eu.elixir.ega.ebi.dataedge.utils.SimpleSeekableStream;
 import eu.elixir.ega.ebi.commons.shared.dto.DownloadEntry;
 import eu.elixir.ega.ebi.commons.shared.dto.EventEntry;
 import eu.elixir.ega.ebi.commons.shared.dto.File;
-import eu.elixir.ega.ebi.commons.shared.dto.FileIndexFile;
 import eu.elixir.ega.ebi.commons.shared.dto.MyExternalConfig;
 import eu.elixir.ega.ebi.commons.shared.service.DownloaderLogService;
 import eu.elixir.ega.ebi.commons.shared.service.FileInfoService;
-import eu.elixir.ega.ebi.dataedge.dto.*;
-import eu.elixir.ega.ebi.htsjdk.variant.vcf.MyVCFFileReader;
+import eu.elixir.ega.ebi.dataedge.dto.HttpResult;
 import eu.elixir.ega.ebi.dataedge.service.FileLengthService;
 import eu.elixir.ega.ebi.dataedge.service.FileService;
 import eu.elixir.ega.ebi.dataedge.service.KeyService;
-import htsjdk.samtools.*;
-import htsjdk.samtools.SamReaderFactory.Option;
-import htsjdk.samtools.cram.ref.CRAMReferenceSource;
-import htsjdk.samtools.cram.ref.ReferenceSource;
-import htsjdk.samtools.seekablestream.SeekableStream;
-import htsjdk.samtools.util.CloseableIterator;
-import htsjdk.samtools.util.CloserUtil;
-import htsjdk.variant.variantcontext.VariantContext;
-import htsjdk.variant.variantcontext.writer.Options;
-import htsjdk.variant.variantcontext.writer.VariantContextWriter;
-import htsjdk.variant.variantcontext.writer.VariantContextWriterBuilder;
-import htsjdk.variant.vcf.VCFHeader;
 import lombok.extern.slf4j.Slf4j;
-
 import okhttp3.OkHttpClient;
-import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
@@ -71,20 +49,17 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.math.BigInteger;
 import java.net.URI;
-import java.net.URL;
 import java.security.DigestInputStream;
 import java.security.DigestOutputStream;
 import java.security.MessageDigest;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.UUID;
 
-import java.util.stream.Stream;
-
-import static eu.elixir.ega.ebi.commons.config.Constants.FILEDATABASE_SERVICE;
 import static eu.elixir.ega.ebi.commons.config.Constants.RES_SERVICE;
 import static org.apache.catalina.connector.OutputBuffer.DEFAULT_BUFFER_SIZE;
 
@@ -338,395 +313,9 @@ public class RemoteFileServiceImpl implements FileService {
         }
     }
 
-    /*
-     * GA4GH / Semantic Functionality: Use SAMTools to access a File in Cleversafe
-     */
-    /**
-     * Returns the SAM file header for a file identified by fileId.
-     *
-     * @param fileId ELIXIR id of the requested file.
-     * @param destinationFormat Requested destination format.
-     * @param destinationKey Encryption key that the result file will be
-     *     encrypted with.
-     * @param x optional CRAM reference source to be used with the
-     *     SamReaderFactory.
-     * @return The SAM file header for the file.
-     */
-    @Override
-    @Cacheable(cacheNames = "headerFile", key="T(org.springframework.security.core.context.SecurityContextHolder).getContext().getAuthentication() + #p0 + #p1 + #p2 + #p3")
-    public Object getFileHeader(String fileId,
-                                String destinationFormat,
-                                String destinationKey,
-                                CRAMReferenceSource x) {
-        Object header = null;
-
-        // Ascertain Access Permissions for specified File ID
-        File reqFile = fileInfoService.getFileInfo(fileId);
-        if (reqFile != null) {
-            URL resURL;
-            try {
-                resURL = new URL(resURL() + "/file/archive/" + reqFile.getFileId()); // Just specify file ID
-                SeekableStream cIn = new SimpleSeekableStream(resURL, client, resHeaderChunkSize, reqFile.getFileSize()); // Deals with coordinates
-                SamReader reader = (x == null) ?
-                        (SamReaderFactory.make()            // BAM File
-                                .validationStringency(ValidationStringency.LENIENT)
-                                .enable(Option.CACHE_FILE_BASED_INDEXES)
-                                .samRecordFactory(DefaultSAMRecordFactory.getInstance())
-                                .open(SamInputResource.of(cIn))) :
-                        (SamReaderFactory.make()            // CRAM File
-                                .referenceSource(x)
-                                .validationStringency(ValidationStringency.LENIENT)
-                                .enable(Option.CACHE_FILE_BASED_INDEXES)
-                                .samRecordFactory(DefaultSAMRecordFactory.getInstance())
-                                .open(SamInputResource.of(cIn)));
-                header = reader.getFileHeader();
-                reader.close();
-            } catch (IOException ex) {
-                log.error(ex.getMessage(), ex);
-            }
-        }
-
-        return header;
-    }
-
     //Hack
     private boolean isRDConnect(File reqFile) {
         return reqFile.getDatasetId().equalsIgnoreCase("EGAD00001003952");
-    }
-
-    /**
-     * Writes a requested file (or part of file), selected by accession, from
-     * the FileService to the supplied response stream.
-     *
-     * @param fileId Should be set to 'file'.
-     * @param accession Local accession ID of the requested file.
-     * @param format Requested file format. Either 'bam' or 'cram' (case
-     *     insensitive).
-     * @param reference FASTA reference name, required for selecting a region
-     *     with start and end.
-     * @param start Start coordinate when requesting a partial file.
-     * @param end End coordinate when requesting a partial file.
-     * @param fields Data fields to include in the output file.
-     * @param tags Data tags to include in the output file.
-     * @param notags Data tags to exclude from the output file.
-     * @param header Unused.
-     * @param destinationFormat Requested destination format.
-     * @param destinationKey Unused.
-     * @param request Unused.
-     * @param response Response stream for the returned data.
-     */
-    @Override
-    public void getById(String fileId,
-                        String accession,
-                        String format,
-                        String reference,
-                        long start,
-                        long end,
-                        List<String> fields,
-                        List<String> tags,
-                        List<String> notags,
-                        boolean header,
-                        String destinationFormat,
-                        String destinationKey,
-                        HttpServletRequest request,
-                        HttpServletResponse response) {
-
-		String sessionId= Strings.isNullOrEmpty(request.getHeader("Session-Id"))? "" : request.getHeader("Session-Id") + " ";
-        // Adding a content header in the response: binary data
-        response.addHeader("Content-Type", MediaType.valueOf("application/octet-stream").toString());
-
-        String localFileId = "";
-        if (fileId.equalsIgnoreCase("file")) { // Currently only support File IDs
-            localFileId = accession;
-        }
-        CountingOutputStream cOut = null;
-        long timeDelta = System.currentTimeMillis();
-
-        // Ascertain Access Permissions for specified File ID
-        File reqFile = fileInfoService.getFileInfo(localFileId);
-        if (reqFile != null) {
-
-            // SeekableStream on top of RES (using Eureka to obtain RES Base URL)
-            SamInputResource inputResource;
-            CRAMReferenceSource x = null;
-            //SeekableBufferedStream bIn = null,
-            //                       bIndexIn = null;
-            try {
-                String extension = "";
-                if (reqFile.getFileName().contains(".bam")) {
-                    extension = ".bam";
-                } else if (reqFile.getFileName().contains(".cram")) {
-                    extension = ".cram";
-
-                    // hack: differentiate between two file sources
-                    //x = new ReferenceSource(new java.io.File(externalConfig.getCramFastaReferenceA()));
-                    x = (isRDConnect(reqFile)) ?
-                            new ReferenceSource(new java.io.File(externalConfig.getCramFastaReferenceB())) :
-                            new ReferenceSource(new java.io.File(externalConfig.getCramFastaReferenceA()));
-                }
-
-                // BAM/CRAM File
-                URL resURL = new URL(resURL() + "/file/archive/" + reqFile.getFileId()); // Just specify file ID
-
-                // HTSJDK works out if the stream is a BAM or a CRAM file from the extension on the URI but RES URIs do
-                // not have extensions, so override the name returned by getSource
-                final String finalExtension = extension;
-                SeekableStream cIn = new SimpleSeekableStream(resURL, client, resDataChunkSize, reqFile.getFileSize()) {
-                    @Override
-                    public String getSource() {
-                        return super.getSource() + "." + finalExtension;
-                    }
-                };
-
-                // BAI/CRAI File
-                FileIndexFile fileIndexFile = getFileIndexFile(reqFile.getFileId());
-                if(fileIndexFile == null || StringUtils.isEmpty(fileIndexFile.getIndexFileId())) {
-                    throw new IndexNotFoundException("IndexFileId not found for file", fileId);
-                }
-
-                File reqIndexFile = fileInfoService.getFileInfo(fileIndexFile.getIndexFileId());
-                URL indexUrl = new URL(resURL() + "/file/archive/" + fileIndexFile.getIndexFileId()); // Just specify index ID
-                SeekableStream cIndexIn = (new SimpleSeekableStream(indexUrl, client, resIndexChunkSize, reqIndexFile.getFileSize()));
-
-                inputResource = SamInputResource.of(cIn).index(cIndexIn);
-            } catch (Exception ex) {
-                throw new InternalErrorException(sessionId + ex.getMessage(), "9");
-            }
-
-            // SamReader with input stream based on RES URL (should work for BAM or CRAM)
-            SamReader reader = (x == null) ?
-                    (SamReaderFactory.make()            // BAM File
-                            .validationStringency(ValidationStringency.LENIENT)
-                            .enable(Option.CACHE_FILE_BASED_INDEXES)
-                            .samRecordFactory(DefaultSAMRecordFactory.getInstance())
-                            .open(inputResource)) :
-                    (SamReaderFactory.make()            // CRAM File
-                            .referenceSource(x)
-                            .validationStringency(ValidationStringency.LENIENT)
-                            .enable(Option.CACHE_FILE_BASED_INDEXES)
-                            .samRecordFactory(DefaultSAMRecordFactory.getInstance())
-                            .open(inputResource));
-
-            SAMFileHeader fileHeader = reader.getFileHeader();
-            int iIndex = fileHeader.getSequenceIndex(reference);
-
-            // Handle Request here - query Reader according to parameters
-            int iStart = (int) (start);
-            int iEnd = (int) (end);
-            SAMRecordIterator query;
-            if (iIndex > -1) { // ref was specified
-                query = reader.queryOverlapping(reference, iStart, iEnd);
-            } else if ((reference == null || reference.isEmpty()) && iIndex == -1) {
-                throw new GeneralStreamingException(sessionId + "Unknown reference: " + reference, 40);
-            } else { // no ref - ignore start/end
-                query = reader.iterator();
-            }
-
-            // Open return output stream - instatiate a SamFileWriter
-            OutputStream out = null;
-            SAMFileWriterFactory writerFactory = new SAMFileWriterFactory();
-            if (query != null) try {
-                cOut = new CountingOutputStream(response.getOutputStream());
-                out = cOut;
-                //out = response.getOutputStream();
-                if (format.equalsIgnoreCase("BAM")) {
-                    try (SAMFileWriter writer = writerFactory.makeBAMWriter(fileHeader, true, out)) { // writes out header
-                        Stream<SAMRecord> stream = query.stream();
-                        Iterator<SAMRecord> iterator = stream.iterator();
-                        while (iterator.hasNext()) {
-                            SAMRecord next = filterMe(iterator.next(), tags, notags, fields);
-                            writer.addAlignment(next);
-                        }
-                    }
-                } else if (format.equalsIgnoreCase("CRAM")) { // Must specify Reference fasta file
-                    // Decide on Reference
-                    String refFPath = (isRDConnect(reqFile)) ?
-                            externalConfig.getCramFastaReferenceB() :
-                            externalConfig.getCramFastaReferenceA();
-
-                    try (CRAMFileWriter writer = writerFactory
-                            .makeCRAMWriter(fileHeader, out, new java.io.File(refFPath))) {
-                        Stream<SAMRecord> stream = query.stream();
-                        Iterator<SAMRecord> iterator = stream.iterator();
-                        while (iterator.hasNext()) {
-                            SAMRecord next = iterator.next();
-                            writer.addAlignment(next);
-                        }
-                    }
-                }
-
-            } catch (Throwable t) { // Log Error!
-                String errorMessage = t.toString();
-                if(errorMessage!=null && errorMessage.length() > 256) {
-                    errorMessage = errorMessage.substring(0,256);
-                }
-                EventEntry eev = downloaderLogService.createEventEntry(errorMessage, "GA4GH htsget Download BAM/CRAM");
-                downloaderLogService.logEvent(eev);
-                log.error(sessionId + "ERROR 4 " + t.toString());
-                throw new GeneralStreamingException(sessionId + t.toString(), 6);
-            } finally {
-
-                timeDelta = System.currentTimeMillis() - timeDelta;
-                double speed = (cOut.getCount() / 1024.0 / 1024.0) / (timeDelta / 1000.0);
-                long bytes = cOut.getCount();
-                boolean success = cOut.getCount() > 0;
-                log.info(sessionId + "Success? " + success + ", Speed: " + speed + " MB/s");
-                DownloadEntry dle = downloaderLogService.createDownloadEntry(success, speed, localFileId,
-                         "htsget bam/cram", destinationFormat,
-                        start, end, bytes);
-                downloaderLogService.logDownload(dle);
-
-                if (out != null) try {
-                    out.close();
-                } catch (IOException ex) {
-                    ;
-                }
-            }
-        } else { // If no 404 was found, this is a permissions denied error
-            throw new PermissionDeniedException(accession);
-        }
-    }
-
-    /**
-     * Writes a requested file (or part of file), selected by accession, from
-     * the FileService to the supplied response stream.
-     *
-     * @param fileId Should be set to 'file'.
-     * @param accession Local accession ID of the requested file.
-     * @param format Unused.
-     * @param reference FASTA reference name, required for selecting a region
-     *     with start and end.
-     * @param start Start coordinate when requesting a partial file.
-     * @param end End coordinate when requesting a partial file.
-     * @param fields Data fields to include in the output file.
-     * @param tags Data tags to include in the output file.
-     * @param notags Data tags to exclude from the output file.
-     * @param header Unused.
-     * @param destinationFormat Requested destination format.
-     * @param destinationKey Unused.
-     * @param request Unused.
-     * @param response Response stream for the returned data.
-     */
-    @Override
-    public void getVCFById(String fileId,
-                           String accession,
-                           String format,
-                           String reference,
-                           long start,
-                           long end,
-                           List<String> fields,
-                           List<String> tags,
-                           List<String> notags,
-                           boolean header,
-                           String destinationFormat,
-                           String destinationKey,
-                           HttpServletRequest request,
-                           HttpServletResponse response) {
-
-		String sessionId= Strings.isNullOrEmpty(request.getHeader("Session-Id"))? "" : request.getHeader("Session-Id") + " ";
-        // Adding a content header in the response: binary data
-        response.addHeader("Content-Type", MediaType.valueOf("application/octet-stream").toString());
-
-        String localFileId = "";
-        if (fileId.equalsIgnoreCase("file")) { // Currently only support File IDs
-            localFileId = accession;
-        }
-
-        long timeDelta = System.currentTimeMillis();
-        CountingOutputStream cOut = null;
-
-        // Ascertain Access Permissions for specified File ID
-        File reqFile = fileInfoService.getFileInfo(localFileId);
-        if (reqFile != null) {
-            URL resURL, indexURL;
-            MyVCFFileReader reader;
-
-            try {
-                String[] vcf_ext = {"?destinationFormat=plain&extension=.vcf", "?destinationFormat=plain&extension=.vcf.tbi"};
-                if (reqFile.getFileName().toLowerCase().endsWith(".gz") ||
-                        reqFile.getFileName().toLowerCase().endsWith(".gz.cip")) {
-                    vcf_ext[0] += ".gz";
-                    vcf_ext[1] = "?destinationFormat=plain&extension=.vcf.gz.tbi";
-                }
-
-                // VCF File
-                resURL = new URL(resURL() + "/file/archive/" + reqFile.getFileId() + vcf_ext[0]); // Just specify file ID
-                FileIndexFile fileIndexFile = getFileIndexFile(reqFile.getFileId());
-                if(fileIndexFile == null || StringUtils.isEmpty(fileIndexFile.getIndexFileId())) {
-                    throw new IndexNotFoundException("IndexFileId not found for file", fileId);
-                }
-
-                indexURL = new URL(resURL() + "/file/archive/" + fileIndexFile.getIndexFileId() + vcf_ext[1]); // Just specify index ID
-
-                log.info(sessionId + "Opening Reader!! ");
-                // VCFFileReader with input stream based on RES URL
-                reader = new MyVCFFileReader(resURL.toString(),
-                        indexURL.toString(),
-                        false,
-                        fileDatabaseURL());
-                log.info(sessionId + "Reader!! ");
-            } catch (Exception ex) {
-                throw new InternalErrorException(sessionId + ex.getMessage(), "19");
-            } catch (Throwable th) {
-                throw new InternalErrorException(sessionId + th.getMessage(), "19.1");
-            }
-
-            VCFHeader fileHeader = reader.getFileHeader();
-            log.info(sessionId + "Header!! " + fileHeader.toString());
-
-            // Handle Request here - query Reader according to parameters
-            int iStart = (int) (start);
-            int iEnd = (int) (end);
-            CloseableIterator<VariantContext> query;
-            if (iEnd > 0 && iEnd >= iStart && iStart > 0 && reference != null && reference.length() > 0) { // ref was specified
-                query = reader.query(reference, iStart, iEnd);
-            } else { // no ref - ignore start/end
-                query = reader.iterator();
-            }
-
-            // Open return output stream - instatiate a SamFileWriter
-            OutputStream out;
-            try {
-                cOut = new CountingOutputStream(response.getOutputStream());
-                out = cOut;
-                //out = response.getOutputStream();
-
-                VariantContextWriterBuilder builder = new VariantContextWriterBuilder().
-                        setOutputVCFStream(out).
-                        setReferenceDictionary(fileHeader.getSequenceDictionary()).
-                        unsetOption(Options.INDEX_ON_THE_FLY);
-
-                final VariantContextWriter writer = builder.build();
-                writer.writeHeader(fileHeader);
-
-                while (query.hasNext()) {
-                    VariantContext context = filterMe(query.next(), tags, notags, fields);
-                    writer.add(context);
-                }
-
-                CloserUtil.close(query);
-                CloserUtil.close(reader);
-
-                writer.close();
-            } catch (IOException ex) {
-                throw new InternalErrorException(sessionId + ex.getMessage(), "20");
-            } finally {
-
-                timeDelta = System.currentTimeMillis() - timeDelta;
-                double speed = (cOut.getCount() / 1024.0 / 1024.0) / (timeDelta / 1000.0);
-                long bytes = cOut.getCount();
-                boolean success = cOut.getCount() > 0;
-                log.info(sessionId + "Success? " + success + ", Speed: " + speed + " MB/s");
-                DownloadEntry dle = downloaderLogService.createDownloadEntry(success, speed, localFileId,
-                        "htsget vcf/bcf", destinationFormat,
-                        start, end, bytes);
-                downloaderLogService.logDownload(dle);
-            }
-
-
-        } else { // If no 404 was found, this is a permissions denied error
-            throw new PermissionDeniedException(accession);
-        }
     }
 
     /*
@@ -828,13 +417,6 @@ public class RemoteFileServiceImpl implements FileService {
         return builder.build().encode().toUri();
     }
 
-    private String mapRunToFile(String runId) {
-
-        // Can't access Runs yet... TODO
-
-        return "";
-    }
-
     /**
      * Asks the load balancer for a RES (Re-Encryption Service) URL.
      *
@@ -851,23 +433,6 @@ public class RemoteFileServiceImpl implements FileService {
      */
     public String fileDatabaseURL() {
         return loadBalancer.choose("FILEDATABASE").getUri().toString();
-    }
-
-    /**
-     * Returns the index file for a given fileId.
-     *
-     * @param fileId ELIXIR id of the requested file.
-     * @return The content of the index file.
-     */
-    @Cacheable(cacheNames = "indexFile", key="T(org.springframework.security.core.context.SecurityContextHolder).getContext().getAuthentication() + #p0")
-    private FileIndexFile getFileIndexFile(String fileId) {
-        FileIndexFile indexFile = null;
-        ResponseEntity<FileIndexFile[]> forEntity = restTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}/index", FileIndexFile[].class, fileId);
-        FileIndexFile[] body = forEntity.getBody();
-        if (body != null && body.length >= 1) {
-            indexFile = body[0];
-        }
-        return indexFile;
     }
 
     /**
@@ -902,66 +467,6 @@ public class RemoteFileServiceImpl implements FileService {
         }
 
         return new ResponseEntity(HttpStatus.UNAUTHORIZED);
-    }
-
-    /**
-     * Filters a SAM record based on fields, tags, and excluded tags, if no
-     * fields, tags or notags are provided, the original context is returned.
-     *
-     * @param record SAM format record to be filtered.
-     * @param fields Fields to include after filtering.
-     * @param tags Tags to include after filtering.
-     * @param notags Tags to exclude after filtering.
-     * @return The modified record.
-     */
-    private SAMRecord filterMe(SAMRecord record, List<String> fields, List<String> tags, List<String> notags) {
-        // Default - leave record as it is
-        if (fields == null && tags == null && notags == null) return record;
-
-        List<SAMRecord.SAMTagAndValue> attributes = record.getAttributes();
-        record.clearAttributes();
-
-        // If tags is specified, without listing any, remove all tags.
-        if (tags != null && tags.size() == 0) return record;
-
-        // If specific tags are specified
-        Iterator<SAMRecord.SAMTagAndValue> iterator = attributes.iterator();
-        while (iterator.hasNext()) {
-            SAMRecord.SAMTagAndValue nextTag = iterator.next();
-            if ((tags != null && tags.contains(nextTag.tag)) ||
-                    (notags != null && !notags.contains(nextTag.tag))) {
-                record.setAttribute(nextTag.tag, nextTag.value);
-            } else if ((tags != null && tags.contains(nextTag.tag)) ||
-                    (notags != null && !notags.contains(nextTag.tag))) {
-                throw new GeneralStreamingException("Tag value specified in tags and notags: " + nextTag.tag, 80);
-            }
-        }
-
-        // Is specific fields are specified
-        // TODO
-
-        return record;
-    }
-
-    /**
-     * Filters a variant context based on fields, tags, and excluded tags, if no
-     * fields, tags or notags are provided, the original context is returned.
-     *
-     * @param context The context to be filtered.
-     * @param fields Fields to include after filtering.
-     * @param tags Tags to include after filtering.
-     * @param notags Tags to exclude after filtering.
-     * @return The modified context.
-     */
-    private VariantContext filterMe(VariantContext context, List<String> fields, List<String> tags, List<String> notags) {
-        // Default - leave record as it is
-        if (fields == null && tags == null && notags == null) return context;
-
-        Map<String, Object> attributes = context.getAttributes();
-
-        // TODO
-
-        return context;
     }
 
 }
