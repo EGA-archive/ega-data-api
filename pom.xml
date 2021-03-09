@@ -45,7 +45,6 @@
     <modules>
         <module>ega-data-api-filedatabase</module>
         <module>ega-data-api-key</module>
-        <module>ega-data-api-res</module>
         <module>ega-data-api-dataedge</module>
         <module>ega-data-api-htsget</module>
         <module>ega-data-api-netflix</module>

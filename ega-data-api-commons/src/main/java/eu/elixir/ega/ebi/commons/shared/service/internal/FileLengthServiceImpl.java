@@ -13,21 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package eu.elixir.ega.ebi.dataedge.service.internal;
+package eu.elixir.ega.ebi.commons.shared.service.internal;
 
 import eu.elixir.ega.ebi.commons.shared.dto.File;
+import eu.elixir.ega.ebi.commons.shared.service.FileLengthService;
+
 import org.springframework.context.annotation.Primary;
-import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
-import eu.elixir.ega.ebi.dataedge.service.FileLengthService;
-
-/**
- * @author amohan
- */
 @Service
 @Primary
-@Profile("!LocalEGA")
 public class FileLengthServiceImpl implements FileLengthService {
 
 

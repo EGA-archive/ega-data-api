@@ -11,8 +11,6 @@ public class Constants {
 
     public static String FILEDATABASE_SERVICE;
 
-    public static String RES_SERVICE;
-
     public static String KEYS_SERVICE;
 
     public static String DATA_SERVICE;
@@ -22,13 +20,8 @@ public class Constants {
         FILEDATABASE_SERVICE = filedburl;
     }
 
-    @Value("${ega.internal.res.url}")
-    public void setKeyService(String resurl) {
-        RES_SERVICE = resurl;
-    }
-
     @Value("${ega.internal.key.url}")
-    public void setResService(String keyurl) {
+    public void setKeyService(String keyurl) {
         KEYS_SERVICE = keyurl;
     }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 ELIXIR EGA
+ * Copyright 2017 ELIXIR EGA
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,8 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package eu.elixir.ega.ebi.dataedge.service;
+package eu.elixir.ega.ebi.commons.shared.service;
 
+import org.springframework.cache.annotation.Cacheable;
+
+import eu.elixir.ega.ebi.commons.shared.dto.KeyPath;
+
+/**
+ * @author asenf
+ */
+@Cacheable
 public interface KeyService {
+
+    String getFileKey(String fileId);
+
+    KeyPath getKeyPath(String key);
+
+    String getPublicKey(String id);
+
+    String getPrivateKey(String id);
+    
     String getEncryptionAlgorithm(String fileId);
+
 }

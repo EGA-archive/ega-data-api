@@ -17,21 +17,20 @@ package eu.elixir.ega.ebi.dataedge.rest;
 
 import com.google.common.base.Strings;
 
-import eu.elixir.ega.ebi.commons.exception.InvalidAuthenticationException;
-import eu.elixir.ega.ebi.commons.shared.service.AuthenticationService;
+import eu.elixir.ega.ebi.commons.shared.dto.ArchiveSource;
+import eu.elixir.ega.ebi.commons.shared.service.ArchiveService;
+import eu.elixir.ega.ebi.commons.shared.service.ResService;
 import lombok.extern.slf4j.Slf4j;
-import eu.elixir.ega.ebi.dataedge.service.FileService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.List;
 
 import static org.springframework.web.bind.annotation.RequestMethod.*;
 
@@ -40,12 +39,13 @@ import static org.springframework.web.bind.annotation.RequestMethod.*;
 @Slf4j
 @RequestMapping("/files")
 public class FileController {
-
+    
     @Autowired
-    private FileService fileService;
-
+    private ResService resService;
+    
     @Autowired
-    private AuthenticationService authenticationService;
+    private ArchiveService archiveService; 
+
 
     /**
      *
@@ -80,15 +80,26 @@ public class FileController {
             startCoordinate = Long.valueOf(ranges[0]);
             endCoordinate = Long.valueOf(ranges[1]) + 1; // translate into exclusive end coordinate
         }
+        
+        // Resolve Archive ID to actual File Path/URL - Needs Organization-Specific Implementation!
+        ArchiveSource source = archiveService.getArchiveFile(fileId, sessionId);
 
-        fileService.getFile(fileId,
-                destinationFormat,
-                destinationKey,
-                destinationIV,
-                startCoordinate,
-                endCoordinate,
-                request,
-                response);
+        resService.transfer(
+        source.getEncryptionFormat(),
+        source.getEncryptionKey(),
+        source.getEncryptionIV(),
+        destinationFormat,
+        destinationKey,
+        destinationIV,
+        source.getFileUrl(),
+        startCoordinate,
+        endCoordinate,
+        source.getSize(),
+        source.getAuth(),
+        fileId,
+        request,
+        response);
+        
 
         try {
             response.flushBuffer();
@@ -112,7 +123,7 @@ public class FileController {
                             HttpServletRequest request,
                             HttpServletResponse response) {
 
-        fileService.getFileHead(fileId,
+        resService.getFileHead(fileId,
                 destinationFormat,
                 request,
                 response);

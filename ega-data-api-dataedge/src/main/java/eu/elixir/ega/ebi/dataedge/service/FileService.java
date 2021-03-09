@@ -47,19 +47,6 @@ public interface FileService {
                  HttpServletRequest request,
                  HttpServletResponse response);
 
-    /**
-     * Returns the http header for a file identified by fileId. This mainly includes
-     * the content length, but also a random UUID for statistics.
-     *
-     * @param fileId            ELIXIR id of the requested file
-     * @param destinationFormat Requested destination format.
-     * @param request           Unused.
-     * @param response          Response stream for the returned data.
-     */
-    void getFileHead(String fileId,
-                     String destinationFormat,
-                     HttpServletRequest request,
-                     HttpServletResponse response);
 
     /**
      * Writes the content length of a selected file to the reponse parameter, and

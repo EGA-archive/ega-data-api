@@ -18,24 +18,28 @@ package eu.elixir.ega.ebi.commons.exception;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
+/**
+ * @author asenf
+ */
 @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-public class GeneralStreamingException extends RuntimeException {
+public class ServerErrorException extends RuntimeException {
 
     private static final long serialVersionUID = 1L;
-    
-    public GeneralStreamingException(String error) {
+
+    public ServerErrorException(String message, Throwable throwable) {
+        super(message, throwable);
+    }
+
+    public ServerErrorException(Throwable throwable) {
+        super(throwable);
+    }
+
+    public ServerErrorException(String error) {
         super(error);
     }
 
-    /**
-     * Thrown when a data stream fails, providing the stream stage and error
-     * description.
-     *
-     * @param error Error description.
-     * @param stage Stage number.
-     */
-    public GeneralStreamingException(String error, int stage) {
-        super("Error processing Stream at stage : " + stage + " (with error " + error + ")");
+    public ServerErrorException(String error, String id) {
+        super(error + ": " + id);
     }
 
 }
