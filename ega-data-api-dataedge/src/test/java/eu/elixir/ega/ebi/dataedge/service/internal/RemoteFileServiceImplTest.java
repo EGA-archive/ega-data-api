@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */
+ 
 package eu.elixir.ega.ebi.dataedge.service.internal;
 
 import eu.elixir.ega.ebi.commons.exception.NoContentException;
@@ -54,20 +54,18 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import static eu.elixir.ega.ebi.commons.config.Constants.FILEDATABASE_SERVICE;
-import static eu.elixir.ega.ebi.commons.config.Constants.RES_SERVICE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.powermock.api.mockito.PowerMockito.mock;
-import static org.powermock.api.mockito.PowerMockito.mockStatic;
 import static org.powermock.api.mockito.PowerMockito.when;
 import static org.powermock.api.mockito.PowerMockito.whenNew;
 
-/**
+*//**
  * Test class for {@link RemoteFileServiceImpl}.
  *
- */
+ *//*
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({RemoteFileServiceImpl.class})
 @TestPropertySource(locations = "classpath:application-test.properties")
@@ -103,11 +101,11 @@ public class RemoteFileServiceImplTest {
     @Mock
     private KeyService keyService;
 
-    /**
+    *//**
      * Test class for
      * {@link RemoteFileServiceImpl#getFile(Authentication, String, String, String, String, long, long, HttpServletRequest, HttpServletResponse)}.
      * Verify code is executing without errors.
-     */
+     *//*
     @Test
     public void testGetFile() {
         try {
@@ -133,17 +131,17 @@ public class RemoteFileServiceImplTest {
         file.setFileName("fileName");
         file.setFileSize(100L);
         file.setFileStatus("unavailable");
-        when(fileInfoService.getFileInfo(FILEID)).thenReturn(file);
+        when(fileInfoService.getFileInfo(FILEID, "")).thenReturn(file);
 
         remoteFileServiceImpl.getFile(FILEID, "plain", "destinationKey", "destinationIV", 0, 0,
                 new MockHttpServletRequest(), new MockHttpServletResponse());
     }
     
-    /**
+    *//**
      * Test class for
      * {@link RemoteFileServiceImpl#getFileHead(Authentication, String, String, HttpServletRequest, HttpServletResponse)}.
      * Verify code is executing without errors.
-     */
+     *//*
     @Test
     public void testGetFileHead() {
         try {
@@ -154,31 +152,21 @@ public class RemoteFileServiceImplTest {
         }
     }
 
-    /**
-     * Test class for {@link RemoteFileServiceImpl#resURL()}. Verify the output
-     * resURL.
-     */
-    @Test
-    public void testResURL() {
-        final String resURL = remoteFileServiceImpl.resURL();
-        assertThat(resURL, equalTo(RES_SERVICE));
-    }
-
-    /**
+    *//**
      * Test class for {@link RemoteFileServiceImpl#fileDatabaseURL()}. Verify the
      * output downloadUrl.
-     */
+     *//*
     @Test
     public void testFileDatabaseURL() {
         final String downloadURL = remoteFileServiceImpl.fileDatabaseURL();
         assertThat(downloadURL, equalTo(FILEDATABASE_SERVICE));
     }
 
-    /**
+    *//**
      * Test class for
      * {@link RemoteFileServiceImpl#getHeadById(Authentication, String, String, HttpServletRequest, HttpServletResponse)}.
      * Verify the response status code.
-     */
+     *//*
     @SuppressWarnings("rawtypes")
     @Test
     public void testGetHeadById() {
@@ -216,8 +204,8 @@ public class RemoteFileServiceImplTest {
         fi.setIndexFileId("indexFileId");
         final FileIndexFile[] fileIndexFiles = {fi};
 
-        when(fileInfoService.getFileInfo(FILEID)).thenReturn(f);
-        when(fileInfoService.getFileInfo("indexFileId")).thenReturn(f);
+        when(fileInfoService.getFileInfo(FILEID, "")).thenReturn(f);
+        when(fileInfoService.getFileInfo("indexFileId", "")).thenReturn(f);
 
         when(authentication.getAuthorities()).thenReturn(authorities);
         when(forEntityDataset.getBody()).thenReturn(datasets);
@@ -229,12 +217,9 @@ public class RemoteFileServiceImplTest {
 
         when(keyService.getEncryptionAlgorithm(FILEID)).thenReturn("aes256");
         FILEDATABASE_SERVICE = "http://filedatabase/";
-        RES_SERVICE = "http://res2/";
 
         SimpleDiscoveryProperties.SimpleServiceInstance fileDatabaseServiceInstance = new SimpleDiscoveryProperties.SimpleServiceInstance(new URL(FILEDATABASE_SERVICE).toURI());
         when(loadBalancer.choose("FILEDATABASE")).thenReturn(fileDatabaseServiceInstance);
-        SimpleDiscoveryProperties.SimpleServiceInstance resServiceInstance = new SimpleDiscoveryProperties.SimpleServiceInstance(new URL(RES_SERVICE).toURI());
-        when(loadBalancer.choose("RES2")).thenReturn(resServiceInstance);
 
         when(restTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}/datasets", FileDataset[].class, FILEID))
                 .thenReturn(forEntityDataset);
@@ -245,9 +230,8 @@ public class RemoteFileServiceImplTest {
                 .thenReturn(forEntity);
         when(restTemplate.getForEntity(FILEDATABASE_SERVICE + "/file/{fileId}/index", FileIndexFile[].class, FILEID))
                 .thenReturn(forResponseEntity);
-        when(restTemplate.getForEntity(RES_SERVICE + "/file/archive/{fileId}/size", Long.class, FILEID))
-                .thenReturn(forSize);
         when(restTemplate.execute(any(), any(), any(), any())).thenReturn(xferResult);
     }
 
 }
+*/

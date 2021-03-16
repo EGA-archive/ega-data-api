@@ -24,7 +24,6 @@ package eu.elixir.ega.ebi.commons.shared.service.internal;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -34,9 +33,7 @@ import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
-import java.security.Security;
 import java.security.spec.AlgorithmParameterSpec;
-import java.util.Iterator;
 import java.util.UUID;
 
 import javax.crypto.Cipher;
@@ -50,15 +47,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.bouncycastle.openpgp.PGPException;
-import org.bouncycastle.openpgp.PGPObjectFactory;
-import org.bouncycastle.openpgp.PGPPublicKey;
-import org.bouncycastle.openpgp.PGPPublicKeyRing;
-import org.bouncycastle.openpgp.PGPPublicKeyRingCollection;
-import org.bouncycastle.openpgp.PGPUtil;
-import org.bouncycastle.openpgp.operator.KeyFingerPrintCalculator;
-import org.bouncycastle.openpgp.operator.bc.BcKeyFingerprintCalculator;
 import org.cache2k.Cache;
 import org.springframework.cache.annotation.Cacheable;
 
@@ -72,11 +60,9 @@ import eu.elixir.ega.ebi.commons.shared.dto.DownloadEntry;
 import eu.elixir.ega.ebi.commons.shared.dto.EgaAESFileHeader;
 import eu.elixir.ega.ebi.commons.shared.dto.EventEntry;
 import eu.elixir.ega.ebi.commons.shared.dto.File;
-import eu.elixir.ega.ebi.commons.shared.dto.KeyPath;
 import eu.elixir.ega.ebi.commons.shared.service.DownloaderLogService;
 import eu.elixir.ega.ebi.commons.shared.service.FileInfoService;
 import eu.elixir.ega.ebi.commons.shared.service.FileLengthService;
-import eu.elixir.ega.ebi.commons.shared.service.KeyService;
 import eu.elixir.ega.ebi.commons.shared.service.ResService;
 import eu.elixir.ega.ebi.commons.shared.util.DecryptionUtils;
 import eu.elixir.ega.ebi.commons.shared.util.FireCommons;
@@ -96,14 +82,7 @@ public class CacheResServiceImpl implements ResService {
      */
     //private static final int BUFFER_SIZE = 16;
     private static final long BUFFER_SIZE = 1024 * 1024 * 12;
-    /**
-     * Bouncy Castle code for Public Key encrypted Files
-     */
-    private static final KeyFingerPrintCalculator fingerPrintCalculater = new BcKeyFingerprintCalculator();
-    /**
-     * Background processing
-     */
-    private KeyService keyService;
+
     private Cache<String, EgaAESFileHeader> myHeaderCache;
     private My2KCachePageFactory pageDowloader;
     private FireCommons fireCommons;
@@ -113,11 +92,10 @@ public class CacheResServiceImpl implements ResService {
     private FileLengthService fileLengthService;
     private DownloaderLogService downloaderLogService;
     
-    public CacheResServiceImpl(KeyService keyService, Cache<String, EgaAESFileHeader> myHeaderCache,
+    public CacheResServiceImpl(Cache<String, EgaAESFileHeader> myHeaderCache,
                                My2KCachePageFactory pageDowloader, FireCommons fireCommons, S3Commons s3Commons,
                                CloseableHttpClient httpClient, FileInfoService fileInfoService, FileLengthService fileLengthService,
                                DownloaderLogService downloaderLogService) {
-        this.keyService = keyService;
         this.myHeaderCache = myHeaderCache;
         this.pageDowloader = pageDowloader;
         this.fireCommons = fireCommons;
@@ -126,42 +104,6 @@ public class CacheResServiceImpl implements ResService {
         this.fileInfoService = fileInfoService;
         this.fileLengthService = fileLengthService;
         this.downloaderLogService = downloaderLogService;
-    }
-
-    /*
-     * Perform Data Transfer Requested by File Controller
-     */
-
-    private static PGPPublicKeyRing getKeyring(InputStream keyBlockStream) throws IOException {
-        // PGPUtil.getDecoderStream() will detect ASCII-armor automatically and decode it,
-        // the PGPObject factory then knows how to read all the data in the encoded stream
-        PGPObjectFactory factory = new PGPObjectFactory(PGPUtil.getDecoderStream(keyBlockStream), fingerPrintCalculater);
-
-        // these files should really just have one object in them,
-        // and that object should be a PGPPublicKeyRing.
-        Object o = factory.nextObject();
-        if (o instanceof PGPPublicKeyRing) {
-            return (PGPPublicKeyRing) o;
-        }
-        throw new IllegalArgumentException("Input text does not contain a PGP Public Key");
-    }
-
-    // -------------------------------------------------------------------------
-    private static PGPPublicKey getEncryptionKey(PGPPublicKeyRing keyRing) {
-        if (keyRing == null)
-            return null;
-
-        // iterate over the keys on the ring, look for one
-        // which is suitable for encryption.
-        Iterator keys = keyRing.getPublicKeys();
-        PGPPublicKey key = null;
-        while (keys.hasNext()) {
-            key = (PGPPublicKey) keys.next();
-            if (key.isEncryptionKey()) {
-                return key;
-            }
-        }
-        return null;
     }
 
     @Override
@@ -203,7 +145,6 @@ public class CacheResServiceImpl implements ResService {
         long bytesToTransfer = fileSize - startCoordinate - (endCoordinate > 0 ? (fileSize - endCoordinate) : 0);
         long bytesTransferred = 0;
         
-        int errorLocation = 0;
         try {
             // Get Send Stream - http Response, wrap in Digest Stream
             outStream = response.getOutputStream();
@@ -216,7 +157,6 @@ public class CacheResServiceImpl implements ResService {
                     destinationKey,
                     destinationIV,
                     startCoordinate);
-            errorLocation = 1;
             if (eOut == null) {
                 throw new GeneralStreamingException(sessionId + "Output Stream (ReEncryption Stage) Null", 2);
             }
@@ -235,19 +175,15 @@ public class CacheResServiceImpl implements ResService {
                 startCoordinate -= blockDelta;
             }
             bytesToTransfer = fileSize - startCoordinate - (endCoordinate > 0 ? (fileSize - endCoordinate) : 0);
-            errorLocation = 2;
 
             int startPage = (int) (startCoordinate / BUFFER_SIZE);
             int pageOffset = (int) (startCoordinate - ((long) startPage * (long) BUFFER_SIZE));
 
             while (bytesTransferred < bytesToTransfer) {
-                errorLocation = 3;
 
                 byte[] page = pageDowloader.downloadPage(id, startPage);
-                errorLocation = 4;
                 if (page == null)
-                    throw new GeneralStreamingException(sessionId + " Error getting page id '" + id + "' page '"
-                            + startPage + "'");
+                    throw new GeneralStreamingException(sessionId + " Error getting page id '" + id + "' page '"+ startPage + "'");
 
                 ByteArrayInputStream bais = new ByteArrayInputStream(page);
                 bais.skip(pageOffset); // first cache page
@@ -264,7 +200,6 @@ public class CacheResServiceImpl implements ResService {
 
                 // Copy the specified contents - decrypting through input, encrypting through output
                 long bytes = ByteStreams.copy(in, eOut);
-                errorLocation = 6;
                 bytesTransferred += bytes;
                 startPage += 1;
             }
@@ -273,40 +208,50 @@ public class CacheResServiceImpl implements ResService {
             return bytesTransferred;
         } catch (Exception t) {
             log.error(sessionId.concat(t.getMessage()) , t);
-            String errorMessage = id + ":" + destinationFormat + ":" + startCoordinate + ":" + endCoordinate + ":" + t.toString();
-            if (errorMessage != null && errorMessage.length() > 256) {
-                errorMessage = errorMessage.substring(0, 256);
-            }
-            
-            EventEntry eev = downloaderLogService.createEventEntry(errorMessage, "file");
-            downloaderLogService.logEvent(eev);
+            logFailedDownload(destinationFormat, startCoordinate, endCoordinate, id, t);
             throw new GeneralStreamingException(sessionId +" "+ t.toString(), 4);
-        } finally {
-            
-            if (bytesToTransfer == bytesTransferred) {
-
-                // Compare - Sent MD5 equals Received MD5? - Log Download in DB
-                double speed = (bytesTransferred / 1024.0 / 1024.0) / (timeDelta / 1000.0);
-                
-                log.info(sessionId + "Success? true, Speed: " + speed + " MB/s");
-                DownloadEntry dle = downloaderLogService.createDownloadEntry(true, speed, id,
-                         "file", destinationFormat,
-                        startCoordinate, endCoordinate, bytesTransferred);
-                downloaderLogService.logDownload(dle);
+        } finally {            
+            if (bytesToTransfer == bytesTransferred) {                
+                logSuccessDownload(destinationFormat, startCoordinate, endCoordinate, id, sessionId, bytesTransferred,
+                        timeDelta);
             }
-            
-            try {
-                if (in != null)
-                    in.close();
-                if (encryptedDigestOut != null)
-                    encryptedDigestOut.close();
-                if (eOut != null)
-                    eOut.close();
-            } catch (Exception ex) {
-                log.error(sessionId + " Error Location: " + errorLocation + "\n" + ex.toString(), ex);
-                throw new GeneralStreamingException(sessionId.concat(" ").concat(ex.toString()), 5);
-            }
+            closeStream(sessionId, encryptedDigestOut, eOut, in);
         }
+    }
+
+    private void closeStream(String sessionId, DigestOutputStream encryptedDigestOut, OutputStream eOut, InputStream in) {
+        try {
+            if (in != null)
+                in.close();
+            if (encryptedDigestOut != null)
+                encryptedDigestOut.close();
+            if (eOut != null)
+                eOut.close();
+        } catch (Exception ex) {
+            log.error(sessionId + " cant able to close stream \n" + ex.toString(), ex);
+            throw new GeneralStreamingException(sessionId.concat(" ").concat(ex.toString()), 5);
+        }
+    }
+
+    private void logFailedDownload(String destinationFormat, long startCoordinate, long endCoordinate, String id,
+            Exception t) {
+        String errorMessage = id + ":" + destinationFormat + ":" + startCoordinate + ":" + endCoordinate + ":" + t.toString();
+        if (errorMessage != null && errorMessage.length() > 256) {
+            errorMessage = errorMessage.substring(0, 256);
+        }
+        
+        EventEntry eev = downloaderLogService.createEventEntry(errorMessage, "file");
+        downloaderLogService.logEvent(eev);
+    }
+
+    private void logSuccessDownload(String destinationFormat, long startCoordinate, long endCoordinate, String id,
+            String sessionId, long bytesTransferred, long timeDelta) {
+        double speed = (bytesTransferred / 1024.0 / 1024.0) / (timeDelta / 1000.0);
+        log.info(sessionId + "Success? true, Speed: " + speed + " MB/s");
+        DownloadEntry dle = downloaderLogService.createDownloadEntry(true, speed, id,
+                 "file", destinationFormat,
+                startCoordinate, endCoordinate, bytesTransferred);
+        downloaderLogService.logDownload(dle);
     }
     
     @Override
@@ -396,77 +341,6 @@ public class CacheResServiceImpl implements ResService {
         } 
 
         return out;
-    }
-
-    // *************************************************************************
-    // ** Get Public Key fo Encryption
-    public PGPPublicKey getPublicGPGKey(String destinationFormat) throws IOException {
-        PGPPublicKey pgKey = null;
-        Security.addProvider(new BouncyCastleProvider());
-
-        // Paths (file containing the key - no paswords for public GPG Keys)
-        KeyPath vals = keyService.getKeyPath(destinationFormat);
-        if (vals == null) {
-            throw new GeneralStreamingException("Can't Read Destination Key: " + destinationFormat, 10);
-        }
-        String path = vals.getKeyPath();
-        InputStream in = new FileInputStream(path);
-
-        // Two types of public GPG key files - pick the correct one! (through trial-and-error)
-        boolean error = false;
-        try {
-            pgKey = readPublicKey(in); // key ring file (e.g. EBI key) -- TODO remove!
-        } catch (IOException | PGPException ex) {
-            in.reset();
-            error = true;
-        }
-        if (pgKey == null || error) {
-            try {
-                pgKey = getEncryptionKey(getKeyring(in)); // exported key file (should be standard)
-            } catch (IOException ignored) {
-            }
-        }
-        in.close();
-
-        return pgKey;
-    }
-
-    // Getting a public GPG key from a keyring
-    private PGPPublicKey readPublicKey(InputStream in)
-            throws IOException, PGPException {
-        in = PGPUtil.getDecoderStream(in);
-
-        PGPPublicKeyRingCollection pgpPub = new PGPPublicKeyRingCollection(in, fingerPrintCalculater);
-
-        //
-        // we just loop through the collection till we find a key suitable for encryption, in the real
-        // world you would probably want to be a bit smarter about this.
-        //
-        PGPPublicKey key = null;
-
-        //
-        // iterate through the key rings.
-        //
-        Iterator rIt = pgpPub.getKeyRings();
-
-        while (key == null && rIt.hasNext()) {
-            PGPPublicKeyRing kRing = (PGPPublicKeyRing) rIt.next();
-            Iterator kIt = kRing.getPublicKeys();
-
-            while (key == null && kIt.hasNext()) {
-                PGPPublicKey k = (PGPPublicKey) kIt.next();
-
-                if (k.isEncryptionKey()) {
-                    key = k;
-                }
-            }
-        }
-
-        if (key == null) {
-            throw new IllegalArgumentException("Can't find encryption key in key ring.");
-        }
-
-        return key;
     }
 
     private void loadHeaderCleversafe(String id, String url, String httpAuth, long fileSize,

@@ -71,9 +71,8 @@ public class My2KCachePageFactory {
     }
 
     public byte[] downloadPage(String id, int cachePage) throws IOException {
-        String sourceKey;
         EgaAESFileHeader header = getEgaAESFileHeader(id);
-        sourceKey = header.getSourceKey();
+        String sourceKey = header.getSourceKey();
 
         long startCoordinate = (long) cachePage * pageSize; // Account for IV at start of File
         long endCoordinate = startCoordinate + pageSize;
@@ -93,45 +92,87 @@ public class My2KCachePageFactory {
         pageSize_ = pageSize > pageSize_ ? pageSize_ : pageSize;
 
         byte[] buffer = new byte[(int) pageSize_];
-            int pageCnt = 0;
-            boolean pageSuccess = false;
-            do {
-                try (CloseableHttpResponse response = httpClient.execute(request)) {
-                    if (response.getStatusLine().getStatusCode() != 200
-                            && response.getStatusLine().getStatusCode() != 206) {
-                        log.error("FIRE error loading Cache Page Code "
-                                + response.getStatusLine().getStatusCode()
-                                + " for id '" + id + "' page '" + cachePage + "'");
-                        continue;
-                    }
+        downloadPageFromFire(id, cachePage, request, buffer);
 
-                    // Read response from HTTP call, count bytes read (encrypted Data)
-                    try (CountingInputStream cIn = new CountingInputStream(response.getEntity().getContent());
-                         DataInputStream dis = new DataInputStream(cIn);) {
-                        dis.readFully(buffer);
-                        pageSuccess = true;
-                    }
-                } catch (Throwable th) {
-                    log.error("FIRE error loading Cache Page Code  for id '" + id + "' page '" + cachePage
-                            + "' attempt '" + pageCnt + "' ", th);
+        // Decrypt, store plain in cache
+        try {
+            byte[] newIV = new byte[16]; // IV always 16 bytes long
+            System.arraycopy(header.getIV(), 0, newIV, 0, 16); // preserved start value
+            if (startCoordinate > 0)
+                DecryptionUtils.byteIncrementFast(newIV, startCoordinate);
+            return decrypt(buffer, sourceKey, newIV);
+        } catch (Exception ex) {
+            log.error("Error decrypting '" + byteRange + "' id '" + id + "' " + ex.getMessage(), ex);
+            throw new ServerErrorException("Error decrypting '" + byteRange + "' id '" + id + "' " + ex.getMessage(),
+                    ex);
+        } finally {
+            request.releaseConnection();
+        }
+    }
+    
+    public byte[] downloadPage(String id, long startCoordinate, long endCoordinate) throws IOException {
+        EgaAESFileHeader header = getEgaAESFileHeader(id);
+        String sourceKey = header.getSourceKey();
+        long fileSize = header.getSize();
+        endCoordinate = endCoordinate > fileSize ? fileSize : endCoordinate;
+
+        HttpGet request = new HttpGet(header.getUrl());
+        request.addHeader("Authorization", "Basic ".concat(fireCommons.getBase64EncodedCredentials()));
+        
+        if ((startCoordinate + 16) >= header.getSize())
+            return new byte[]{};
+        
+        String byteRange = "bytes=" + (startCoordinate + 16) + "-" + (endCoordinate + 16);
+        request.addHeader("Range", byteRange);
+        long pageSize_ = ((endCoordinate + 16) > header.getSize() ? header.getSize() : (endCoordinate + 16)) - (startCoordinate + 16);
+        pageSize_ = pageSize > pageSize_ ? pageSize_ : pageSize;
+
+        byte[] buffer = new byte[(int) pageSize_];
+        downloadPageFromFire(id, 0, request, buffer);
+
+        // Decrypt, store plain in cache
+        try {
+            byte[] newIV = new byte[16]; // IV always 16 bytes long
+            System.arraycopy(header.getIV(), 0, newIV, 0, 16); // preserved start value
+            if (startCoordinate > 0)
+                DecryptionUtils.byteIncrementFast(newIV, startCoordinate);
+            return decrypt(buffer, sourceKey, newIV);
+        } catch (Exception ex) {
+            log.error("Error decrypting '" + byteRange + "' id '" + id + "' " + ex.getMessage(), ex);
+            throw new ServerErrorException("Error decrypting '" + byteRange + "' id '" + id + "' " + ex.getMessage(),
+                    ex);
+        } finally {
+            request.releaseConnection();
+        }
+    }
+
+    private void downloadPageFromFire(String id, int cachePage, HttpGet request, byte[] buffer) {
+        int pageCnt = 0;
+        boolean pageSuccess = false;
+        do {
+            try (CloseableHttpResponse response = httpClient.execute(request)) {
+                if (response.getStatusLine().getStatusCode() != 200
+                        && response.getStatusLine().getStatusCode() != 206) {
+                    log.error("FIRE error loading Cache Page Code "
+                            + response.getStatusLine().getStatusCode()
+                            + " for id '" + id + "' page '" + cachePage + "'");
+                    continue;
                 }
-            } while (!pageSuccess && pageCnt++ < 3);
 
-            if(!pageSuccess)
-                throw new ServerErrorException("FIRE error can't read data, file id " + id + " ,page " +cachePage);
-            
-            // Decrypt, store plain in cache
-            try {
-                byte[] newIV = new byte[16]; // IV always 16 bytes long
-                System.arraycopy(header.getIV(), 0, newIV, 0, 16); // preserved start value
-                if (startCoordinate > 0) DecryptionUtils.byteIncrementFast(newIV, startCoordinate);
-                return decrypt(buffer, sourceKey, newIV);
-            } catch (Exception ex) {
-                log.error("Error decrypting '" + byteRange + "' id '" + id + "' " + ex.getMessage(), ex);
-                throw new ServerErrorException("Error decrypting '" + byteRange + "' id '" + id + "' " + ex.getMessage(), ex);
-            } finally {
-                request.releaseConnection();
+                // Read response from HTTP call, count bytes read (encrypted Data)
+                try (CountingInputStream cIn = new CountingInputStream(response.getEntity().getContent());
+                     DataInputStream dis = new DataInputStream(cIn);) {
+                    dis.readFully(buffer);
+                    pageSuccess = true;
+                }
+            } catch (Throwable th) {
+                log.error("FIRE error loading Cache Page Code  for id '" + id + "' page '" + cachePage
+                        + "' attempt '" + pageCnt + "' ", th);
             }
+        } while (!pageSuccess && pageCnt++ < 3);
+
+        if(!pageSuccess)
+            throw new ServerErrorException("FIRE error can't read data, file id " + id + " ,page " +cachePage);
     }
 
     private EgaAESFileHeader getEgaAESFileHeader(String id) throws IOException {
@@ -151,7 +192,6 @@ public class My2KCachePageFactory {
             // Obtain Signed S3 URL, place in Header Cache
             myHeaderCache.put(id, getFileEncryptionHeader(fileLocation, httpAuth, fileSize, sourceKey)
                     .orElseThrow(() -> new ServerErrorException("Header could not be loaded, File id", id)));
-            log.info(" --- " + id + " size: " + fileSize + " time to load: " + 0); // dt);
         }
         return myHeaderCache.get(id);
     }

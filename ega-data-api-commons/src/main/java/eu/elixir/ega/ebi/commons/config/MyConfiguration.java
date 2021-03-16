@@ -181,10 +181,10 @@ public class MyConfiguration {
     
     @Bean
     @Primary
-    public ResService initCacheResService(KeyService keyService, Cache<String, EgaAESFileHeader> myHeaderCache,
+    public ResService initCacheResService(Cache<String, EgaAESFileHeader> myHeaderCache,
             My2KCachePageFactory pageDownloader, IFireService fireService, CloseableHttpClient httpClient,
             FileInfoService fileInfoService, FileLengthService fileLengthService, DownloaderLogService downloaderLogService) {
-        return new CacheResServiceImpl(keyService, myHeaderCache, pageDownloader,
+        return new CacheResServiceImpl(myHeaderCache, pageDownloader,
                 new FireCommons(fireURL, base64EncodedCredentials(), fireService),
                 new S3Commons(awsKey, awsSecretKey, awsEndpointUrl, awsRegion), httpClient,
                 fileInfoService, fileLengthService, downloaderLogService);

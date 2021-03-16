@@ -16,12 +16,8 @@ public class ResClient {
     }
 
     public SeekableStream getStreamForFile(String id) throws MalformedURLException {
-        URL resDataURL = new URL(resURL() + "/file/archive/" + id);
+        URL resDataURL = new URL(/*resURL() +*/ "/file/archive/" + id);
         return new SeekableHTTPStream(resDataURL);
-    }
-
-    private String resURL() {
-        return loadBalancer.choose("RES2").getUri().toString();
     }
 
 }

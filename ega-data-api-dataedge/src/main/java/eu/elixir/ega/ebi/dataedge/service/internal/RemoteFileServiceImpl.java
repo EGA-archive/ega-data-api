@@ -24,12 +24,14 @@ import eu.elixir.ega.ebi.commons.shared.dto.DownloadEntry;
 import eu.elixir.ega.ebi.commons.shared.dto.EventEntry;
 import eu.elixir.ega.ebi.commons.shared.dto.File;
 import eu.elixir.ega.ebi.commons.shared.dto.MyExternalConfig;
+import eu.elixir.ega.ebi.commons.shared.service.ArchiveService;
 import eu.elixir.ega.ebi.commons.shared.service.DownloaderLogService;
 import eu.elixir.ega.ebi.commons.shared.service.FileInfoService;
+import eu.elixir.ega.ebi.commons.shared.service.FileLengthService;
+import eu.elixir.ega.ebi.commons.shared.service.KeyService;
+import eu.elixir.ega.ebi.commons.shared.service.ResService;
 import eu.elixir.ega.ebi.dataedge.dto.HttpResult;
-import eu.elixir.ega.ebi.dataedge.service.FileLengthService;
 import eu.elixir.ega.ebi.dataedge.service.FileService;
-import eu.elixir.ega.ebi.dataedge.service.KeyService;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.OkHttpClient;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,6 +44,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.client.RequestCallback;
 import org.springframework.web.client.ResponseExtractor;
 import org.springframework.web.client.RestTemplate;
@@ -60,7 +65,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
-import static eu.elixir.ega.ebi.commons.config.Constants.RES_SERVICE;
 import static org.apache.catalina.connector.OutputBuffer.DEFAULT_BUFFER_SIZE;
 
 @Service
@@ -102,6 +106,13 @@ public class RemoteFileServiceImpl implements FileService {
     
     @Autowired
     private KeyService keyService;
+    
+    @Autowired
+    private ResService resService; 
+    
+    @Autowired
+    private ArchiveService archiveService;
+    
 
     /**
      * Writes a requested file, or part of file from the FileService to the
@@ -131,7 +142,7 @@ public class RemoteFileServiceImpl implements FileService {
 
 		String sessionId= Strings.isNullOrEmpty(request.getHeader("Session-Id"))? "" : request.getHeader("Session-Id") + " ";
         // Ascertain Access Permissions for specified File ID
-        File reqFile = fileInfoService.getFileInfo(fileId); // request added for ELIXIR
+        File reqFile = fileInfoService.getFileInfo(fileId, sessionId); // request added for ELIXIR
         String encryptionAlgorithm = keyService.getEncryptionAlgorithm(fileId);
 
         if (reqFile == null) {
@@ -139,7 +150,7 @@ public class RemoteFileServiceImpl implements FileService {
                 Thread.sleep(2500);
             } catch (InterruptedException ignored) {
             }
-            reqFile = fileInfoService.getFileInfo(fileId);
+            reqFile = fileInfoService.getFileInfo(fileId, sessionId);
         }
         if (reqFile.getFileSize() > 0 && endCoordinate > reqFile.getFileSize())
             endCoordinate = reqFile.getFileSize();
@@ -198,11 +209,7 @@ public class RemoteFileServiceImpl implements FileService {
 
                 // -----------------------------------------------------------------
 
-                /*
-                 * CUSTOMISATION: If you access files by absolute path (nearly everyone) then
-                 * call getResUri with the file path instead of the file ID
-                 * [...]getResUri(reqFile.getFileName(),destinationFormat[...]
-                 */
+                
 
                 // Build Request URI with Ticket Parameters and get requested file from RES (timed for statistics)
                 timeDelta = System.currentTimeMillis();
@@ -215,6 +222,7 @@ public class RemoteFileServiceImpl implements FileService {
                 timeDelta = System.currentTimeMillis() - timeDelta;
 
             }
+            
         } catch (Throwable t) { // Log Error!
             log.error(sessionId + " Throwable execute error " , t);
             String errorMessage = fileId + ":" + destinationFormat + ":" + startCoordinate + ":" + endCoordinate + ":"
@@ -275,8 +283,7 @@ public class RemoteFileServiceImpl implements FileService {
                 log.error(sessionId + " Throwable responseExtractor error ", t);
                 throw new GeneralStreamingException(sessionId + " " + t.getMessage(), 7);
             }
-            // return number of bytes copied, RES session header, and MD5 of RES input
-            // stream
+            // return number of bytes copied, RES session header, and MD5 of RES input stream
             return new HttpResult(b, get, inHashtext); // This is the result of the RestTemplate
         };
     }
@@ -290,28 +297,7 @@ public class RemoteFileServiceImpl implements FileService {
      * @param request Unused.
      * @param response Response stream for the returned data.
      */
-    @Override
-    @Cacheable(cacheNames = "fileHead", key="T(org.springframework.security.core.context.SecurityContextHolder).getContext().getAuthentication() + #p0 + #p1 + #p2 + #p3")
-    public void getFileHead(String fileId,
-                            String destinationFormat,
-                            HttpServletRequest request,
-                            HttpServletResponse response) {
 
-        // Ascertain Access Permissions for specified File ID
-        File reqFile = fileInfoService.getFileInfo(fileId); // request added for ELIXIR
-
-        // Variables needed for responses at the end of the function
-        if (reqFile != null) {
-            // Build Header - Specify UUID (Allow later stats query regarding this transfer)
-            UUID dlIdentifier = UUID.randomUUID();
-            String headerValue = dlIdentifier.toString();
-            response = setHeaders(response, headerValue);
-
-            // Content Length of response (if available)
-            response.setContentLengthLong(fileLengthService.getContentLength(reqFile, destinationFormat, 0, 0));
-            response.addHeader("X-Content-Length", String.valueOf(fileLengthService.getContentLength(reqFile, destinationFormat, 0, 0)));
-        }
-    }
 
     //Hack
     private boolean isRDConnect(File reqFile) {
@@ -359,20 +345,7 @@ public class RemoteFileServiceImpl implements FileService {
         return response;
     }
 
-    /**
-     * Create a formatted URI to request a resource from the RES micro-service.
-     *
-     * @param fileStableIdPath Path to the file.
-     * @param destFormat Requested format (encryption type, 'plain', or
-     *     'publicgpg').
-     * @param destKey Encryption key that the result file will be encrypted
-     *     with.
-     * @param destIV Destination Initialization Vector. Needed to request part
-     *     of an AES encrypted file, as the IV is otherwise part of the header.
-     * @param startCoord Start coordinate of the requested file area, or 0.
-     * @param endCoord End coordinate of the requested file area, or 0.
-     * @return Formatted URI for the resource.
-     */
+
     private URI getResUri(String fileStableIdPath,
                           String destFormat,
                           String destKey,
@@ -380,7 +353,7 @@ public class RemoteFileServiceImpl implements FileService {
                           Long startCoord,
                           Long endCoord) {
         destFormat = destFormat.equals("AES") ? "aes128" : destFormat; // default to 128-bit if not specified
-        String url = RES_SERVICE + "/file";
+        String url =  "/file";
         if (fileStableIdPath.startsWith("EGAF")) { // If an ID is specified - resolve this in RES
             url += "/archive/" + fileStableIdPath;
         }
@@ -418,15 +391,6 @@ public class RemoteFileServiceImpl implements FileService {
     }
 
     /**
-     * Asks the load balancer for a RES (Re-Encryption Service) URL.
-     *
-     * @return RES service URL.
-     */
-    public String resURL() {
-        return loadBalancer.choose("RES2").getUri().toString();
-    }
-
-    /**
      * Asks the load balancer for a file database URL.
      *
      * @return file database URL.
@@ -459,8 +423,10 @@ public class RemoteFileServiceImpl implements FileService {
             localFileId = accession;
         }
 
+        String sessionId= Strings.isNullOrEmpty(request.getHeader("Session-Id"))? "" : request.getHeader("Session-Id") + " ";
+
         // Ascertain Access Permissions for specified File ID
-        File reqFile = fileInfoService.getFileInfo(localFileId);
+        File reqFile = fileInfoService.getFileInfo(localFileId, sessionId);
         if (reqFile != null) {
             response.addHeader("Content-Length", String.valueOf(reqFile.getFileSize()));
             return new ResponseEntity(HttpStatus.OK);

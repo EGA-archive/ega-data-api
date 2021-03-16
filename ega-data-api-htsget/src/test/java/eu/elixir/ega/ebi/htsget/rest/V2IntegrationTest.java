@@ -1,4 +1,4 @@
-package eu.elixir.ega.ebi.htsget.rest;
+/*package eu.elixir.ega.ebi.htsget.rest;
 
 import eu.elixir.ega.ebi.htsget.HtsgetServiceApplication;
 import org.junit.Assert;
@@ -39,3 +39,4 @@ public class V2IntegrationTest {
     }
 
 }
+*/

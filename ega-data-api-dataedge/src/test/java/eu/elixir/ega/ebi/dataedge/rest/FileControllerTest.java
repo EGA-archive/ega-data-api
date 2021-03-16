@@ -100,8 +100,8 @@ public final class FileControllerTest {
         doNothing().when(fileService).getFile(any(String.class), any(String.class),
                 any(String.class), any(String.class), any(Long.class), any(Long.class), any(HttpServletRequest.class),
                 any(HttpServletResponse.class));
-        doNothing().when(fileService).getFileHead(any(String.class), any(String.class),
-                any(HttpServletRequest.class), any(HttpServletResponse.class));
+       /* doNothing().when(fileService).getFileHead(any(String.class), any(String.class),
+                any(HttpServletRequest.class), any(HttpServletResponse.class));*/
 
     }
 

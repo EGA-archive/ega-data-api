@@ -1,5 +1,6 @@
 package eu.elixir.ega.ebi.htsget.service.internal;
 
+import eu.elixir.ega.ebi.commons.cache2k.My2KCachePageFactory;
 import eu.elixir.ega.ebi.commons.config.HtsgetException;
 import eu.elixir.ega.ebi.commons.config.InvalidInputException;
 import eu.elixir.ega.ebi.commons.config.InvalidRangeException;
@@ -10,9 +11,11 @@ import eu.elixir.ega.ebi.commons.exception.PermissionDeniedException;
 import eu.elixir.ega.ebi.commons.shared.dto.File;
 import eu.elixir.ega.ebi.commons.shared.dto.FileIndexFile;
 import eu.elixir.ega.ebi.commons.shared.dto.MyExternalConfig;
+import eu.elixir.ega.ebi.commons.shared.service.DownloaderLogService;
 import eu.elixir.ega.ebi.commons.shared.service.FileInfoService;
 import eu.elixir.ega.ebi.htsget.dto.HtsgetResponseV2;
 import eu.elixir.ega.ebi.htsget.dto.HtsgetUrlV2;
+import eu.elixir.ega.ebi.htsget.egaSeekableStream.EgaSeekableStream;
 import eu.elixir.ega.ebi.htsget.formats.DataProvider;
 import eu.elixir.ega.ebi.htsget.formats.DataProviderFactory;
 import eu.elixir.ega.ebi.htsget.service.TicketService;
@@ -33,22 +36,16 @@ import java.util.Optional;
 public class TicketServiceImpl implements TicketService {
 
     public static final int MAX_BYTES_PER_DATA_BLOCK = 1024 * 1024 * 1024;
-
     private final FileInfoService fileInfoService;
-
     private final MyExternalConfig externalConfig;
-
-    private final ResClient resClient;
-
     private final DataProviderFactory dataProviderFactory;
+    private My2KCachePageFactory pageFactory;
 
-
-    public TicketServiceImpl(FileInfoService fileInfoService, MyExternalConfig externalConfig, ResClient resClient,
-                             DataProviderFactory dataProviderFactory) {
+    public TicketServiceImpl(FileInfoService fileInfoService, MyExternalConfig externalConfig, DataProviderFactory dataProviderFactory, My2KCachePageFactory pageFactory) {
         this.fileInfoService = fileInfoService;
         this.externalConfig = externalConfig;
-        this.resClient = resClient;
         this.dataProviderFactory = dataProviderFactory;
+        this.pageFactory = pageFactory;
     }
 
     public HtsgetResponseV2 getFile(String id,
@@ -71,7 +68,7 @@ public class TicketServiceImpl implements TicketService {
         }
 
         // Ascertain Access Permissions for specified File ID
-        File reqFile = fileInfoService.getFileInfo(id);
+        File reqFile = fileInfoService.getFileInfo(id, "");
 
         // Start Building the URL for the file on DataEdge
         URI baseURI = UriComponentsBuilder
@@ -89,7 +86,7 @@ public class TicketServiceImpl implements TicketService {
                 result.setMd5(reqFile.getUnencryptedChecksum());
         } else {
 
-            try (SeekableStream dataStream = resClient.getStreamForFile(id)) {
+            try (SeekableStream dataStream = new EgaSeekableStream(id, pageFactory, reqFile.getFileSize())) {
                 DataProvider reader = dataProviderFactory.getProviderForFormat(format, dataStream);
                 if (!reader.supportsFileType(reqFile.getFileName()))
                     throw new UnsupportedFormatException("Conversion not supported");
@@ -109,7 +106,8 @@ public class TicketServiceImpl implements TicketService {
                         throw new IndexNotFoundException("IndexFileId not found for file", id);
                     }
 
-                    try (SeekableStream indexStream = resClient.getStreamForFile(fileIndexFile.getIndexFileId())) {
+                    File reqIndexFile = fileInfoService.getFileInfo(fileIndexFile.getIndexFileId(), "");
+                    try (SeekableStream indexStream = new EgaSeekableStream(reqIndexFile.getFileId(), pageFactory, reqIndexFile.getFileSize())) {
                         result.getUrls().addAll(reader.addContentUris(referenceName.get(), start.orElse(0L),
                                 end.orElse(Long.MAX_VALUE), baseURI, dataStream, indexStream));
                     }

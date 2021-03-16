@@ -1,4 +1,4 @@
-package eu.elixir.ega.ebi.htsget.service.internal;
+/*package eu.elixir.ega.ebi.htsget.service.internal;
 
 import eu.elixir.ega.ebi.commons.config.InvalidInputException;
 import eu.elixir.ega.ebi.commons.config.InvalidRangeException;
@@ -259,3 +259,4 @@ public class TicketServiceTest {
     }
 
 }
+*/

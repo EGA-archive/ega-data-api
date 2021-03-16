@@ -17,6 +17,7 @@
  */
 package eu.elixir.ega.ebi.htsget.config;
 
+import eu.elixir.ega.ebi.commons.cache2k.My2KCachePageFactory;
 import eu.elixir.ega.ebi.commons.config.CachingMultipleRemoteTokenService;
 import eu.elixir.ega.ebi.commons.config.CachingRemoteTokenService;
 import eu.elixir.ega.ebi.commons.config.MyAccessTokenConverter;
@@ -63,8 +64,8 @@ public class HtsGetConfiguration {
 
     @Bean
     public TicketService ticketServiceV2(FileInfoService fileInfoService, MyExternalConfig externalConfig,
-                                         ResClient resClient) {
-        return new TicketServiceImpl(fileInfoService, externalConfig, resClient, new DataProviderFactory());
+            My2KCachePageFactory pageFactory) {
+        return new TicketServiceImpl(fileInfoService, externalConfig, new DataProviderFactory(), pageFactory);
     }
 
     @Bean

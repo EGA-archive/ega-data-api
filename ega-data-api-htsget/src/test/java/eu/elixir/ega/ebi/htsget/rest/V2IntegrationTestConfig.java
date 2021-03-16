@@ -1,4 +1,4 @@
-package eu.elixir.ega.ebi.htsget.rest;
+/*package eu.elixir.ega.ebi.htsget.rest;
 
 import eu.elixir.ega.ebi.commons.exception.NotFoundException;
 import eu.elixir.ega.ebi.commons.shared.dto.File;
@@ -63,3 +63,4 @@ public class V2IntegrationTestConfig {
         return new DataProviderFactory();
     }
 }
+*/
