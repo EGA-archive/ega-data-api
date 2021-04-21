@@ -238,7 +238,7 @@ public class MyAccessTokenConverter implements AccessTokenConverter {
                         .orElse(null));
     }
 
-    private Map<String, List<String>> getDatasetFileMap(final List<String> ga4ghDatasets) {
+    protected Map<String, List<String>> getDatasetFileMap(final List<String> ga4ghDatasets) {
         return ga4ghDatasets
                 .parallelStream()
                 .map(jwtService::parse)
@@ -249,7 +249,7 @@ public class MyAccessTokenConverter implements AccessTokenConverter {
                 .map(this::getDatasetId)
                 .filter(Optional::isPresent)
                 .map(Optional::get)
-                .collect(toMap(datasetId -> datasetId, fileDatasetService::getFileIds));
+                .collect(toMap(datasetId -> datasetId, fileDatasetService::getFileIds, (d1, d2) -> d2));
     }
 
     private boolean isValidToken(final SignedJWT signedJWT) {

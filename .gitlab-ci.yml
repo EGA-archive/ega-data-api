@@ -16,7 +16,6 @@ services:
 ## List of jobs:
 stages:
   - unitTest
-  - integrationTest
   - imageBuild
 
 # Cache downloaded dependencies and plugins between builds.
@@ -34,27 +33,6 @@ unitTest:
   stage: unitTest
   script:
     - mvn test
-
-integrationTest:
-  stage: integrationTest
-  before_script:
-    - mvn install -DskipTests=true -P production -Dmaven.javadoc.skip=true -B -V -DskipDockerPush
-#    - sudo service postgresql stop
-    - mkdir -p /usr/local/share/ca-certificates/
-    - cp extras/certificate/rootCA.pem /usr/local/share/ca-certificates/CA.crt
-    - chmod 644 /usr/local/share/ca-certificates/CA.crt
-    - update-ca-certificates
-    - docker build -t ega-data-api/ega-dataedge  --file Dockerfile.dataedge .
-    - docker build -t ega-data-api/ega-res  --file Dockerfile.res .
-    - docker build -t ega-data-api/ega-keyserver  --file Dockerfile.keyserver .
-    - docker build -t ega-data-api/ega-filedatabase  --file Dockerfile.filedatabase .
-    - docker build -t ega-data-api/ega-postgres --file extras/postgresdb/Dockerfile .
-    - cd extras && source ./variables.sh
-    - docker-compose up -d
-    - sleep 90
-    - cd ../ega-data-api-it
-  script:
-    - mvn test "-Dkey.url=https://dataedge" "-Dfile.url=https://dataedge" "-Dres.url=https://dataedge" "-Ddataedge.url=https://dataedge"
 
 imageBuild:
   stage: imageBuild
