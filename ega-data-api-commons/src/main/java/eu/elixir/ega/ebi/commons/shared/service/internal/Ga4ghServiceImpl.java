@@ -19,7 +19,6 @@ package eu.elixir.ega.ebi.commons.shared.service.internal;
 
 import eu.elixir.ega.ebi.commons.shared.dto.JWTTokenDTO;
 import eu.elixir.ega.ebi.commons.shared.service.Ga4ghService;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -46,7 +45,6 @@ public class Ga4ghServiceImpl implements Ga4ghService {
         this.authorization = authorization;
     }
 
-    @Cacheable(value = "datasetsGa4gh", key = "#userId")
     @Override
     public List<String> getDatasets(final String userId) {
         final HttpHeaders headers = new HttpHeaders();
