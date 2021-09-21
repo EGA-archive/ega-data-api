@@ -26,10 +26,10 @@ import eu.elixir.ega.ebi.reencryptionmvc.util.FireCommons;
 import eu.elixir.ega.ebi.reencryptionmvc.util.S3Commons;
 import htsjdk.samtools.seekablestream.cipher.ebi.Glue;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.util.EntityUtils;
 import org.cache2k.Cache;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
 
@@ -40,6 +40,7 @@ import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Arrays;
 import java.util.Optional;
 
 /**
@@ -97,9 +98,21 @@ public class My2KCachePageFactory {
                 try (CloseableHttpResponse response = httpClient.execute(request)) {
                     if (response.getStatusLine().getStatusCode() != 200
                             && response.getStatusLine().getStatusCode() != 206) {
-                        log.error("FIRE error loading Cache Page Code "
-                                + response.getStatusLine().getStatusCode()
-                                + " for id '" + id + "' page '" + cachePage + "'");
+                        final String message = String.format("FIRE error loading Cache Page Code %d for id '%s' page '%d'%n" +
+                                        "Request: '%s'%n" +
+                                        "Request headers: '%s'%n" +
+                                        "Response: '%s'%n" +
+                                        "Response statusLine: '%s'%n" +
+                                        "Response headers: '%s'%n" +
+                                        "Response entity: '%s'",
+                                response.getStatusLine().getStatusCode(), id, cachePage,
+                                request,
+                                Arrays.toString(request.getAllHeaders()),
+                                response,
+                                response.getStatusLine(),
+                                Arrays.toString(response.getAllHeaders()),
+                                EntityUtils.toString(response.getEntity()));
+                        log.error(message);
                         continue;
                     }
 
