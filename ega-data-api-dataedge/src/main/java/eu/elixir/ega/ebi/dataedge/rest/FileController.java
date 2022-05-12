@@ -22,7 +22,9 @@ import eu.elixir.ega.ebi.commons.shared.service.AuthenticationService;
 import lombok.extern.slf4j.Slf4j;
 import eu.elixir.ega.ebi.dataedge.service.FileService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
+import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -39,6 +41,7 @@ import static org.springframework.web.bind.annotation.RequestMethod.*;
  * @author asenf
  */
 @RestController
+@Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 @EnableDiscoveryClient
 @Slf4j
 @RequestMapping("/files")

@@ -24,7 +24,9 @@ import htsjdk.samtools.seekablestream.ebi.BufferedBackgroundInputStream;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
+import org.springframework.context.annotation.Scope;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.ServletContext;
@@ -46,6 +48,7 @@ import java.util.stream.StreamSupport;
  * @author asenf
  */
 @RestController
+@Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 @EnableDiscoveryClient
 @Slf4j
 @RequestMapping("/file")

@@ -56,9 +56,11 @@ import okhttp3.OkHttpClient;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
+import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -89,6 +91,7 @@ import static eu.elixir.ega.ebi.commons.config.Constants.RES_SERVICE;
 import static org.apache.catalina.connector.OutputBuffer.DEFAULT_BUFFER_SIZE;
 
 @Service
+@Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 @EnableDiscoveryClient
 @Slf4j
 public class RemoteFileServiceImpl implements FileService {
