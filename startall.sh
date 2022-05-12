@@ -1,3 +1,9 @@
+#!/bin/bash
+
+## This script will launch the main components for data-api (config, eureka, key, filedatabase)
+## Please run the following components in debug mode: res, data-edge, htsget
+
+
 #Save current dir for future usage
 DIR=$(pwd)
 RUNDIR=$DIR/local_run
@@ -5,8 +11,10 @@ LOG_DIR=$RUNDIR/logs
 
 mkdir -p $LOG_DIR
 
-echo "Building project, not showing stdout"
-# mvn clean install > /dev/null
+echo "Building project with maven in background..."
+mvn clean install > /dev/null
+echo "Done \n"
+
 
 #-------------------------------
 echo "Launching config server..."
@@ -53,9 +61,21 @@ echo "filedatabase: $!" >> $RUNDIR/process_ids.txt
 
 
 #-------------------------------
-echo "All processes started:"
+echo ""
+echo "All processes started: (process: PID)"
 cat $RUNDIR/process_ids.txt
 
-echo "Press a key to kill them all"
+echo ""
+echo "Logs: $LOG_DIR"
+ls -ltrh $LOG_DIR
+echo "\n"
+read -n 1 -r -s -p $'Press enter to exit...'
 
+#-------------------------------
+echo "Killing all processes:"
+
+PIDS="$(cat $RUNDIR/process_ids.txt | awk -F' ' '{print $2}' | paste -s -d' ')"
+KILL_COMMAND="kill -9 $PIDS"
+echo "    -> $KILL_COMMAND"
+eval $KILL_COMMAND
 
